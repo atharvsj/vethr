@@ -1,0 +1,284 @@
+// import React, { useEffect, useState, useContext } from 'react';
+// import { EmployeeContext } from './EmployeeContext';
+// import {
+//   Box,
+//   Grid,
+//   TextField,
+//   InputAdornment,
+//   Typography,
+//   Button,
+//   InputLabel,
+// } from '@mui/material';
+// import PersonIcon from '@mui/icons-material/Person';
+// import EmailIcon from '@mui/icons-material/Email';
+// import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
+// import axiosInstance from '../../utils/axiosInstance';
+// import Swal from 'sweetalert2';
+
+// const AccountInformation = () => {
+//   const [username, setUsername] = useState('');
+//   const [email, setEmail] = useState('');
+//   const { employeeId } = useContext(EmployeeContext);
+//   const userId = employeeId;
+
+//   useEffect(() => {
+//     console.log('employee id from context in basicinfo:', employeeId);
+//   }, [employeeId]);
+
+//   useEffect(() => {
+//     const fetchAccountInfo = async () => {
+//       try {
+//         const response = await axiosInstance.post('/api/account_info/', {
+//           user_id: userId,
+//         });
+
+//         if (response.data.status === 'success') {
+//           const { username, email } = response.data.data;
+//           setUsername(username);
+//           setEmail(email);
+//         }
+//       } catch (error) {
+//         console.error('Error fetching account info:', error);
+//         Swal.fire({
+//           icon: 'error',
+//           title: 'Error',
+//           text: 'Failed to fetch account information.',
+//         });
+//       }
+//     };
+
+//     if (userId) fetchAccountInfo();
+//   }, [userId]);
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     try {
+//       await axiosInstance.patch('/api/account_info/', {
+//         user_id: userId,
+//         username,
+//         email,
+//       });
+//       Swal.fire({
+//         icon: 'success',
+//         title: 'Success',
+//         text: 'Account information has been saved.',
+//       });
+//     } catch (error) {
+//       console.error('Error updating account info:', error);
+//       Swal.fire({
+//         icon: 'error',
+//         title: 'Error',
+//         text: 'Failed to save account information.',
+//       });
+//     }
+//   };
+
+//   return (
+//     <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 700 }}>
+//       <Box display="flex" alignItems="center" gap={1} mb={2}>
+//         <PhoneIphoneIcon color="primary" />
+//         <Box>
+//           <Typography variant="h6">Account Information</Typography>
+//           <Typography variant="body2" color="text.secondary">
+//             Change your account information
+//           </Typography>
+//         </Box>
+//       </Box>
+
+//       <Grid container spacing={2}>
+//         <Grid item xs={12} sm={6}>
+//           <InputLabel required>Username</InputLabel>
+//           <TextField
+//             fullWidth
+//             value={username}
+//             onChange={(e) => setUsername(e.target.value)}
+//             placeholder="Username"
+//             InputProps={{
+//               startAdornment: (
+//                 <InputAdornment position="start">
+//                   <PersonIcon />
+//                 </InputAdornment>
+//               ),
+//             }}
+//           />
+//         </Grid>
+//         <Grid item xs={12} sm={6}>
+//           <InputLabel required>Account Email</InputLabel>
+//           <TextField
+//             fullWidth
+//             value={email}
+//             onChange={(e) => setEmail(e.target.value)}
+//             placeholder="Email"
+//             InputProps={{
+//               startAdornment: (
+//                 <InputAdornment position="start">
+//                   <EmailIcon />
+//                 </InputAdornment>
+//               ),
+//             }}
+//           />
+//         </Grid>
+//       </Grid>
+
+//       <Box sx={{ mt: 3 }}>
+//         <Button type="submit" variant="contained" color="primary">
+//           Save
+//         </Button>
+//       </Box>
+//     </Box>
+//   );
+// };
+
+// export default AccountInformation;
+ import React, { useEffect, useState, useContext } from 'react';
+import {
+  Box,
+  Typography,
+  Button,
+  Grid,
+  TextField,
+  InputAdornment,
+  InputLabel
+} from '@mui/material';
+import PersonIcon from '@mui/icons-material/Person';
+import EmailIcon from '@mui/icons-material/Email';
+import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
+import { EmployeeContext } from '../../SuperAdmin/Employee/EmployeeContext';
+import axiosInstance from '../../utils/axiosInstance';
+import Swal from 'sweetalert2';
+
+const AccountInformation = () => {
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const { employeeId } = useContext(EmployeeContext);
+  const userId = employeeId;
+
+  useEffect(() => {
+    // This is for debugging and is fine.
+    console.log('employee id from context in AccountInformation:', employeeId);
+  }, [employeeId]);
+
+  useEffect(() => {
+    const fetchAccountInfo = async () => {
+      try {
+        const response = await axiosInstance.post('/api/account_info/', {
+          user_id: userId,
+        });
+
+        if (response.data.status === 'success') {
+          const { username, email } = response.data.data;
+          setUsername(username);
+          setEmail(email);
+        }
+      } catch (error) {
+        console.error('Error fetching account info:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Fetch Error',
+          text: 'Failed to fetch account information. Please try again.',
+        });
+      }
+    };
+
+    if (userId) fetchAccountInfo();
+  }, [userId]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // 1. Add a loading indicator with Swal
+    Swal.fire({
+      title: 'Saving...',
+      text: 'Please wait while we update your account information.',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    try {
+      await axiosInstance.patch('/api/account_info/', {
+        user_id: userId,
+        username,
+        email,
+      });
+
+      // 2. On success, the loading alert is replaced by the success message
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: 'Your account information has been saved successfully.',
+      });
+    } catch (error) {
+      console.error('Error updating account info:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to save account information.';
+      
+      // 3. On error, the loading alert is replaced by the error message
+      Swal.fire({
+        icon: 'error',
+        title: 'Update Failed',
+        text: errorMessage,
+      });
+    }
+  };
+
+  return (
+    <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 700, p: 3 }}>
+      <Box display="flex" alignItems="center" gap={1} mb={2}>
+        <PhoneIphoneIcon color="primary" />
+        <Box>
+          <Typography variant="h6">Account Information</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Change your account information
+          </Typography>
+        </Box>
+      </Box>
+
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={6}>
+          <InputLabel required>Username</InputLabel>
+          <TextField
+            fullWidth
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Username"
+            required // Added for good practice
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <PersonIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <InputLabel required>Account Email</InputLabel>
+          <TextField
+            fullWidth
+            value={email}
+            type="email" // Added for better validation and mobile experience
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            required // Added for good practice
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <EmailIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Grid>
+      </Grid>
+
+      <Box sx={{ mt: 3 }}>
+        <Button type="submit" variant="contained" color="primary">
+          Save
+        </Button>
+      </Box>
+    </Box>
+  );
+};
+
+export default AccountInformation;
