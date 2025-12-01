@@ -1966,6 +1966,554 @@
 
 
 
+// import React, {
+//     useState,
+//     useEffect,
+//     useMemo,
+//     useCallback
+// } from 'react';
+// import axios from 'axios';
+// import {
+//     Container,
+//     Paper,
+//     Typography,
+//     TextField,
+//     Box,
+//     Table,
+//     TableBody,
+//     TableCell,
+//     TableContainer,
+//     TableHead,
+//     TableRow,
+//     IconButton,
+//     Button,
+//     Dialog,
+//     DialogActions,
+//     DialogContent,
+//     DialogTitle,
+//     CircularProgress,
+//     InputAdornment,
+//     Skeleton,
+//     // --- START: Imports for new pagination ---
+//     Pagination,
+//     FormControl,
+//     Select,
+//     MenuItem,
+//     // --- END: Imports for new pagination ---
+//     useTheme,
+//     useMediaQuery,
+// } from '@mui/material';
+// import EditIcon from '@mui/icons-material/Edit';
+// import DeleteIcon from '@mui/icons-material/Delete';
+// import Add from '@mui/icons-material/Add';
+// import SearchIcon from '@mui/icons-material/Search';
+// import dayjs from 'dayjs';
+// import Swal from 'sweetalert2';
+
+// // --- UI STANDARDIZATION & COLOR SCHEME ---
+// const THEME_COLORS = {
+//     primary: '#8C257C',
+//     primaryDark: '#6d1d60', // For hover
+//     secondary: '#F58E35',
+//     textOnPrimary: '#FFFFFF',
+//     cancelButton: '#757575',
+// };
+
+// function Division() {
+//     const [rows, setRows] = useState([]);
+//     const [loading, setLoading] = useState(true);
+//     const [searchTerm, setSearchTerm] = useState('');
+//     const [page, setPage] = useState(0);
+//     const [rowsPerPage, setRowsPerPage] = useState(5);
+//     const [openAddDialog, setOpenAddDialog] = useState(false);
+//     const [openEditDialog, setOpenEditDialog] = useState(false);
+//     const [newDivision, setNewDivision] = useState({
+//         name: '',
+//         code: ''
+//     });
+//     const [editDivision, setEditDivision] = useState(null);
+//     const [isSubmitting, setIsSubmitting] = useState(false);
+
+//     const theme = useTheme();
+//     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+//     const API_URL = 'https://tdtlworld.com/hrms-backend/api/division/';
+
+//     const fetchData = useCallback(async () => {
+//         setLoading(true);
+//         try {
+//             const res = await axios.get(API_URL);
+//             const sortedData = res.data.sort(
+//                 (a, b) => new Date(b.created_at) - new Date(a.created_at)
+//             );
+//             const apiData = sortedData.map((d) => ({
+//                 id: d.division_id,
+//                 name: d.division_name || '',
+//                 code: d.division_code || '',
+//                 createdAt: d.created_at ?
+//                     dayjs(d.created_at).format('DD-MM-YYYY') :
+//                     '-',
+//             }));
+//             setRows(apiData);
+//         } catch (error) {
+//             console.error('GET API error:', error);
+//             Swal.fire({
+//                 icon: 'error',
+//                 title: 'Fetch Error',
+//                 text: 'Failed to fetch divisions from the server.',
+//                 timer: 3000,
+//                 showConfirmButton: false,
+//             });
+//         } finally {
+//             setLoading(false);
+//         }
+//     }, []);
+
+//     useEffect(() => {
+//         fetchData();
+//     }, [fetchData]);
+
+//     const filteredRows = useMemo(() => {
+//         if (!searchTerm) {
+//             return rows;
+//         }
+//         return rows.filter(
+//             (row) =>
+//             row.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//             row.code.toLowerCase().includes(searchTerm.toLowerCase())
+//         );
+//     }, [rows, searchTerm]);
+
+//     const paginatedRows = useMemo(() => {
+//         return filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+//     }, [filteredRows, page, rowsPerPage]);
+
+//     // --- START: Calculation for 'Showing X to Y' text ---
+//     const startEntry = filteredRows.length > 0 ? page * rowsPerPage + 1 : 0;
+//     const endEntry = Math.min((page + 1) * rowsPerPage, filteredRows.length);
+//     // --- END: Calculation for 'Showing X to Y' text ---
+
+//     const handleAddNewDivision = async (e) => {
+//         e.preventDefault();
+//         if (!newDivision.name.trim() || !newDivision.code.trim()) {
+//             Swal.fire({
+//                 icon: 'error',
+//                 title: 'Validation Error',
+//                 text: 'All fields are required.',
+//                 timer: 3000,
+//                 showConfirmButton: false,
+//             });
+//             return;
+//         }
+//         setIsSubmitting(true);
+//         try {
+//             await axios.post(API_URL, {
+//                 division_name: newDivision.name.trim(),
+//                 division_code: newDivision.code.trim(),
+//             });
+//             Swal.fire({
+//                 icon: 'success',
+//                 title: 'Success!',
+//                 text: 'Division added successfully.',
+//                 timer: 3000,
+//                 showConfirmButton: false,
+//             });
+//             setOpenAddDialog(false);
+//             setNewDivision({
+//                 name: '',
+//                 code: ''
+//             });
+//             fetchData(); // Refresh data
+//         } catch (err) {
+//             console.error('POST error', err);
+//             Swal.fire({
+//                 icon: 'error',
+//                 title: 'Submission Error',
+//                 text: 'An error occurred while adding the division.',
+//                 timer: 3000,
+//                 showConfirmButton: false,
+//             });
+//         } finally {
+//             setIsSubmitting(false);
+//         }
+//     };
+
+//     const handleEditSubmit = async (e) => {
+//         e.preventDefault();
+//         if (!editDivision || !editDivision.name.trim() || !editDivision.code.trim()) {
+//             Swal.fire({
+//                 icon: 'error',
+//                 title: 'Validation Error',
+//                 text: 'All fields are required.',
+//                 timer: 3000,
+//                 showConfirmButton: false,
+//             });
+//             return;
+//         }
+//         setIsSubmitting(true);
+//         try {
+//             await axios.patch(`${API_URL}${editDivision.id}/`, {
+//                 division_name: editDivision.name.trim(),
+//                 division_code: editDivision.code.trim(),
+//             });
+//             Swal.fire({
+//                 icon: 'success',
+//                 title: 'Success!',
+//                 text: 'Division updated successfully.',
+//                 timer: 3000,
+//                 showConfirmButton: false,
+//             });
+//             setOpenEditDialog(false);
+//             setEditDivision(null);
+//             fetchData(); // Refresh data
+//         } catch (err) {
+//             console.error('PATCH error', err);
+//             Swal.fire({
+//                 icon: 'error',
+//                 title: 'Update Error',
+//                 text: 'An error occurred while updating the division.',
+//                 timer: 3000,
+//                 showConfirmButton: false,
+//             });
+//         } finally {
+//             setIsSubmitting(false);
+//         }
+//     };
+
+//     const handleDeleteClick = (id) => {
+//         Swal.fire({
+//             title: 'Are you sure?',
+//             text: "You won't be able to revert this!",
+//             icon: 'warning',
+//             showCancelButton: true,
+//             confirmButtonColor: '#d33',
+//             cancelButtonColor: '#3085d6',
+//             confirmButtonText: 'Yes, delete it!',
+//         }).then(async (result) => {
+//             if (result.isConfirmed) {
+//                 try {
+//                     await axios.delete(`${API_URL}${id}/`);
+//                     Swal.fire({
+//                         icon: 'success',
+//                         title: 'Deleted!',
+//                         text: 'The division has been deleted.',
+//                         timer: 3000,
+//                         showConfirmButton: false,
+//                     });
+//                     fetchData(); // Refresh data
+//                 } catch (err) {
+//                     console.error('DELETE error', err);
+//                     Swal.fire({
+//                         icon: 'error',
+//                         title: 'Deletion Error',
+//                         text: 'An error occurred while deleting the division.',
+//                         timer: 3000,
+//                         showConfirmButton: false,
+//                     });
+//                 }
+//             }
+//         });
+//     };
+
+//     // --- START: Handlers for new pagination ---
+//     const handlePaginationChange = (event, newPage) => {
+//         setPage(newPage - 1); // MUI Pagination is 1-based, array is 0-based
+//     };
+
+//     const handleChangeRowsPerPage = (event) => {
+//         setRowsPerPage(parseInt(event.target.value, 10));
+//         setPage(0);
+//     };
+//     // --- END: Handlers for new pagination ---
+
+//     const handleOpenEditDialog = (row) => {
+//         setEditDivision(row);
+//         setOpenEditDialog(true);
+//     };
+
+//     return (
+//         <Container maxWidth="lg" sx={{ mt: 2 }}>
+//             <Box component={Paper} p={3}>
+//                 <Typography
+//                     variant="h4"
+//                     sx={{
+//                         color: THEME_COLORS.primary,
+//                         fontWeight: 'bold',
+//                         mb: 4,
+//                     }}
+//                 >
+//                     Division 
+//                 </Typography>
+
+//                 <Box
+//                     sx={{
+//                         display: 'flex',
+//                         flexDirection: isMobile ? 'column' : 'row',
+//                         justifyContent: 'space-between',
+//                         alignItems: isMobile ? 'stretch' : 'center',
+//                         gap: 2,
+//                         mb: 2,
+//                     }}
+//                 >
+//                     <Button
+//                         variant="contained"
+//                         startIcon={<Add />}
+//                         onClick={() => setOpenAddDialog(true)}
+//                         sx={{
+//                             backgroundColor: THEME_COLORS.primary,
+//                             color: THEME_COLORS.textOnPrimary,
+//                             '&:hover': { backgroundColor: THEME_COLORS.primaryDark },
+//                         }}
+//                     >
+//                         Add New
+//                     </Button>
+//                     <TextField
+//                         size="small"
+//                         placeholder="Search..."
+//                         value={searchTerm}
+//                         onChange={(e) => {
+//                             setSearchTerm(e.target.value);
+//                             setPage(0);
+//                         }}
+//                         InputProps={{
+//                             startAdornment: (
+//                                 <InputAdornment position="start">
+//                                     <SearchIcon />
+//                                 </InputAdornment>
+//                             ),
+//                         }}
+//                         sx={{ width: isMobile ? '100%' : 'auto' }}
+//                     />
+//                 </Box>
+
+//                 <TableContainer>
+//                     <Table sx={{ minWidth: '100%', whiteSpace: 'nowrap' }}>
+//                         <TableHead sx={{ backgroundColor: THEME_COLORS.primary }}>
+//                             <TableRow>
+//                                 <TableCell sx={{ fontWeight: 'bold', color: THEME_COLORS.textOnPrimary }}>
+//                                     SR. NO.
+//                                 </TableCell>
+//                                 <TableCell sx={{ fontWeight: 'bold', color: THEME_COLORS.textOnPrimary }}>
+//                                     DIVISION NAME
+//                                 </TableCell>
+//                                 <TableCell sx={{ fontWeight: 'bold', color: THEME_COLORS.textOnPrimary }}>
+//                                     DIVISION CODE
+//                                 </TableCell>
+//                                 <TableCell sx={{ fontWeight: 'bold', color: THEME_COLORS.textOnPrimary }}>
+//                                     CREATED AT
+//                                 </TableCell>
+//                                 <TableCell align="center" sx={{ fontWeight: 'bold', color: THEME_COLORS.textOnPrimary }}>
+//                                     ACTIONS
+//                                 </TableCell>
+//                             </TableRow>
+//                         </TableHead>
+//                         <TableBody>
+//                             {loading ?
+//                                 Array.from(new Array(rowsPerPage)).map((_, index) => (
+//                                     <TableRow key={index}>
+//                                         <TableCell><Skeleton variant="text" /></TableCell>
+//                                         <TableCell><Skeleton variant="text" /></TableCell>
+//                                         <TableCell><Skeleton variant="text" /></TableCell>
+//                                         <TableCell><Skeleton variant="text" /></TableCell>
+//                                         <TableCell align="center">
+//                                             <Skeleton variant="rectangular" width={120} height={30} />
+//                                         </TableCell>
+//                                     </TableRow>
+//                                 )) :
+//                                 paginatedRows.length > 0 ?
+//                                 paginatedRows.map((row, index) => (
+//                                     <TableRow key={row.id} hover>
+//                                         <TableCell sx={{ fontSize: '0.95rem' }}>{page * rowsPerPage + index + 1}</TableCell>
+//                                         <TableCell sx={{ fontSize: '0.95rem' }}>{row.name}</TableCell>
+//                                         <TableCell sx={{ fontSize: '0.95rem' }}>{row.code}</TableCell>
+//                                         <TableCell sx={{ fontSize: '0.95rem' }}>{row.createdAt}</TableCell>
+//                                         <TableCell>
+//                                             <Box display="flex" justifyContent="center" gap={0.5}>
+//                                                 <IconButton
+//                                                     sx={{ color: THEME_COLORS.primary }}
+//                                                     onClick={() => handleOpenEditDialog(row)}
+//                                                 >
+//                                                     <EditIcon />
+//                                                 </IconButton>
+//                                                 <IconButton
+//                                                     color="error"
+//                                                     onClick={() => handleDeleteClick(row.id)}
+//                                                 >
+//                                                     <DeleteIcon />
+//                                                 </IconButton>
+//                                             </Box>
+//                                         </TableCell>
+//                                     </TableRow>
+//                                 )) :
+//                                 (
+//                                     <TableRow>
+//                                         <TableCell colSpan={5} align="center">
+//                                             No Divisions Found
+//                                         </TableCell>
+//                                     </TableRow>
+//                                 )
+//                             }
+//                         </TableBody>
+//                     </Table>
+//                 </TableContainer>
+
+//                 {/* --- START: New Styled Pagination (Replaces TablePagination) --- */}
+//                 <Box sx={{ p: 2, borderTop: '1px solid rgba(224, 224, 224, 1)' }}>
+//                     {loading ? (
+//                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+//                             <Skeleton variant="text" width={200} />
+//                             <Skeleton variant="rectangular" width={300} height={40} />
+//                         </Box>
+//                     ) : (
+//                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+//                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+//                                 <FormControl variant="outlined" size="small">
+//                                     <Select
+//                                         value={rowsPerPage}
+//                                         onChange={handleChangeRowsPerPage}
+//                                         sx={{
+//                                             backgroundColor: THEME_COLORS.primary,
+//                                             color: 'white',
+//                                             borderRadius: '4px',
+//                                             '&:hover': { backgroundColor: THEME_COLORS.primaryDark },
+//                                             '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+//                                             '& .MuiSvgIcon-root': { color: 'white' },
+//                                         }}
+//                                     >
+//                                         {[5, 10, 15, 25].map((value) => ( <MenuItem key={value} value={value}>{value}</MenuItem> ))}
+//                                     </Select>
+//                                 </FormControl>
+//                                 <Typography variant="body2" color="text.secondary">
+//                                    {`Showing ${startEntry} to ${endEntry} of ${filteredRows.length} results`}
+//                                 </Typography>
+//                             </Box>
+//                             <Pagination
+//                                 count={Math.ceil(filteredRows.length / rowsPerPage)}
+//                                 page={page + 1}
+//                                 onChange={handlePaginationChange}
+//                                 showFirstButton showLastButton
+//                                 sx={{
+//                                     '& .MuiPaginationItem-root:hover': { backgroundColor: THEME_COLORS.secondary, color: 'white' },
+//                                     '& .MuiPaginationItem-page': {
+//                                         color: THEME_COLORS.primary,
+//                                         '&.Mui-selected': {
+//                                             backgroundColor: THEME_COLORS.primary,
+//                                             color: 'white',
+//                                             '&:hover': { backgroundColor: THEME_COLORS.secondary }
+//                                         },
+//                                     },
+//                                     '& .MuiPaginationItem-icon': { color: THEME_COLORS.primary }
+//                                 }}
+//                             />
+//                         </Box>
+//                     )}
+//                 </Box>
+//                 {/* --- END: New Styled Pagination --- */}
+
+//             </Box>
+
+//             {/* Add/Edit Dialogs */}
+//             <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)} fullWidth maxWidth="sm">
+//                 <DialogTitle sx={{ color: '#8C257C' , fontWeight: "bold", fontSize: '2rem' }}>
+//                     Add New Division
+//                 </DialogTitle>
+//                 <DialogContent>
+//                     <TextField
+//                         label="Division Name"
+//                         value={newDivision.name}
+//                         onChange={(e) => setNewDivision({ ...newDivision, name: e.target.value })}
+//                         fullWidth
+//                         margin="normal"
+//                         required
+//                     />
+//                     <TextField
+//                         label="Division Code"
+//                         value={newDivision.code}
+//                         onChange={(e) => setNewDivision({ ...newDivision, code: e.target.value })}
+//                         fullWidth
+//                         margin="normal"
+//                         required
+//                     />
+//                 </DialogContent>
+//                 <DialogActions sx={{ p: '0 24px 16px' }}>
+//                     <Button onClick={() => setOpenAddDialog(false)} sx={{ color: THEME_COLORS.cancelButton }}>
+//                         Cancel
+//                     </Button>
+//                     <Button
+//                         onClick={handleAddNewDivision}
+//                         variant="contained"
+//                         disabled={isSubmitting}
+//                         sx={{
+//                             backgroundColor: THEME_COLORS.primary,
+//                             '&:hover': { backgroundColor: THEME_COLORS.primaryDark },
+//                             color: THEME_COLORS.textOnPrimary,
+//                         }}
+//                     >
+//                         {isSubmitting ? <CircularProgress size={24} color="inherit" /> : 'Save'}
+//                     </Button>
+//                 </DialogActions>
+//             </Dialog>
+
+//             <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} fullWidth maxWidth="sm">
+//                 <DialogTitle sx={{ color: THEME_COLORS.primary, fontWeight: 'bold' }}>
+//                     Edit Division
+//                 </DialogTitle>
+//                 {editDivision && (
+//                     <>
+//                         <DialogContent>
+//                             <TextField
+//                                 label="Division Name"
+//                                 value={editDivision.name}
+//                                 onChange={(e) =>
+//                                     setEditDivision({ ...editDivision, name: e.target.value })
+//                                 }
+//                                 fullWidth
+//                                 margin="normal"
+//                                 required
+//                             />
+//                             <TextField
+//                                 label="Division Code"
+//                                 value={editDivision.code}
+//                                 onChange={(e) =>
+//                                     setEditDivision({ ...editDivision, code: e.target.value })
+//                                 }
+//                                 fullWidth
+//                                 margin="normal"
+//                                 required
+//                             />
+//                         </DialogContent>
+//                         <DialogActions sx={{ p: '0 24px 16px' }}>
+//                             <Button onClick={() => setOpenEditDialog(false)} sx={{ color: THEME_COLORS.cancelButton }}>
+//                                 Cancel
+//                             </Button>
+//                             <Button
+//                                 onClick={handleEditSubmit}
+//                                 variant="contained"
+//                                 disabled={isSubmitting}
+//                                 sx={{
+//                                     backgroundColor: THEME_COLORS.primary,
+//                                     '&:hover': { backgroundColor: THEME_COLORS.primaryDark },
+//                                     color: THEME_COLORS.textOnPrimary,
+//                                 }}
+//                             >
+//                                 {isSubmitting ? (
+//                                     <CircularProgress size={24} color="inherit" />
+//                                 ) : (
+//                                     'Update'
+//                                 )}
+//                             </Button>
+//                         </DialogActions>
+//                     </>
+//                 )}
+//             </Dialog>
+//         </Container>
+//     );
+// }
+
+// export default Division;
+
+
+
 import React, {
     useState,
     useEffect,
@@ -1994,12 +2542,11 @@ import {
     CircularProgress,
     InputAdornment,
     Skeleton,
-    // --- START: Imports for new pagination ---
     Pagination,
     FormControl,
     Select,
     MenuItem,
-    // --- END: Imports for new pagination ---
+    Alert, // Imported Alert
     useTheme,
     useMediaQuery,
 } from '@mui/material';
@@ -2027,12 +2574,16 @@ function Division() {
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [openAddDialog, setOpenAddDialog] = useState(false);
     const [openEditDialog, setOpenEditDialog] = useState(false);
+    
     const [newDivision, setNewDivision] = useState({
         name: '',
         code: ''
     });
     const [editDivision, setEditDivision] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // --- NEW STATE for validation errors ---
+    const [validationErrors, setValidationErrors] = useState({});
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -2088,23 +2639,39 @@ function Division() {
         return filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     }, [filteredRows, page, rowsPerPage]);
 
-    // --- START: Calculation for 'Showing X to Y' text ---
     const startEntry = filteredRows.length > 0 ? page * rowsPerPage + 1 : 0;
     const endEntry = Math.min((page + 1) * rowsPerPage, filteredRows.length);
-    // --- END: Calculation for 'Showing X to Y' text ---
+
+    // --- Helper to clean up dialog state ---
+    const handleCloseAdd = () => {
+        setOpenAddDialog(false);
+        setValidationErrors({});
+        setNewDivision({ name: '', code: '' });
+    };
+
+    const handleCloseEdit = () => {
+        setOpenEditDialog(false);
+        setValidationErrors({});
+        setEditDivision(null);
+    };
+
+    const validateForm = (data) => {
+        const errors = {};
+        if (!data.name || !data.name.trim()) errors.name = 'Division Name is required';
+        if (!data.code || !data.code.trim()) errors.code = 'Division Code is required';
+        return errors;
+    };
 
     const handleAddNewDivision = async (e) => {
         e.preventDefault();
-        if (!newDivision.name.trim() || !newDivision.code.trim()) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Validation Error',
-                text: 'All fields are required.',
-                timer: 3000,
-                showConfirmButton: false,
-            });
-            return;
+        
+        // --- Validation Logic ---
+        const errors = validateForm(newDivision);
+        if (Object.keys(errors).length > 0) {
+            setValidationErrors(errors);
+            return; // Stop execution
         }
+
         setIsSubmitting(true);
         try {
             await axios.post(API_URL, {
@@ -2118,12 +2685,8 @@ function Division() {
                 timer: 3000,
                 showConfirmButton: false,
             });
-            setOpenAddDialog(false);
-            setNewDivision({
-                name: '',
-                code: ''
-            });
-            fetchData(); // Refresh data
+            handleCloseAdd();
+            fetchData(); 
         } catch (err) {
             console.error('POST error', err);
             Swal.fire({
@@ -2140,16 +2703,14 @@ function Division() {
 
     const handleEditSubmit = async (e) => {
         e.preventDefault();
-        if (!editDivision || !editDivision.name.trim() || !editDivision.code.trim()) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Validation Error',
-                text: 'All fields are required.',
-                timer: 3000,
-                showConfirmButton: false,
-            });
-            return;
+
+        // --- Validation Logic ---
+        const errors = validateForm(editDivision);
+        if (Object.keys(errors).length > 0) {
+            setValidationErrors(errors);
+            return; // Stop execution
         }
+
         setIsSubmitting(true);
         try {
             await axios.patch(`${API_URL}${editDivision.id}/`, {
@@ -2163,9 +2724,8 @@ function Division() {
                 timer: 3000,
                 showConfirmButton: false,
             });
-            setOpenEditDialog(false);
-            setEditDivision(null);
-            fetchData(); // Refresh data
+            handleCloseEdit();
+            fetchData(); 
         } catch (err) {
             console.error('PATCH error', err);
             Swal.fire({
@@ -2200,7 +2760,7 @@ function Division() {
                         timer: 3000,
                         showConfirmButton: false,
                     });
-                    fetchData(); // Refresh data
+                    fetchData(); 
                 } catch (err) {
                     console.error('DELETE error', err);
                     Swal.fire({
@@ -2215,55 +2775,37 @@ function Division() {
         });
     };
 
-    // --- START: Handlers for new pagination ---
     const handlePaginationChange = (event, newPage) => {
-        setPage(newPage - 1); // MUI Pagination is 1-based, array is 0-based
+        setPage(newPage - 1);
     };
 
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
-    // --- END: Handlers for new pagination ---
 
     const handleOpenEditDialog = (row) => {
         setEditDivision(row);
+        setValidationErrors({}); // Clear errors when opening
         setOpenEditDialog(true);
     };
 
     return (
         <Container maxWidth="lg" sx={{ mt: 2 }}>
             <Box component={Paper} p={3}>
-                <Typography
-                    variant="h4"
-                    sx={{
-                        color: THEME_COLORS.primary,
-                        fontWeight: 'bold',
-                        mb: 4,
-                    }}
-                >
+                <Typography variant="h4" sx={{ color: THEME_COLORS.primary, fontWeight: 'bold', mb: 4 }}>
                     Division 
                 </Typography>
 
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: isMobile ? 'column' : 'row',
-                        justifyContent: 'space-between',
-                        alignItems: isMobile ? 'stretch' : 'center',
-                        gap: 2,
-                        mb: 2,
-                    }}
-                >
+                <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', gap: 2, mb: 2 }}>
                     <Button
                         variant="contained"
                         startIcon={<Add />}
-                        onClick={() => setOpenAddDialog(true)}
-                        sx={{
-                            backgroundColor: THEME_COLORS.primary,
-                            color: THEME_COLORS.textOnPrimary,
-                            '&:hover': { backgroundColor: THEME_COLORS.primaryDark },
+                        onClick={() => {
+                            setValidationErrors({});
+                            setOpenAddDialog(true);
                         }}
+                        sx={{ backgroundColor: THEME_COLORS.primary, color: THEME_COLORS.textOnPrimary, '&:hover': { backgroundColor: THEME_COLORS.primaryDark } }}
                     >
                         Add New
                     </Button>
@@ -2271,17 +2813,8 @@ function Division() {
                         size="small"
                         placeholder="Search..."
                         value={searchTerm}
-                        onChange={(e) => {
-                            setSearchTerm(e.target.value);
-                            setPage(0);
-                        }}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchIcon />
-                                </InputAdornment>
-                            ),
-                        }}
+                        onChange={(e) => { setSearchTerm(e.target.value); setPage(0); }}
+                        InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>) }}
                         sx={{ width: isMobile ? '100%' : 'auto' }}
                     />
                 </Box>
@@ -2290,21 +2823,11 @@ function Division() {
                     <Table sx={{ minWidth: '100%', whiteSpace: 'nowrap' }}>
                         <TableHead sx={{ backgroundColor: THEME_COLORS.primary }}>
                             <TableRow>
-                                <TableCell sx={{ fontWeight: 'bold', color: THEME_COLORS.textOnPrimary }}>
-                                    SR. NO.
-                                </TableCell>
-                                <TableCell sx={{ fontWeight: 'bold', color: THEME_COLORS.textOnPrimary }}>
-                                    DIVISION NAME
-                                </TableCell>
-                                <TableCell sx={{ fontWeight: 'bold', color: THEME_COLORS.textOnPrimary }}>
-                                    DIVISION CODE
-                                </TableCell>
-                                <TableCell sx={{ fontWeight: 'bold', color: THEME_COLORS.textOnPrimary }}>
-                                    CREATED AT
-                                </TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 'bold', color: THEME_COLORS.textOnPrimary }}>
-                                    ACTIONS
-                                </TableCell>
+                                <TableCell sx={{ fontWeight: 'bold', color: THEME_COLORS.textOnPrimary }}>SR. NO.</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold', color: THEME_COLORS.textOnPrimary }}>DIVISION NAME</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold', color: THEME_COLORS.textOnPrimary }}>DIVISION CODE</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold', color: THEME_COLORS.textOnPrimary }}>CREATED AT</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold', color: THEME_COLORS.textOnPrimary }}>ACTIONS</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -2315,9 +2838,7 @@ function Division() {
                                         <TableCell><Skeleton variant="text" /></TableCell>
                                         <TableCell><Skeleton variant="text" /></TableCell>
                                         <TableCell><Skeleton variant="text" /></TableCell>
-                                        <TableCell align="center">
-                                            <Skeleton variant="rectangular" width={120} height={30} />
-                                        </TableCell>
+                                        <TableCell align="center"><Skeleton variant="rectangular" width={120} height={30} /></TableCell>
                                     </TableRow>
                                 )) :
                                 paginatedRows.length > 0 ?
@@ -2329,35 +2850,18 @@ function Division() {
                                         <TableCell sx={{ fontSize: '0.95rem' }}>{row.createdAt}</TableCell>
                                         <TableCell>
                                             <Box display="flex" justifyContent="center" gap={0.5}>
-                                                <IconButton
-                                                    sx={{ color: THEME_COLORS.primary }}
-                                                    onClick={() => handleOpenEditDialog(row)}
-                                                >
-                                                    <EditIcon />
-                                                </IconButton>
-                                                <IconButton
-                                                    color="error"
-                                                    onClick={() => handleDeleteClick(row.id)}
-                                                >
-                                                    <DeleteIcon />
-                                                </IconButton>
+                                                <IconButton sx={{ color: THEME_COLORS.primary }} onClick={() => handleOpenEditDialog(row)}><EditIcon /></IconButton>
+                                                <IconButton color="error" onClick={() => handleDeleteClick(row.id)}><DeleteIcon /></IconButton>
                                             </Box>
                                         </TableCell>
                                     </TableRow>
                                 )) :
-                                (
-                                    <TableRow>
-                                        <TableCell colSpan={5} align="center">
-                                            No Divisions Found
-                                        </TableCell>
-                                    </TableRow>
-                                )
+                                (<TableRow><TableCell colSpan={5} align="center">No Divisions Found</TableCell></TableRow>)
                             }
                         </TableBody>
                     </Table>
                 </TableContainer>
 
-                {/* --- START: New Styled Pagination (Replaces TablePagination) --- */}
                 <Box sx={{ p: 2, borderTop: '1px solid rgba(224, 224, 224, 1)' }}>
                     {loading ? (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -2383,9 +2887,7 @@ function Division() {
                                         {[5, 10, 15, 25].map((value) => ( <MenuItem key={value} value={value}>{value}</MenuItem> ))}
                                     </Select>
                                 </FormControl>
-                                <Typography variant="body2" color="text.secondary">
-                                   {`Showing ${startEntry} to ${endEntry} of ${filteredRows.length} results`}
-                                </Typography>
+                                <Typography variant="body2" color="text.secondary">{`Showing ${startEntry} to ${endEntry} of ${filteredRows.length} results`}</Typography>
                             </Box>
                             <Pagination
                                 count={Math.ceil(filteredRows.length / rowsPerPage)}
@@ -2394,49 +2896,61 @@ function Division() {
                                 showFirstButton showLastButton
                                 sx={{
                                     '& .MuiPaginationItem-root:hover': { backgroundColor: THEME_COLORS.secondary, color: 'white' },
-                                    '& .MuiPaginationItem-page': {
-                                        color: THEME_COLORS.primary,
-                                        '&.Mui-selected': {
-                                            backgroundColor: THEME_COLORS.primary,
-                                            color: 'white',
-                                            '&:hover': { backgroundColor: THEME_COLORS.secondary }
-                                        },
-                                    },
+                                    '& .MuiPaginationItem-page': { color: THEME_COLORS.primary, '&.Mui-selected': { backgroundColor: THEME_COLORS.primary, color: 'white', '&:hover': { backgroundColor: THEME_COLORS.secondary } } },
                                     '& .MuiPaginationItem-icon': { color: THEME_COLORS.primary }
                                 }}
                             />
                         </Box>
                     )}
                 </Box>
-                {/* --- END: New Styled Pagination --- */}
-
             </Box>
 
-            {/* Add/Edit Dialogs */}
-            <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)} fullWidth maxWidth="sm">
+            {/* Add New Division Dialog */}
+            <Dialog open={openAddDialog} onClose={handleCloseAdd} fullWidth maxWidth="sm">
                 <DialogTitle sx={{ color: '#8C257C' , fontWeight: "bold", fontSize: '2rem' }}>
                     Add New Division
                 </DialogTitle>
                 <DialogContent>
+                    {/* Alert Message Above Fields */}
+                    {Object.keys(validationErrors).length > 0 && (
+                        <Alert severity="error" sx={{ mb: 2 }}>
+                            Please fill out the missing required fields.
+                        </Alert>
+                    )}
+
                     <TextField
                         label="Division Name"
                         value={newDivision.name}
-                        onChange={(e) => setNewDivision({ ...newDivision, name: e.target.value })}
+                        onChange={(e) => {
+                            setNewDivision({ ...newDivision, name: e.target.value });
+                            // Clear error for this field
+                            if (validationErrors.name) setValidationErrors({...validationErrors, name: null});
+                        }}
                         fullWidth
                         margin="normal"
                         required
+                        // Show Error in Red
+                        error={!!validationErrors.name}
+                        helperText={validationErrors.name}
                     />
                     <TextField
                         label="Division Code"
                         value={newDivision.code}
-                        onChange={(e) => setNewDivision({ ...newDivision, code: e.target.value })}
+                        onChange={(e) => {
+                            setNewDivision({ ...newDivision, code: e.target.value });
+                            // Clear error for this field
+                            if (validationErrors.code) setValidationErrors({...validationErrors, code: null});
+                        }}
                         fullWidth
                         margin="normal"
                         required
+                        // Show Error in Red
+                        error={!!validationErrors.code}
+                        helperText={validationErrors.code}
                     />
                 </DialogContent>
                 <DialogActions sx={{ p: '0 24px 16px' }}>
-                    <Button onClick={() => setOpenAddDialog(false)} sx={{ color: THEME_COLORS.cancelButton }}>
+                    <Button onClick={handleCloseAdd} sx={{ color: THEME_COLORS.cancelButton }}>
                         Cancel
                     </Button>
                     <Button
@@ -2454,36 +2968,50 @@ function Division() {
                 </DialogActions>
             </Dialog>
 
-            <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} fullWidth maxWidth="sm">
+            {/* Edit Division Dialog */}
+            <Dialog open={openEditDialog} onClose={handleCloseEdit} fullWidth maxWidth="sm">
                 <DialogTitle sx={{ color: THEME_COLORS.primary, fontWeight: 'bold' }}>
                     Edit Division
                 </DialogTitle>
                 {editDivision && (
                     <>
                         <DialogContent>
+                             {/* Alert Message Above Fields */}
+                            {Object.keys(validationErrors).length > 0 && (
+                                <Alert severity="error" sx={{ mb: 2 }}>
+                                    Please fill out the missing required fields.
+                                </Alert>
+                            )}
+
                             <TextField
                                 label="Division Name"
                                 value={editDivision.name}
-                                onChange={(e) =>
-                                    setEditDivision({ ...editDivision, name: e.target.value })
-                                }
+                                onChange={(e) => {
+                                    setEditDivision({ ...editDivision, name: e.target.value });
+                                    if (validationErrors.name) setValidationErrors({...validationErrors, name: null});
+                                }}
                                 fullWidth
                                 margin="normal"
                                 required
+                                error={!!validationErrors.name}
+                                helperText={validationErrors.name}
                             />
                             <TextField
                                 label="Division Code"
                                 value={editDivision.code}
-                                onChange={(e) =>
-                                    setEditDivision({ ...editDivision, code: e.target.value })
-                                }
+                                onChange={(e) => {
+                                    setEditDivision({ ...editDivision, code: e.target.value });
+                                    if (validationErrors.code) setValidationErrors({...validationErrors, code: null});
+                                }}
                                 fullWidth
                                 margin="normal"
                                 required
+                                error={!!validationErrors.code}
+                                helperText={validationErrors.code}
                             />
                         </DialogContent>
                         <DialogActions sx={{ p: '0 24px 16px' }}>
-                            <Button onClick={() => setOpenEditDialog(false)} sx={{ color: THEME_COLORS.cancelButton }}>
+                            <Button onClick={handleCloseEdit} sx={{ color: THEME_COLORS.cancelButton }}>
                                 Cancel
                             </Button>
                             <Button

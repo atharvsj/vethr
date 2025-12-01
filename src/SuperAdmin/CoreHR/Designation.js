@@ -1492,6 +1492,396 @@
 
 
 
+// import React, { useState, useEffect } from "react";
+// import axiosInstance from "../../utils/axiosInstance";
+// import {
+//   Box,
+//   Button,
+//   Container,
+//   Paper,
+//   TextField,
+//   Typography,
+//   Table,
+//   TableBody,
+//   TableCell,
+//   TableContainer,
+//   TableHead,
+//   TableRow,
+//   Dialog,
+//   DialogTitle,
+//   DialogContent,
+//   DialogActions,
+//   IconButton,
+//   FormControl,
+//   InputLabel,
+//   Select,
+//   MenuItem,
+//   Stack,
+//   CircularProgress,
+//   useTheme,
+//   useMediaQuery,
+//   Skeleton,
+//   TablePagination,
+// } from "@mui/material";
+// import {
+//   Add as AddIcon,
+//   Edit as EditIcon,
+//   Delete as DeleteIcon,
+//   Search as SearchIcon,
+// } from "@mui/icons-material";
+// import Swal from "sweetalert2";
+
+// export default function Designation() {
+//   const THEME_PRIMARY = "#8C257C";
+//   const THEME_PRIMARY_DARK = "#6d1d60";
+//   const THEME_SECONDARY = "#F58E35";
+
+//   const theme = useTheme();
+//   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+//   const [department, setDepartment] = useState("");
+//   const [designationName, setDesignationName] = useState("");
+//   const [code, setCode] = useState("");
+//   const [description, setDescription] = useState("");
+
+//   const [loading, setLoading] = useState(true);
+//   const [submitting, setSubmitting] = useState(false);
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [designations, setDesignations] = useState([]);
+//   const [departments, setDepartments] = useState([]);
+//   const [editingDesignation, setEditingDesignation] = useState(null);
+//   const [openDialog, setOpenDialog] = useState(false);
+
+//   const [page, setPage] = useState(0);
+//   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+//   useEffect(() => {
+//     Promise.all([fetchDesignations(), fetchDepartments()]).finally(() => {
+//       setLoading(false);
+//     });
+//   }, []);
+
+//   const fetchDepartments = async () => {
+//     try {
+//       const response = await axiosInstance.get("api/desig_dept_dropdown/");
+//       setDepartments(response.data.dept_data || []);
+//     } catch (error) {
+//       console.error("Error fetching departments:", error.response || error.message);
+//       Swal.fire({
+//         icon: "error",
+//         title: "Error",
+//         text: "Failed to fetch departments",
+//         timer: 3000,
+//         showConfirmButton: false,
+//       });
+//     }
+//   };
+
+//   const getDepartmentName = (id) => {
+//     const dept = departments.find((d) => d.dept_id === id);
+//     return dept ? dept.dept_name : "Unknown";
+//   };
+
+//   const fetchDesignations = async () => {
+//     setLoading(true);
+//     try {
+//       const response = await axiosInstance.get("ci_designations/");
+//       const mappedData = response.data.map((item) => ({
+//         id: item.designation_id,
+//         departmentId: item.department_id,
+//         code: item.designation_code,
+//         designation: item.designation_name,
+//         description: item.description,
+//       }));
+//       setDesignations(mappedData);
+//     } catch (error) {
+//       console.error("Error fetching designations:", error.response || error.message);
+//       Swal.fire({
+//         icon: "error",
+//         title: "Error",
+//         text: "Failed to fetch designations",
+//         timer: 3000,
+//         showConfirmButton: false,
+//       });
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleDepartmentChange = (event) => setDepartment(event.target.value);
+//   const handleCodeChange = (event) => setCode(event.target.value);
+//   const handleDesignationNameChange = (event) => setDesignationName(event.target.value);
+//   const handleSearchChange = (event) => {
+//     setSearchTerm(event.target.value.toLowerCase());
+//     setPage(0);
+//   };
+//   const handleDescriptionChange = (event) => setDescription(event.target.value);
+
+//   const handleRowsPerPageChange = (event) => {
+//     setRowsPerPage(parseInt(event.target.value, 10));
+//     setPage(0);
+//   };
+
+//   const handleAddDesignation = async () => {
+//     if (department && designationName && code && description) {
+//       setSubmitting(true);
+//       try {
+//         await axiosInstance.post("ci_designations/", {
+//           company_id: 2,
+//           department_id: department,
+//           designation_code: code,
+//           designation_name: designationName,
+//           description,
+//           created_at: new Date().toISOString().split("T")[0],
+//         });
+//         await fetchDesignations();
+//         resetFormAndCloseDialog();
+//         Swal.fire({ icon: "success", title: "Added", text: "Designation added", timer: 3000, showConfirmButton: false });
+//       } catch (error) {
+//         console.error("Error adding designation:", error.response || error.message);
+//         Swal.fire({ icon: "error", title: "Error", text: error.response?.data?.detail || "Failed to add designation", timer: 3000, showConfirmButton: false });
+//       } finally {
+//         setSubmitting(false);
+//       }
+//     } else {
+//       Swal.fire({ icon: "info", title: "Required", text: "Please fill out all required fields.", timer: 3000, showConfirmButton: false });
+//     }
+//   };
+
+//   const handleEditDesignation = (designation) => {
+//     setEditingDesignation(designation);
+//     setDepartment(designation.departmentId);
+//     setCode(designation.code || "");
+//     setDesignationName(designation.designation || "");
+//     setDescription(designation.description || "");
+//     setOpenDialog(true);
+//   };
+
+//   const handleSaveEdit = async () => {
+//     if (!editingDesignation) return;
+//     if (department && designationName && code && description) {
+//       setSubmitting(true);
+//       try {
+//         await axiosInstance.patch(`ci_designations/${editingDesignation.id}/`, {
+//           company_id: 2,
+//           department_id: department,
+//           designation_code: code,
+//           designation_name: designationName,
+//           description,
+//         });
+//         await fetchDesignations();
+//         resetFormAndCloseDialog();
+//         Swal.fire({ icon: "success", title: "Updated", text: "Designation updated", timer: 3000, showConfirmButton: false });
+//       } catch (error) {
+//         console.error("Error updating designation:", error.response || error.message);
+//         Swal.fire({ icon: "error", title: "Error", text: error.response?.data?.detail || "Failed to update designation", timer: 3000, showConfirmButton: false });
+//       } finally {
+//         setSubmitting(false);
+//       }
+//     } else {
+//       Swal.fire({ icon: "info", title: "Required", text: "Please fill out all required fields.", timer: 3000, showConfirmButton: false });
+//     }
+//   };
+
+//   const handleDeleteDesignation = async (id) => {
+//     const result = await Swal.fire({
+//       title: "Are you sure?",
+//       text: "This will delete the designation.",
+//       icon: "warning",
+//       showCancelButton: true,
+//       confirmButtonColor: THEME_PRIMARY,
+//       cancelButtonColor: "#757575",
+//       confirmButtonText: "Yes, delete it!",
+//     });
+
+//     if (result.isConfirmed) {
+//       try {
+//         await axiosInstance.delete(`ci_designations/${id}/`);
+//         await fetchDesignations();
+//         Swal.fire({ icon: "success", title: "Deleted", text: "Designation deleted", timer: 3000, showConfirmButton: false });
+//       } catch (error) {
+//         console.error("Error deleting designation:", error);
+//         Swal.fire({ icon: "error", title: "Error", text: error.response?.data?.detail || "Failed to delete designation", timer: 3000, showConfirmButton: false });
+//       }
+//     }
+//   };
+
+//   const resetFormAndCloseDialog = () => {
+//     setDepartment("");
+//     setDesignationName("");
+//     setDescription("");
+//     setCode("");
+//     setEditingDesignation(null);
+//     setOpenDialog(false);
+//   };
+
+//   const filteredDesignations = designations.filter(
+//     (d) =>
+//       (d.designation && d.designation.toLowerCase().includes(searchTerm)) ||
+//       (getDepartmentName(d.departmentId) && getDepartmentName(d.departmentId).toLowerCase().includes(searchTerm)) ||
+//       (d.code && d.code.toLowerCase().includes(searchTerm))
+//   );
+
+//   const paginatedData = filteredDesignations.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+//   const startItem = filteredDesignations.length === 0 ? 0 : page * rowsPerPage + 1;
+//   const endItem = Math.min((page + 1) * rowsPerPage, filteredDesignations.length);
+
+//   return (
+//     <Container maxWidth="lg" sx={{ mt: 2 }}>
+//       <Box component={Paper} p={3}>
+//         <Typography variant="h4" sx={{ color: THEME_PRIMARY, fontWeight: "bold", mb: 5
+          
+//          }}>
+//           Designation 
+//         </Typography>
+
+//         <Stack direction={isMobile ? "column" : "row"} spacing={2} alignItems="center" justifyContent="space-between" mb={2}>
+//           <Box display="flex" gap={2} alignItems="center">
+//             <Button
+//               variant="contained"
+//               startIcon={<AddIcon />}
+//               onClick={() => { setEditingDesignation(null); setOpenDialog(true); }}
+//               sx={{ backgroundColor: THEME_PRIMARY, color: "#fff", "&:hover": { backgroundColor: THEME_PRIMARY_DARK } }}
+//             >
+//               Add New
+//             </Button>
+//           </Box>
+
+//           <TextField
+//             size="small"
+//             placeholder="Search by Designation, Department, or Code"
+//             value={searchTerm}
+//             onChange={handleSearchChange}
+//             sx={{ width: isMobile ? "100%" : 360 }}
+//             InputProps={{
+//               startAdornment: <SearchIcon sx={{ mr: 1, color: "action.active" }} />,
+//             }}
+//           />
+//         </Stack>
+
+//         <TableContainer>
+//           <Table sx={{ minWidth: "100%", whiteSpace: "nowrap" }} stickyHeader>
+//           <TableHead>
+//   <TableRow>
+//     {['SR. NO.', 'Department', 'Code', 'Designation', 'Actions'].map((header) => (
+//       <TableCell
+//         key={header}
+//         sx={{
+//           backgroundColor: '#8C257C',
+//           color: '#FFFFFF',
+//           fontWeight: 'bold',
+//           textTransform: 'uppercase',
+//           textAlign: header === 'Actions' ? 'center' : 'left',
+//         }}
+//       >
+//         {header}
+//       </TableCell>
+//     ))}
+//   </TableRow>
+// </TableHead>
+
+//             <TableBody>
+//               {loading ? (
+//                 Array.from({ length: rowsPerPage }).map((_, idx) => (
+//                   <TableRow key={idx} hover>
+//                     <TableCell><Skeleton variant="text" /></TableCell>
+//                     <TableCell><Skeleton variant="text" /></TableCell>
+//                     <TableCell><Skeleton variant="text" /></TableCell>
+//                     <TableCell><Skeleton variant="text" /></TableCell>
+//                     <TableCell>
+//                       <Box display="flex" justifyContent="center" gap={0.5}>
+//                         <Skeleton variant="rectangular" width={120} height={30} />
+//                       </Box>
+//                     </TableCell>
+//                   </TableRow>
+//                 ))
+//               ) : paginatedData.length > 0 ? (
+//                 paginatedData.map((designation, index) => (
+//                   <TableRow key={designation.id} hover sx={{ fontSize: "0.95rem" }}>
+//                     <TableCell>{page * rowsPerPage + index + 1}</TableCell>
+//                     <TableCell>{getDepartmentName(designation.departmentId)}</TableCell>
+//                     <TableCell>{designation.code}</TableCell>
+//                     <TableCell>{designation.designation}</TableCell>
+//                     <TableCell>
+//                       <Box display="flex" justifyContent="center" gap={0.5}>
+//                         <IconButton sx={{ color: THEME_PRIMARY }} size="small" onClick={() => handleEditDesignation(designation)}>
+//                           <EditIcon />
+//                         </IconButton>
+//                         <IconButton sx={{ color: "#d32f2f" }} size="small" onClick={() => handleDeleteDesignation(designation.id)}>
+//                           <DeleteIcon />
+//                         </IconButton>
+//                       </Box>
+//                     </TableCell>
+//                   </TableRow>
+//                 ))
+//               ) : (
+//                 <TableRow>
+//                   <TableCell colSpan={5} align="center">No designations found.</TableCell>
+//                 </TableRow>
+//               )}
+//             </TableBody>
+//           </Table>
+//         </TableContainer>
+
+//         <Box display={isMobile ? "block" : "flex"} justifyContent="space-between" alignItems="center" mt={2} gap={2}>
+//           <Typography variant="body2" color="text.secondary">
+//             Showing {startItem} to {endItem} of {filteredDesignations.length} results
+//           </Typography>
+
+//           <TablePagination
+//             component="div"
+//             count={filteredDesignations.length}
+//             page={page}
+//             onPageChange={(_, newPage) => setPage(newPage)}
+//             rowsPerPage={rowsPerPage}
+//             onRowsPerPageChange={handleRowsPerPageChange}
+//             rowsPerPageOptions={[5, 10, 15, 25]}
+//             labelRowsPerPage="Rows"
+//             sx={{ 
+//               ":.MuiTablePagination-toolbar": { justifyContent: isMobile ? "center" : "flex-end" },
+              
+//             }}
+//           />
+//         </Box>
+
+//         <Dialog fullWidth maxWidth="sm" open={openDialog} onClose={resetFormAndCloseDialog}>
+//           <DialogTitle sx={{ color: THEME_PRIMARY, fontWeight: "bold" }}>{editingDesignation ? "Edit Designation" : "Add New Designation"}</DialogTitle>
+//           <DialogContent>
+//             <FormControl fullWidth margin="normal" required>
+//               <InputLabel id="department-select-label">Department</InputLabel>
+//               <Select labelId="department-select-label" value={department} onChange={handleDepartmentChange} label="Department">
+//                 <MenuItem value=""><em>Select Department</em></MenuItem>
+//                 {departments.map((dept) => (
+//                   <MenuItem key={dept.dept_id} value={dept.dept_id}>{dept.dept_name}</MenuItem>
+//                 ))}
+//               </Select>
+//             </FormControl>
+
+//             <TextField fullWidth required label="Designation Name" value={designationName} onChange={handleDesignationNameChange} variant="outlined" margin="normal" />
+//             <TextField fullWidth required label="Designation Code" value={code} onChange={handleCodeChange} variant="outlined" margin="normal" />
+//             <TextField fullWidth required label="Description" value={description} onChange={handleDescriptionChange} variant="outlined" margin="normal" multiline rows={3} />
+
+//             <Box mt={1}>
+//               <input type="file" accept=".pdf" />
+//             </Box>
+//           </DialogContent>
+//           <DialogActions sx={{ px: 3, pb: 2 }}>
+//             <Button sx={{ backgroundColor: "#757575", color: "#fff", "&:hover": { backgroundColor: "#bdbdbd" } }} onClick={resetFormAndCloseDialog}>
+//               Cancel
+//             </Button>
+//             <Button sx={{ backgroundColor: THEME_PRIMARY, color: "#fff", "&:hover": { backgroundColor: THEME_PRIMARY_DARK } }} onClick={editingDesignation ? handleSaveEdit : handleAddDesignation}>
+//               {submitting ? <CircularProgress size={24} sx={{ color: "#fff" }} /> : editingDesignation ? "Save" : "Save"}
+//             </Button>
+//           </DialogActions>
+//         </Dialog>
+//       </Box>
+//     </Container>
+//   );
+// }
+
+
+
+
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../utils/axiosInstance";
 import {
@@ -1534,7 +1924,7 @@ import Swal from "sweetalert2";
 export default function Designation() {
   const THEME_PRIMARY = "#8C257C";
   const THEME_PRIMARY_DARK = "#6d1d60";
-  const THEME_SECONDARY = "#F58E35";
+  // const THEME_SECONDARY = "#F58E35"; // Unused
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -1593,6 +1983,10 @@ export default function Designation() {
         designation: item.designation_name,
         description: item.description,
       }));
+      
+      // FIX: Sort by ID descending to show recent added entries on top
+      mappedData.sort((a, b) => b.id - a.id);
+      
       setDesignations(mappedData);
     } catch (error) {
       console.error("Error fetching designations:", error.response || error.message);
@@ -1623,6 +2017,7 @@ export default function Designation() {
   };
 
   const handleAddDesignation = async () => {
+    // FIX: Alert logic for missing fields
     if (department && designationName && code && description) {
       setSubmitting(true);
       try {
@@ -1644,7 +2039,8 @@ export default function Designation() {
         setSubmitting(false);
       }
     } else {
-      Swal.fire({ icon: "info", title: "Required", text: "Please fill out all required fields.", timer: 3000, showConfirmButton: false });
+      // Alert appears in front if fields are missing
+      Swal.fire({ icon: "warning", title: "Missing Fields", text: "Please fill out all required fields.", confirmButtonColor: THEME_PRIMARY });
     }
   };
 
@@ -1679,7 +2075,8 @@ export default function Designation() {
         setSubmitting(false);
       }
     } else {
-      Swal.fire({ icon: "info", title: "Required", text: "Please fill out all required fields.", timer: 3000, showConfirmButton: false });
+       // Alert appears in front if fields are missing
+       Swal.fire({ icon: "warning", title: "Missing Fields", text: "Please fill out all required fields.", confirmButtonColor: THEME_PRIMARY });
     }
   };
 
@@ -1729,10 +2126,8 @@ export default function Designation() {
   return (
     <Container maxWidth="lg" sx={{ mt: 2 }}>
       <Box component={Paper} p={3}>
-        <Typography variant="h4" sx={{ color: THEME_PRIMARY, fontWeight: "bold", mb: 5
-          
-         }}>
-          Designation 
+        <Typography variant="h4" sx={{ color: THEME_PRIMARY, fontWeight: "bold", mb: 5 }}>
+          Designation
         </Typography>
 
         <Stack direction={isMobile ? "column" : "row"} spacing={2} alignItems="center" justifyContent="space-between" mb={2}>
@@ -1761,24 +2156,24 @@ export default function Designation() {
 
         <TableContainer>
           <Table sx={{ minWidth: "100%", whiteSpace: "nowrap" }} stickyHeader>
-          <TableHead>
-  <TableRow>
-    {['SR. NO.', 'Department', 'Code', 'Designation', 'Actions'].map((header) => (
-      <TableCell
-        key={header}
-        sx={{
-          backgroundColor: '#8C257C',
-          color: '#FFFFFF',
-          fontWeight: 'bold',
-          textTransform: 'uppercase',
-          textAlign: header === 'Actions' ? 'center' : 'left',
-        }}
-      >
-        {header}
-      </TableCell>
-    ))}
-  </TableRow>
-</TableHead>
+            <TableHead>
+              <TableRow>
+                {['SR. NO.', 'Department', 'Code', 'Designation', 'Actions'].map((header) => (
+                  <TableCell
+                    key={header}
+                    sx={{
+                      backgroundColor: '#8C257C',
+                      color: '#FFFFFF',
+                      fontWeight: 'bold',
+                      textTransform: 'uppercase',
+                      textAlign: header === 'Actions' ? 'center' : 'left',
+                    }}
+                  >
+                    {header}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
 
             <TableBody>
               {loading ? (
@@ -1837,9 +2232,8 @@ export default function Designation() {
             onRowsPerPageChange={handleRowsPerPageChange}
             rowsPerPageOptions={[5, 10, 15, 25]}
             labelRowsPerPage="Rows"
-            sx={{ 
+            sx={{
               ":.MuiTablePagination-toolbar": { justifyContent: isMobile ? "center" : "flex-end" },
-              
             }}
           />
         </Box>
@@ -1860,17 +2254,16 @@ export default function Designation() {
             <TextField fullWidth required label="Designation Name" value={designationName} onChange={handleDesignationNameChange} variant="outlined" margin="normal" />
             <TextField fullWidth required label="Designation Code" value={code} onChange={handleCodeChange} variant="outlined" margin="normal" />
             <TextField fullWidth required label="Description" value={description} onChange={handleDescriptionChange} variant="outlined" margin="normal" multiline rows={3} />
+            
+            {/* FIX: Upload option removed from here */}
 
-            <Box mt={1}>
-              <input type="file" accept=".pdf" />
-            </Box>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
             <Button sx={{ backgroundColor: "#757575", color: "#fff", "&:hover": { backgroundColor: "#bdbdbd" } }} onClick={resetFormAndCloseDialog}>
               Cancel
             </Button>
             <Button sx={{ backgroundColor: THEME_PRIMARY, color: "#fff", "&:hover": { backgroundColor: THEME_PRIMARY_DARK } }} onClick={editingDesignation ? handleSaveEdit : handleAddDesignation}>
-              {submitting ? <CircularProgress size={24} sx={{ color: "#fff" }} /> : editingDesignation ? "Save" : "Save"}
+              {submitting ? <CircularProgress size={24} sx={{ color: "#fff" }} /> : "Save"}
             </Button>
           </DialogActions>
         </Dialog>
