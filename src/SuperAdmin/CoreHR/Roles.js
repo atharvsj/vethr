@@ -1110,6 +1110,412 @@
 
 
 
+// import React, { useState, useEffect } from "react";
+// import {
+//   Table,
+//   TableBody,
+//   TableCell,
+//   TableContainer,
+//   TableHead,
+//   TableRow,
+//   Paper,
+//   Button,
+//   TextField,
+//   Dialog,
+//   DialogActions,
+//   DialogContent,
+//   DialogTitle,
+//   IconButton,
+//   Select,
+//   MenuItem,
+//   InputLabel,
+//   FormControl,
+//   Box,
+//   Typography,
+//   Pagination, // Added import
+//   Skeleton,   // Added import
+// } from "@mui/material";
+// import { Edit, Delete, Add } from "@mui/icons-material";
+// import { styled } from "@mui/system";
+// import Swal from "sweetalert2";
+// import axiosInstance from "../../utils/axiosInstance"; // ✅ axios instance
+
+// // --- Color Palette for Standardization ---
+// const THEME_PURPLE = "#8C257C";
+// const THEME_ORANGE = "#F58E35";
+// const THEME_PURPLE_HOVER = "#701d63"; // A darker shade for hover effects
+
+// // --- Styled Components ---
+// const PrimaryButton = styled(Button)(({ theme }) => ({
+//   backgroundColor: THEME_PURPLE,
+//   color: "#fff",
+//   "&:hover": {
+//     backgroundColor: THEME_PURPLE_HOVER,
+//   },
+// }));
+
+// const StyledTableCell = styled(TableCell)({
+//   wordBreak: "break-word",
+//   whiteSpace: "normal",
+//   maxWidth: "200px",
+// });
+
+// const Role = () => {
+//   const [roles, setRoles] = useState([]);
+//   const [openForm, setOpenForm] = useState(false);
+//   const [currentRole, setCurrentRole] = useState({ role_name: "" });
+//   const [isEditing, setIsEditing] = useState(false);
+//   const [page, setPage] = useState(0);
+//   const [rowsPerPage, setRowsPerPage] = useState(10);
+//   const [totalRoles, setTotalRoles] = useState(0);
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [loading, setLoading] = useState(true); // Added loading state
+
+//   useEffect(() => {
+//     fetchRoles();
+//   }, [page, rowsPerPage, searchTerm]);
+
+//   const fetchRoles = async () => {
+//     setLoading(true);
+//     try {
+//       const res = await axiosInstance.get("api/staffrole/");
+//       let data = res.data;
+
+//       let formatted = data.map((r) => ({
+//         role_id: r.value,
+//         role_name: r.label,
+//         created_at: r.created_at,
+//       }));
+
+//       if (searchTerm) {
+//         formatted = formatted.filter((role) =>
+//           role.role_name.toLowerCase().includes(searchTerm.toLowerCase())
+//         );
+//       }
+
+//       setTotalRoles(formatted.length);
+
+//       const startIndex = page * rowsPerPage;
+//       const endIndex = startIndex + rowsPerPage;
+//       setRoles(formatted.slice(startIndex, endIndex));
+//     } catch (error) {
+//       console.error("Error fetching roles:", error);
+//       Swal.fire("Error", "Failed to fetch roles", "error");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleOpenForm = (role = { role_name: "" }) => {
+//     // ... (function remains the same)
+//     setCurrentRole(role);
+//     setIsEditing(!!role.role_id);
+//     setOpenForm(true);
+//   };
+
+//   const handleCloseForm = () => {
+//     // ... (function remains the same)
+//     setOpenForm(false);
+//     setCurrentRole({ role_name: "" });
+//   };
+
+//   const handleSubmit = async () => {
+//     // ... (function remains the same)
+//     try {
+//       if (isEditing) {
+//         await axiosInstance.patch(`api/staffrole/${currentRole.role_id}/`, {
+//           role_name: currentRole.role_name,
+//         });
+//         Swal.fire({
+//           icon: "success",
+//           title: "Role Updated",
+//           text: `Role "${currentRole.role_name}" has been updated successfully.`,
+//           timer: 2000,
+//           showConfirmButton: false,
+//         });
+//       } else {
+//         await axiosInstance.post("api/staffrole/", {
+//           role_name: currentRole.role_name,
+//         });
+//         Swal.fire({
+//           icon: "success",
+//           title: "Role Added",
+//           text: `Role "${currentRole.role_name}" has been added successfully.`,
+//           timer: 2000,
+//           showConfirmButton: false,
+//         });
+//       }
+//       handleCloseForm();
+//       fetchRoles();
+//     } catch (error) {
+//       console.error("Error saving role:", error);
+//       Swal.fire("Error", "Failed to save role", "error");
+//     }
+//   };
+
+//   const handleDelete = (role) => {
+//     // ... (function remains the same)
+//     Swal.fire({
+//       title: "Are you sure?",
+//       text: `You won't be able to revert deleting Role: ${role.role_name}`,
+//       icon: "warning",
+//       showCancelButton: true,
+//       confirmButtonColor: THEME_PURPLE,
+//       cancelButtonColor: "#d33",
+//       confirmButtonText: "Yes, delete it!",
+//     }).then(async (result) => {
+//       if (result.isConfirmed) {
+//         try {
+//           await axiosInstance.delete(`api/staffrole/${role.role_id}/`);
+//           Swal.fire({
+//             icon: "success",
+//             title: "Deleted!",
+//             text: `Role "${role.role_name}" has been deleted.`,
+//             timer: 2000,
+//             showConfirmButton: false,
+//           });
+//           fetchRoles();
+//         } catch (error) {
+//           console.error("Error deleting role:", error);
+//           Swal.fire("Error", "Failed to delete role", "error");
+//         }
+//       }
+//     });
+//   };
+
+//   const formatDate = (dateString) => {
+//     // ... (function remains the same)
+//     if (!dateString) return "";
+//     const date = new Date(dateString);
+//     return date.toLocaleDateString("en-US", {
+//       year: "numeric",
+//       month: "long",
+//       day: "numeric",
+//     });
+//   };
+
+//   const handlePaginationChange = (event, newPage) => {
+//     setPage(newPage - 1);
+//   };
+
+//   const handleChangeRowsPerPage = (event) => {
+//     setRowsPerPage(parseInt(event.target.value, 10));
+//     setPage(0);
+//   };
+  
+//   const startEntry = roles.length > 0 ? page * rowsPerPage + 1 : 0;
+//   const endEntry = Math.min((page + 1) * rowsPerPage, totalRoles);
+
+//   return (
+//     <Box sx={{ p: 3, width: "100%" }}>
+//       <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold", color: "#8C257C ", mb: 5}}>
+//         Create Roles 
+//       </Typography>
+
+//       {/* --- Top Bar: Add Button and Search --- */}
+//       <Box
+//         display="flex"
+//         justifyContent="space-between"
+//         alignItems="center"
+//         mb={2}
+//         flexWrap="wrap"
+//         gap={2}
+//       >
+//         <PrimaryButton
+//           variant="contained"
+//           startIcon={<Add />}
+//           onClick={() => handleOpenForm()}
+//         >
+//           Add Role
+//         </PrimaryButton>
+//         <TextField
+//           placeholder="Search by Role Name..."
+//           variant="outlined"
+//           size="small"
+//           value={searchTerm}
+//           onChange={(e) => setSearchTerm(e.target.value)}
+//           sx={{ width: { xs: "100%", sm: "250px" } }}
+//         />
+//       </Box>
+
+//       {/* --- Table --- */}
+//       <TableContainer component={Paper} sx={{ overflowX: "auto" }}>
+//         <Table size="small">
+//           <TableHead sx={{ backgroundColor: THEME_PURPLE }}>
+//             <TableRow>
+//               <StyledTableCell sx={{ color: "white", fontWeight: "bold" }}>
+//                 SR. NO.
+//               </StyledTableCell>
+//               <StyledTableCell sx={{ color: "white", fontWeight: "bold" }}>
+//                 ROLE ID
+//               </StyledTableCell>
+//               <StyledTableCell sx={{ color: "white", fontWeight: "bold" }}>
+//                 ROLE NAME
+//               </StyledTableCell>
+//               <StyledTableCell sx={{ color: "white", fontWeight: "bold" }}>
+//                 CREATED AT
+//               </StyledTableCell>
+//               <StyledTableCell sx={{ color: "white", fontWeight: "bold" }}>
+//                 ACTIONS
+//               </StyledTableCell>
+//             </TableRow>
+//           </TableHead>
+//           <TableBody>
+//             {loading ? (
+//               Array.from(new Array(rowsPerPage)).map((_, index) => (
+//                 <TableRow key={index}>
+//                   <StyledTableCell colSpan={5}><Skeleton /></StyledTableCell>
+//                 </TableRow>
+//               ))
+//             ) : roles.length > 0 ? (
+//               roles.map((role, index) => (
+//                 <TableRow
+//                   key={role.role_id}
+//                   sx={{ "&:nth-of-type(odd)": { backgroundColor: "#f9f9f9" } }}
+//                 >
+//                   <StyledTableCell>
+//                     {page * rowsPerPage + index + 1}
+//                   </StyledTableCell>
+//                   <StyledTableCell>{role.role_id}</StyledTableCell>
+//                   <StyledTableCell>{role.role_name}</StyledTableCell>
+//                   <StyledTableCell>{formatDate(role.created_at)}</StyledTableCell>
+//                   <StyledTableCell>
+//                     <IconButton
+//                       size="small"
+//                       color="primary"
+//                       onClick={() => handleOpenForm(role)}
+//                     >
+//                       <Edit fontSize="small" />
+//                     </IconButton>
+//                     <IconButton
+//                       size="small"
+//                       color="error"
+//                       onClick={() => handleDelete(role)}
+//                     >
+//                       <Delete fontSize="small" />
+//                     </IconButton>
+//                   </StyledTableCell>
+//                 </TableRow>
+//               ))
+//             ) : (
+//               <TableRow>
+//                 <StyledTableCell colSpan={5} align="center">
+//                   No roles found.
+//                 </StyledTableCell>
+//               </TableRow>
+//             )}
+//           </TableBody>
+//         </Table>
+//       </TableContainer>
+
+//       {/* --- START: New Styled Pagination --- */}
+//       <Box sx={{ p: 2, borderTop: '1px solid rgba(224, 224, 224, 1)' }}>
+//           {loading ? (
+//               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+//                   <Skeleton variant="text" width={200} />
+//                   <Skeleton variant="rectangular" width={300} height={40} />
+//               </Box>
+//           ) : (
+//               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+//                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+//                       <FormControl variant="outlined" size="small">
+//                           <Select
+//                               value={rowsPerPage}
+//                               onChange={handleChangeRowsPerPage}
+//                               sx={{
+//                                   backgroundColor: THEME_PURPLE,
+//                                   color: 'white',
+//                                   borderRadius: '4px',
+//                                   transition: 'background-color 0.3s',
+//                                   '&:hover': {
+//                                       backgroundColor: THEME_PURPLE_HOVER,
+//                                   },
+//                                   '& .MuiOutlinedInput-notchedOutline': {
+//                                       border: 'none',
+//                                   },
+//                                   '& .MuiSvgIcon-root': {
+//                                       color: 'white',
+//                                   },
+//                               }}
+//                           >
+//                               {[5, 10, 15, 25].map((value) => (
+//                                   <MenuItem key={value} value={value}>{value}</MenuItem>
+//                               ))}
+//                           </Select>
+//                       </FormControl>
+//                       <Typography variant="body2" color="text.secondary">
+//                          {`Showing ${startEntry} to ${endEntry} of ${totalRoles} results`}
+//                       </Typography>
+//                   </Box>
+//                   <Pagination
+//                       count={Math.ceil(totalRoles / rowsPerPage)}
+//                       page={page + 1}
+//                       onChange={handlePaginationChange}
+//                       showFirstButton
+//                       showLastButton
+//                       sx={{
+//                           '& .MuiPaginationItem-root': {
+//                               borderRadius: '4px',
+//                               transition: 'background-color 0.3s, color 0.3s',
+//                               '&:hover': {
+//                                   backgroundColor: THEME_ORANGE,
+//                                   color: 'white',
+//                               }
+//                           },
+//                           '& .MuiPaginationItem-page': {
+//                               color: THEME_PURPLE,
+//                               '&.Mui-selected': {
+//                                   backgroundColor: THEME_PURPLE,
+//                                   color: 'white',
+//                                   '&:hover': {
+//                                       backgroundColor: THEME_ORANGE,
+//                                   }
+//                               },
+//                           },
+//                            '& .MuiPaginationItem-icon': {
+//                               color: THEME_PURPLE,
+//                           }
+//                       }}
+//                   />
+//               </Box>
+//           )}
+//       </Box>
+//       {/* --- END: New Styled Pagination --- */}
+
+//       {/* --- Add/Edit Role Dialog Form --- */}
+//       <Dialog open={openForm} onClose={handleCloseForm} fullWidth maxWidth="xs">
+//         <DialogTitle sx={{ color: '#8C257C' , fontWeight: "bold", fontSize: '2rem' }} >
+//           {isEditing ? "Edit Role" : "Add Role"}</DialogTitle>
+//         <DialogContent>
+//           <TextField
+//             autoFocus
+//             margin="dense"
+//             label="Role Name"
+//             type="text"
+//             fullWidth
+//             value={currentRole.role_name}
+//             onChange={(e) =>
+//               setCurrentRole({ ...currentRole, role_name: e.target.value })
+//             }
+//           />
+//         </DialogContent>
+//         <DialogActions sx={{ p: "16px 24px" }}>
+//           <Button onClick={handleCloseForm} sx={{ color: THEME_ORANGE }}>
+//             Cancel
+//           </Button>
+//           <PrimaryButton onClick={handleSubmit} variant="contained">
+//             Save
+//           </PrimaryButton>
+//         </DialogActions>
+//       </Dialog>
+//     </Box>
+//   );
+// };
+
+// export default Role;
+
+
+
 import React, { useState, useEffect } from "react";
 import {
   Table,
@@ -1128,22 +1534,21 @@ import {
   IconButton,
   Select,
   MenuItem,
-  InputLabel,
   FormControl,
   Box,
   Typography,
-  Pagination, // Added import
-  Skeleton,   // Added import
+  Pagination,
+  Skeleton,
 } from "@mui/material";
 import { Edit, Delete, Add } from "@mui/icons-material";
 import { styled } from "@mui/system";
 import Swal from "sweetalert2";
-import axiosInstance from "../../utils/axiosInstance"; // ✅ axios instance
+import axiosInstance from "../../utils/axiosInstance";
 
 // --- Color Palette for Standardization ---
 const THEME_PURPLE = "#8C257C";
 const THEME_ORANGE = "#F58E35";
-const THEME_PURPLE_HOVER = "#701d63"; // A darker shade for hover effects
+const THEME_PURPLE_HOVER = "#701d63";
 
 // --- Styled Components ---
 const PrimaryButton = styled(Button)(({ theme }) => ({
@@ -1169,7 +1574,7 @@ const Role = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalRoles, setTotalRoles] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true); // Added loading state
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchRoles();
@@ -1187,6 +1592,14 @@ const Role = () => {
         created_at: r.created_at,
       }));
 
+      // ---------------------------------------------------------
+      // ✅ CHANGED: Sort by created_at DESCENDING (Newest First)
+      // ---------------------------------------------------------
+      formatted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      
+      // Fallback: If dates are missing, you can sort by ID descending:
+      // formatted.sort((a, b) => b.role_id - a.role_id);
+
       if (searchTerm) {
         formatted = formatted.filter((role) =>
           role.role_name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -1195,6 +1608,7 @@ const Role = () => {
 
       setTotalRoles(formatted.length);
 
+      // Pagination slice is applied AFTER sorting
       const startIndex = page * rowsPerPage;
       const endIndex = startIndex + rowsPerPage;
       setRoles(formatted.slice(startIndex, endIndex));
@@ -1207,20 +1621,17 @@ const Role = () => {
   };
 
   const handleOpenForm = (role = { role_name: "" }) => {
-    // ... (function remains the same)
     setCurrentRole(role);
     setIsEditing(!!role.role_id);
     setOpenForm(true);
   };
 
   const handleCloseForm = () => {
-    // ... (function remains the same)
     setOpenForm(false);
     setCurrentRole({ role_name: "" });
   };
 
   const handleSubmit = async () => {
-    // ... (function remains the same)
     try {
       if (isEditing) {
         await axiosInstance.patch(`api/staffrole/${currentRole.role_id}/`, {
@@ -1254,7 +1665,6 @@ const Role = () => {
   };
 
   const handleDelete = (role) => {
-    // ... (function remains the same)
     Swal.fire({
       title: "Are you sure?",
       text: `You won't be able to revert deleting Role: ${role.role_name}`,
@@ -1284,7 +1694,6 @@ const Role = () => {
   };
 
   const formatDate = (dateString) => {
-    // ... (function remains the same)
     if (!dateString) return "";
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -1408,7 +1817,7 @@ const Role = () => {
         </Table>
       </TableContainer>
 
-      {/* --- START: New Styled Pagination --- */}
+      {/* --- Pagination --- */}
       <Box sx={{ p: 2, borderTop: '1px solid rgba(224, 224, 224, 1)' }}>
           {loading ? (
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1480,7 +1889,6 @@ const Role = () => {
               </Box>
           )}
       </Box>
-      {/* --- END: New Styled Pagination --- */}
 
       {/* --- Add/Edit Role Dialog Form --- */}
       <Dialog open={openForm} onClose={handleCloseForm} fullWidth maxWidth="xs">

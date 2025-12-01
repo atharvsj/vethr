@@ -6943,6 +6943,551 @@
 
 
 
+// import { useState, useEffect } from "react";
+// import axiosInstance from "../../utils/axiosInstance";
+// import {
+//   Box,
+//   Button,
+//   Paper,
+//   TextField,
+//   Typography,
+//   Table,
+//   TableBody,
+//   TableCell,
+//   TableContainer,
+//   TableHead,
+//   TableRow,
+//   IconButton,
+//   Select,
+//   MenuItem,
+//   InputLabel,
+//   FormControl,
+//   CircularProgress,
+//   Dialog,
+//   DialogActions,
+//   DialogContent,
+//   DialogTitle,
+//   useTheme,
+//   useMediaQuery,
+//   InputAdornment,
+//   Skeleton,
+//   Pagination,
+// } from "@mui/material";
+// import {
+//   Edit as EditIcon,
+//   Delete as DeleteIcon,
+//   Add as AddIcon,
+//   Search as SearchIcon,
+// } from "@mui/icons-material";
+// import Swal from "sweetalert2";
+
+// const primaryColor = "#8C257C";
+// const primaryDarkColor = "#6d1d60";
+// const secondaryColor = "#F58E35";
+// const textColorOnPrimary = "#FFFFFF";
+// const cancelButtonColor = "#757575";
+
+// const StyledHeaderCell = (props) => (
+//   <TableCell
+//     {...props}
+//     sx={{
+//       backgroundColor: primaryColor,
+//       color: textColorOnPrimary,
+//       fontWeight: "bold",
+//       whiteSpace: "nowrap",
+//     }}
+//   />
+// );
+
+// export default function Department() {
+//   const [departments, setDepartments] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [open, setOpen] = useState(false);
+//   const [editOpen, setEditOpen] = useState(false);
+//   const [submitting, setSubmitting] = useState(false);
+
+//   const [newDepartment, setNewDepartment] = useState({ name: "", code: "", head: "" });
+//   const [editDepartment, setEditDepartment] = useState(null);
+
+//   const [employeesDropdown, setEmployeesDropdown] = useState([]);
+//   const [loadingEmployeesDropdown, setLoadingEmployeesDropdown] = useState(true);
+//   const [employeesDropdownError, setEmployeesDropdownError] = useState(null);
+
+//   const [page, setPage] = useState(0);
+//   const [rowsPerPage, setRowsPerPage] = useState(5);
+
+//   const theme = useTheme();
+//   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+//   const fetchDepartments = async () => {
+//     setLoading(true);
+//     try {
+//       const response = await axiosInstance.get("/departments/");
+//       const formattedData = response.data.map((dept) => ({
+//         id: dept.department_id,
+//         name: dept.department_name,
+//         code: dept.department_code,
+//         headId: dept.department_head,
+//         headName: dept.department_head_name,
+//       }));
+//       setDepartments(formattedData);
+//     } catch (error) {
+//       console.error("Error fetching departments:", error);
+//       Swal.fire({
+//         icon: "error",
+//         title: "Fetch Error",
+//         text: "Could not fetch departments from the server.",
+//         timer: 3000,
+//         showConfirmButton: false,
+//       });
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const fetchEmployeesDropdown = async () => {
+//     setLoadingEmployeesDropdown(true);
+//     setEmployeesDropdownError(null);
+//     try {
+//       const response = await axiosInstance.get("/employee-dropdown/");
+//       setEmployeesDropdown(response.data || []);
+//     } catch (error) {
+//       console.error("Error fetching employees dropdown:", error);
+//       setEmployeesDropdownError("Failed to load employees.");
+//     } finally {
+//       setLoadingEmployeesDropdown(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchDepartments();
+//     fetchEmployeesDropdown();
+//   }, []);
+
+//   const handleSearch = (event) => {
+//     setSearchTerm(event.target.value);
+//     setPage(0);
+//   };
+
+//   const handlePaginationChange = (event, newPage) => {
+//     setPage(newPage - 1);
+//   };
+
+//   const handleChangeRowsPerPage = (event) => {
+//     setRowsPerPage(parseInt(event.target.value, 10));
+//     setPage(0);
+//   };
+
+//   const filteredDepartments = departments.filter(
+//     (department) =>
+//       department?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//       department?.headName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//       department?.code?.toLowerCase().includes(searchTerm.toLowerCase())
+//   );
+
+//   const paginatedData = filteredDepartments.slice(
+//     page * rowsPerPage,
+//     page * rowsPerPage + rowsPerPage
+//   );
+
+//   const startEntry = filteredDepartments.length > 0 ? page * rowsPerPage + 1 : 0;
+//   const endEntry = Math.min((page + 1) * rowsPerPage, filteredDepartments.length);
+
+//   const handleOpen = () => {
+//     setNewDepartment({ name: "", code: "", head: "" });
+//     setOpen(true);
+//   };
+//   const handleClose = () => setOpen(false);
+
+//   const handleEditOpen = (department) => {
+//     const headEmployee = employeesDropdown.find(
+//       (emp) => emp.value === department.headId?.toString()
+//     );
+
+//     setEditDepartment({
+//       id: department.id,
+//       name: department.name,
+//       code: department.code || "",
+//       head: headEmployee ? headEmployee.emp_id : "",
+//     });
+//     setEditOpen(true);
+//   };
+//   const handleEditClose = () => {
+//     setEditDepartment(null);
+//     setEditOpen(false);
+//   };
+
+//   const handleAddDepartment = async () => {
+//     if (!newDepartment.name.trim() || !newDepartment.code.trim() || !newDepartment.head) {
+//       Swal.fire({
+//         icon: "warning",
+//         title: "Missing Fields",
+//         text: "Please fill all required fields.",
+//         timer: 3000,
+//         showConfirmButton: false,
+//       });
+//       return;
+//     }
+//     setSubmitting(true);
+//     try {
+//       const payload = {
+//         department_name: newDepartment.name.trim(),
+//         department_code: newDepartment.code.trim(),
+//         company_id: 2,
+//         department_head: newDepartment.head,
+//         added_by: 3,
+//       };
+//       await axiosInstance.post("/departments/", payload);
+//       fetchDepartments();
+//       handleClose();
+//       Swal.fire({
+//         icon: "success",
+//         title: "Department Added",
+//         timer: 3000,
+//         showConfirmButton: false,
+//       });
+//     } catch (error) {
+//       console.error("Error adding department:", error);
+//       Swal.fire({
+//         icon: "error",
+//         title: "Submission Error",
+//         text: "Failed to add department. Please try again.",
+//         timer: 3000,
+//         showConfirmButton: false,
+//       });
+//     } finally {
+//       setSubmitting(false);
+//     }
+//   };
+
+//   const handleEditDepartment = async () => {
+//     if (!editDepartment || !editDepartment.name.trim() || !editDepartment.code.trim() || !editDepartment.head) {
+//       Swal.fire({
+//         icon: "warning",
+//         title: "Missing Fields",
+//         text: "Please ensure all fields are filled correctly.",
+//         timer: 3000,
+//         showConfirmButton: false,
+//       });
+//       return;
+//     }
+//     setSubmitting(true);
+//     const updatedData = {
+//       department_name: editDepartment.name.trim(),
+//       department_code: editDepartment.code.trim(),
+//       company_id: 2,
+//       department_head: editDepartment.head,
+//       added_by: 3,
+//     };
+//     try {
+//       await axiosInstance.patch(`/departments/${editDepartment.id}/`, updatedData);
+//       fetchDepartments();
+//       handleEditClose();
+//       Swal.fire({
+//         icon: "success",
+//         title: "Department Updated",
+//         timer: 3000,
+//         showConfirmButton: false,
+//       });
+//     } catch (error) {
+//       console.error("Error updating department:", error);
+//       Swal.fire({
+//         icon: "error",
+//         title: "Update Error",
+//         text: "Failed to update department. Please try again.",
+//         timer: 3000,
+//         showConfirmButton: false,
+//       });
+//     } finally {
+//       setSubmitting(false);
+//     }
+//   };
+
+//   const handleDeleteDepartment = (department) => {
+//     Swal.fire({
+//       title: "Are you sure?",
+//       text: `You won't be able to revert this!`,
+//       icon: "warning",
+//       showCancelButton: true,
+//       confirmButtonColor: "#d33",
+//       cancelButtonColor: "#3085d6",
+//       confirmButtonText: "Yes, delete it!",
+//     }).then(async (result) => {
+//       if (result.isConfirmed) {
+//         try {
+//           await axiosInstance.delete(`/departments/${department.id}/`);
+//           fetchDepartments();
+//           Swal.fire({
+//             icon: "success",
+//             title: "Deleted!",
+//             text: `Department "${department.name}" has been deleted.`,
+//             timer: 3000,
+//             showConfirmButton: false,
+//           });
+//         } catch (error) {
+//           console.error("Error deleting department:", error);
+//           Swal.fire({
+//             icon: "error",
+//             title: "Deletion Error",
+//             text: "Failed to delete department.",
+//             timer: 3000,
+//             showConfirmButton: false,
+//           });
+//         }
+//       }
+//     });
+//   };
+
+//   const renderSkeletons = () => {
+//     return Array.from(new Array(rowsPerPage)).map((_, index) => (
+//       <TableRow key={index}>
+//         <TableCell sx={{ py: 2 }}><Skeleton variant="text" /></TableCell>
+//         <TableCell sx={{ py: 2 }}><Skeleton variant="text" /></TableCell>
+//         <TableCell sx={{ py: 2 }}><Skeleton variant="text" /></TableCell>
+//         <TableCell sx={{ py: 2 }}><Skeleton variant="text" /></TableCell>
+//         <TableCell align="center" sx={{ py: 2 }}>
+//           <Skeleton variant="rectangular" width={70} height={30} />
+//         </TableCell>
+//       </TableRow>
+//     ));
+//   };
+
+//   return (
+//     <Box component={Paper} p={3}>
+//       <Typography variant="h4" sx={{ color: primaryColor, fontWeight: "bold", mb: 5 }}>
+//         Department
+//       </Typography>
+
+//       <Box
+//         display="flex"
+//         justifyContent="space-between"
+//         alignItems="center"
+//         flexDirection={isMobile ? "column" : "row"}
+//         gap={2}
+//         mb={2}
+//       >
+//         <Button
+//           variant="contained"
+//           startIcon={<AddIcon />}
+//           onClick={handleOpen}
+//           sx={{
+//             backgroundColor: primaryColor,
+//             color: textColorOnPrimary,
+//             "&:hover": { backgroundColor: primaryDarkColor },
+//             alignSelf: isMobile ? "stretch" : "auto",
+//           }}
+//         >
+//           Add New
+//         </Button>
+//         <TextField
+//           size="small"
+//           placeholder="Search ..."
+//           value={searchTerm}
+//           onChange={handleSearch}
+//           InputProps={{
+//             startAdornment: (
+//               <InputAdornment position="start">
+//                 <SearchIcon />
+//               </InputAdornment>
+//             ),
+//           }}
+//           sx={{ width: isMobile ? "100%" : "auto" }}
+//         />
+//       </Box>
+
+//       <TableContainer sx={{ minWidth: "100%", whiteSpace: "nowrap" }}>
+//         <Table stickyHeader size="small">
+//           <TableHead>
+//             <TableRow>
+//               <StyledHeaderCell>SR. NO.</StyledHeaderCell>
+//               <StyledHeaderCell>DEPT. CODE</StyledHeaderCell>
+//               <StyledHeaderCell>DEPT. NAME</StyledHeaderCell>
+//               <StyledHeaderCell>HEAD</StyledHeaderCell>
+//               <StyledHeaderCell align="center">ACTIONS</StyledHeaderCell>
+//             </TableRow>
+//           </TableHead>
+//           <TableBody>
+//             {loading ? (
+//               renderSkeletons()
+//             ) : paginatedData.length > 0 ? (
+//               paginatedData.map((department, index) => (
+//                 <TableRow key={department.id} hover>
+//                   <TableCell sx={{ fontSize: "0.95rem", py: 2 }}>
+//                     {page * rowsPerPage + index + 1}
+//                   </TableCell>
+//                   <TableCell sx={{ fontSize: "0.95rem", py: 2 }}>{department.code || "N/A"}</TableCell>
+//                   <TableCell sx={{ fontSize: "0.95rem", py: 2 }}>{department.name}</TableCell>
+//                   <TableCell sx={{ fontSize: "0.95rem", py: 2 }}>{department.headName || "N/A"}</TableCell>
+//                   <TableCell sx={{ py: 2 }}>
+//                     <Box display="flex" justifyContent="center" gap={0.5}>
+//                       <IconButton
+//                         onClick={() => handleEditOpen(department)}
+//                         size="small"
+//                         sx={{ color: secondaryColor }}
+//                       >
+//                         <EditIcon fontSize="small" />
+//                       </IconButton>
+//                       <IconButton
+//                         color="error"
+//                         onClick={() => handleDeleteDepartment(department)}
+//                         size="small"
+//                       >
+//                         <DeleteIcon fontSize="small" />
+//                       </IconButton>
+//                     </Box>
+//                   </TableCell>
+//                 </TableRow>
+//               ))
+//             ) : (
+//               <TableRow>
+//                 <TableCell colSpan={5} align="center" sx={{ py: 2 }}>
+//                   No departments found.
+//                 </TableCell>
+//               </TableRow>
+//             )}
+//           </TableBody>
+//         </Table>
+//       </TableContainer>
+
+//       <Box sx={{ p: 2, borderTop: '1px solid rgba(224, 224, 224, 1)' }}>
+//           {loading ? (
+//               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+//                   <Skeleton variant="text" width={200} />
+//                   <Skeleton variant="rectangular" width={300} height={40} />
+//               </Box>
+//           ) : (
+//               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+//                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+//                       <FormControl variant="outlined" size="small">
+//                           <Select
+//                               value={rowsPerPage}
+//                               onChange={handleChangeRowsPerPage}
+//                               sx={{
+//                                   backgroundColor: primaryColor,
+//                                   color: 'white',
+//                                   borderRadius: '4px',
+//                                   '&:hover': { backgroundColor: primaryDarkColor },
+//                                   '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+//                                   '& .MuiSvgIcon-root': { color: 'white' },
+//                               }}
+//                           >
+//                               {[5, 10, 15, 25].map((value) => ( <MenuItem key={value} value={value}>{value}</MenuItem> ))}
+//                           </Select>
+//                       </FormControl>
+//                       <Typography variant="body2" color="text.secondary">
+//                          {`Showing ${startEntry} to ${endEntry} of ${filteredDepartments.length} results`}
+//                       </Typography>
+//                   </Box>
+//                   <Pagination
+//                       count={Math.ceil(filteredDepartments.length / rowsPerPage)}
+//                       page={page + 1}
+//                       onChange={handlePaginationChange}
+//                       showFirstButton showLastButton
+//                       sx={{
+//                           '& .MuiPaginationItem-root:hover': { backgroundColor: secondaryColor, color: 'white' },
+//                           '& .MuiPaginationItem-page': {
+//                               color: primaryColor,
+//                               '&.Mui-selected': {
+//                                   backgroundColor: primaryColor,
+//                                   color: 'white',
+//                                   '&:hover': { backgroundColor: secondaryColor }
+//                               },
+//                           },
+//                            '& .MuiPaginationItem-icon': { color: primaryColor }
+//                       }}
+//                   />
+//               </Box>
+//           )}
+//         </Box>
+
+//       <Dialog open={open || editOpen} onClose={editOpen ? handleEditClose : handleClose} fullWidth maxWidth="sm">
+//         <DialogTitle sx={{ color: primaryColor, fontWeight: "bold", fontSize: '2rem' }}>
+//           {editOpen ? "Edit Department" : "Add New Department"}
+//         </DialogTitle>
+//         <DialogContent>
+//           <TextField
+//             fullWidth
+//             label="Department Code"
+//             value={editOpen ? editDepartment?.code : newDepartment.code}
+//             onChange={(e) =>
+//               editOpen
+//                 ? setEditDepartment({ ...editDepartment, code: e.target.value })
+//                 : setNewDepartment({ ...newDepartment, code: e.target.value })
+//             }
+//             margin="normal"
+//             required
+//           />
+//           <TextField
+//             fullWidth
+//             label="Department Name"
+//             value={editOpen ? editDepartment?.name : newDepartment.name}
+//             onChange={(e) =>
+//               editOpen
+//                 ? setEditDepartment({ ...editDepartment, name: e.target.value })
+//                 : setNewDepartment({ ...newDepartment, name: e.target.value })
+//             }
+//             margin="normal"
+//             required
+//           />
+//           <FormControl fullWidth margin="normal" required>
+//             <InputLabel>Department Head</InputLabel>
+//             <Select
+//               label="Department Head"
+//               value={editOpen ? editDepartment?.head : newDepartment.head}
+//               onChange={(e) =>
+//                 editOpen
+//                   ? setEditDepartment({ ...editDepartment, head: e.target.value })
+//                   : setNewDepartment({ ...newDepartment, head: e.target.value })
+//               }
+//               disabled={loadingEmployeesDropdown}
+//             >
+//               <MenuItem value="">
+//                 <em>
+//                   {loadingEmployeesDropdown ? (
+//                     <CircularProgress size={20} />
+//                   ) : (
+//                     employeesDropdownError || "Select Head"
+//                   )}
+//                 </em>
+//               </MenuItem>
+//               {!loadingEmployeesDropdown &&
+//                 !employeesDropdownError &&
+//                 employeesDropdown.map((emp) => (
+//                   <MenuItem key={emp.emp_id} value={emp.emp_id}>
+//                     {emp.label} ({emp.emp_id})
+//                   </MenuItem>
+//                 ))}
+//             </Select>
+//           </FormControl>
+//         </DialogContent>
+//         <DialogActions sx={{ p: 2 }}>
+//           <Button
+//             onClick={editOpen ? handleEditClose : handleClose}
+//             sx={{ color: cancelButtonColor }}
+//           >
+//             Cancel
+//           </Button>
+//           <Button
+//             onClick={editOpen ? handleEditDepartment : handleAddDepartment}
+//             variant="contained"
+//             disabled={submitting}
+//             sx={{
+//               backgroundColor: primaryColor,
+//               "&:hover": { backgroundColor: primaryDarkColor },
+//             }}
+//           >
+//             {submitting ? <CircularProgress size={24} sx={{ color: textColorOnPrimary }} /> : (editOpen ? "Save Changes" : "Save")}
+//           </Button>
+//         </DialogActions>
+//       </Dialog>
+//     </Box>
+//   );
+// }
+
+
+
+
 import { useState, useEffect } from "react";
 import axiosInstance from "../../utils/axiosInstance";
 import {
@@ -6972,6 +7517,7 @@ import {
   InputAdornment,
   Skeleton,
   Pagination,
+  FormHelperText,
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -7010,6 +7556,9 @@ export default function Department() {
   const [newDepartment, setNewDepartment] = useState({ name: "", code: "", head: "" });
   const [editDepartment, setEditDepartment] = useState(null);
 
+  // Validation State
+  const [errors, setErrors] = useState({});
+
   const [employeesDropdown, setEmployeesDropdown] = useState([]);
   const [loadingEmployeesDropdown, setLoadingEmployeesDropdown] = useState(true);
   const [employeesDropdownError, setEmployeesDropdownError] = useState(null);
@@ -7031,6 +7580,10 @@ export default function Department() {
         headId: dept.department_head,
         headName: dept.department_head_name,
       }));
+      
+      // 1. Sort recent added entries on top (Descending by ID)
+      formattedData.sort((a, b) => b.id - a.id);
+      
       setDepartments(formattedData);
     } catch (error) {
       console.error("Error fetching departments:", error);
@@ -7096,9 +7649,13 @@ export default function Department() {
 
   const handleOpen = () => {
     setNewDepartment({ name: "", code: "", head: "" });
+    setErrors({}); // Reset errors
     setOpen(true);
   };
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setErrors({});
+  };
 
   const handleEditOpen = (department) => {
     const headEmployee = employeesDropdown.find(
@@ -7111,24 +7668,50 @@ export default function Department() {
       code: department.code || "",
       head: headEmployee ? headEmployee.emp_id : "",
     });
+    setErrors({}); // Reset errors
     setEditOpen(true);
   };
   const handleEditClose = () => {
     setEditDepartment(null);
+    setErrors({});
     setEditOpen(false);
   };
 
+  // Helper function to validate fields
+  const validateForm = (data) => {
+    const newErrors = {};
+    if (!data.code || !data.code.trim()) newErrors.code = "Department Code is required";
+    if (!data.name || !data.name.trim()) newErrors.name = "Department Name is required";
+    if (!data.head) newErrors.head = "Department Head is required";
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Helper for High Z-Index Alert
+  const showValidationAlert = () => {
+    Swal.fire({
+      icon: "warning",
+      title: "Missing Fields",
+      text: "Please fill all highlighted fields.",
+      timer: 3000,
+      showConfirmButton: false,
+      // 2. Ensure Alert is in front of the MUI Dialog
+      didOpen: () => {
+        const swalContainer = Swal.getContainer();
+        if (swalContainer) {
+          swalContainer.style.zIndex = "9999"; 
+        }
+      }
+    });
+  };
+
   const handleAddDepartment = async () => {
-    if (!newDepartment.name.trim() || !newDepartment.code.trim() || !newDepartment.head) {
-      Swal.fire({
-        icon: "warning",
-        title: "Missing Fields",
-        text: "Please fill all required fields.",
-        timer: 3000,
-        showConfirmButton: false,
-      });
+    if (!validateForm(newDepartment)) {
+      showValidationAlert();
       return;
     }
+
     setSubmitting(true);
     try {
       const payload = {
@@ -7162,16 +7745,11 @@ export default function Department() {
   };
 
   const handleEditDepartment = async () => {
-    if (!editDepartment || !editDepartment.name.trim() || !editDepartment.code.trim() || !editDepartment.head) {
-      Swal.fire({
-        icon: "warning",
-        title: "Missing Fields",
-        text: "Please ensure all fields are filled correctly.",
-        timer: 3000,
-        showConfirmButton: false,
-      });
+    if (!validateForm(editDepartment)) {
+      showValidationAlert();
       return;
     }
+
     setSubmitting(true);
     const updatedData = {
       department_name: editDepartment.name.trim(),
@@ -7410,36 +7988,44 @@ export default function Department() {
             fullWidth
             label="Department Code"
             value={editOpen ? editDepartment?.code : newDepartment.code}
-            onChange={(e) =>
+            onChange={(e) => {
               editOpen
                 ? setEditDepartment({ ...editDepartment, code: e.target.value })
-                : setNewDepartment({ ...newDepartment, code: e.target.value })
-            }
+                : setNewDepartment({ ...newDepartment, code: e.target.value });
+              // Clear error on type
+              if(errors.code) setErrors({...errors, code: null});
+            }}
             margin="normal"
             required
+            error={!!errors.code}
+            helperText={errors.code}
           />
           <TextField
             fullWidth
             label="Department Name"
             value={editOpen ? editDepartment?.name : newDepartment.name}
-            onChange={(e) =>
+            onChange={(e) => {
               editOpen
                 ? setEditDepartment({ ...editDepartment, name: e.target.value })
-                : setNewDepartment({ ...newDepartment, name: e.target.value })
-            }
+                : setNewDepartment({ ...newDepartment, name: e.target.value });
+              if(errors.name) setErrors({...errors, name: null});
+            }}
             margin="normal"
             required
+            error={!!errors.name}
+            helperText={errors.name}
           />
-          <FormControl fullWidth margin="normal" required>
+          <FormControl fullWidth margin="normal" required error={!!errors.head}>
             <InputLabel>Department Head</InputLabel>
             <Select
               label="Department Head"
               value={editOpen ? editDepartment?.head : newDepartment.head}
-              onChange={(e) =>
+              onChange={(e) => {
                 editOpen
                   ? setEditDepartment({ ...editDepartment, head: e.target.value })
-                  : setNewDepartment({ ...newDepartment, head: e.target.value })
-              }
+                  : setNewDepartment({ ...newDepartment, head: e.target.value });
+                if(errors.head) setErrors({...errors, head: null});
+              }}
               disabled={loadingEmployeesDropdown}
             >
               <MenuItem value="">
@@ -7459,6 +8045,7 @@ export default function Department() {
                   </MenuItem>
                 ))}
             </Select>
+            {errors.head && <FormHelperText>{errors.head}</FormHelperText>}
           </FormControl>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>

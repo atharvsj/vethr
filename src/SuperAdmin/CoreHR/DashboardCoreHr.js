@@ -1917,6 +1917,599 @@
 
 
 
+// import React, { useEffect, useState, useMemo } from "react";
+// import {
+//   Box,
+//   Paper,
+//   Table,
+//   TableBody,
+//   TableCell,
+//   TableContainer,
+//   TableHead,
+//   TableRow,
+//   Typography,
+//   Skeleton,
+//   TextField,
+//   InputAdornment,
+//   useTheme,
+//   useMediaQuery,
+//   FormControl, // Added import
+//   Select,      // Added import
+//   MenuItem,    // Added import
+//   Pagination,  // Added import
+// } from "@mui/material";
+// import { Search as SearchIcon } from "@mui/icons-material";
+// import axios from "axios";
+
+// // Define brand colors for easy reuse
+// const themePurple = "#8C257C";
+// const themePurpleDark = "#6d1d60";
+// const themeOrange = "#F58E35";
+
+// function DashboardCoreHr() {
+//   // --- MUI Theme and Responsiveness ---
+//   const theme = useTheme();
+//   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+//   // State for original data and loading
+//   const [departments, setDepartments] = useState([]);
+//   const [designations, setDesignations] = useState([]);
+//   const [grades, setGrades] = useState([]);
+//   const [loading, setLoading] = useState(true);
+
+//   // --- State for Department Table ---
+//   const [departmentSearchTerm, setDepartmentSearchTerm] = useState("");
+//   const [departmentPage, setDepartmentPage] = useState(0);
+//   const [departmentRowsPerPage, setDepartmentRowsPerPage] = useState(5);
+
+//   // --- State for Designation Table ---
+//   const [designationSearchTerm, setDesignationSearchTerm] = useState("");
+//   const [designationPage, setDesignationPage] = useState(0);
+//   const [designationRowsPerPage, setDesignationRowsPerPage] = useState(5);
+
+//   // --- State for Grade Table ---
+//   const [gradeSearchTerm, setGradeSearchTerm] = useState("");
+//   const [gradePage, setGradePage] = useState(0);
+//   const [gradeRowsPerPage, setGradeRowsPerPage] = useState(5);
+
+//   // Fetch Department, Designation, and Grade data
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       setLoading(true);
+//       try {
+//         const [departmentResponse, designationResponse, gradeResponse] =
+//           await Promise.all([
+//             axios.get(
+//               "https://tdtlworld.com/hrms-backend/api/company-setup-dashboard/"
+//             ),
+//             axios.get(
+//               "https://tdtlworld.com/hrms-backend/get_designationwise_count/"
+//             ),
+//             axios.get("https://tdtlworld.com/hrms-backend/api/grade/"),
+//           ]);
+//         setDepartments(departmentResponse.data || []);
+//         setDesignations(designationResponse.data.data || []);
+//         setGrades(gradeResponse.data || []);
+//       } catch (error) {
+//         console.error("Error fetching data:", error);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     fetchData();
+//   }, []);
+
+//   // --- Memoized Filtering for Departments ---
+//   const filteredDepartments = useMemo(() => {
+//     return departments.filter((dept) =>
+//       dept.department_name
+//         .toLowerCase()
+//         .includes(departmentSearchTerm.toLowerCase())
+//     );
+//   }, [departments, departmentSearchTerm]);
+
+//   // --- Memoized Filtering for Designations ---
+//   const filteredDesignations = useMemo(() => {
+//     return designations.filter((desg) =>
+//       desg.designation_name
+//         .toLowerCase()
+//         .includes(designationSearchTerm.toLowerCase())
+//     );
+//   }, [designations, designationSearchTerm]);
+
+//   // --- Memoized Filtering for Grades ---
+//   const filteredGrades = useMemo(() => {
+//     return grades.filter(
+//       (grade) =>
+//         grade.grade_name
+//           .toLowerCase()
+//           .includes(gradeSearchTerm.toLowerCase()) ||
+//         grade.grade_code.toLowerCase().includes(gradeSearchTerm.toLowerCase())
+//     );
+//   }, [grades, gradeSearchTerm]);
+    
+//   // --- Department Pagination Logic ---
+//   const handleDepartmentPaginationChange = (event, newPage) => {
+//     setDepartmentPage(newPage - 1);
+//   };
+//   const handleDepartmentRowsPerPageChange = (event) => {
+//     setDepartmentRowsPerPage(parseInt(event.target.value, 10));
+//     setDepartmentPage(0);
+//   };
+//   const departmentStartEntry = filteredDepartments.length > 0 ? departmentPage * departmentRowsPerPage + 1 : 0;
+//   const departmentEndEntry = Math.min((departmentPage + 1) * departmentRowsPerPage, filteredDepartments.length);
+
+//   // --- Designation Pagination Logic ---
+//   const handleDesignationPaginationChange = (event, newPage) => {
+//     setDesignationPage(newPage - 1);
+//   };
+//   const handleDesignationRowsPerPageChange = (event) => {
+//     setDesignationRowsPerPage(parseInt(event.target.value, 10));
+//     setDesignationPage(0);
+//   };
+//   const designationStartEntry = filteredDesignations.length > 0 ? designationPage * designationRowsPerPage + 1 : 0;
+//   const designationEndEntry = Math.min((designationPage + 1) * designationRowsPerPage, filteredDesignations.length);
+
+//   // --- Grade Pagination Logic ---
+//   const handleGradePaginationChange = (event, newPage) => {
+//     setGradePage(newPage - 1);
+//   };
+//   const handleGradeRowsPerPageChange = (event) => {
+//     setGradeRowsPerPage(parseInt(event.target.value, 10));
+//     setGradePage(0);
+//   };
+//   const gradeStartEntry = filteredGrades.length > 0 ? gradePage * gradeRowsPerPage + 1 : 0;
+//   const gradeEndEntry = Math.min((gradePage + 1) * gradeRowsPerPage, filteredGrades.length);
+
+
+//   // --- Render Table Body with Skeletons ---
+//   const renderTableSkeletons = (rows, columns) => {
+//     return Array.from(new Array(rows)).map((_, index) => (
+//       <TableRow key={index}>
+//         {Array.from(new Array(columns)).map((_, colIndex) => (
+//           <TableCell key={colIndex}>
+//             <Skeleton variant="text" />
+//           </TableCell>
+//         ))}
+//       </TableRow>
+//     ));
+//   };
+
+//   return (
+//     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+//       {/* Department Section */}
+//       <Box component={Paper} p={3}>
+//         <Typography
+//           variant="h4"
+//           sx={{ color: themePurple, fontWeight: "bold", mb: 4 }}
+//         >
+//           Department Wise Manpower
+//         </Typography>
+        
+//         {/* ... (Search bar remains the same) */}
+//         <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+//           <TextField
+//             size="small"
+//             placeholder="Search..."
+//             value={departmentSearchTerm}
+//             onChange={(e) => {
+//               setDepartmentSearchTerm(e.target.value);
+//               setDepartmentPage(0);
+//             }}
+//             sx={{ width: isMobile ? "100%" : "auto" }}
+//             InputProps={{
+//               startAdornment: (
+//                 <InputAdornment position="start">
+//                   <SearchIcon />
+//                 </InputAdornment>
+//               ),
+//             }}
+//           />
+//         </Box>
+
+//         <TableContainer>
+//           <Table sx={{ minWidth: "100%", whiteSpace: "nowrap" }}>
+//             <TableHead sx={{ backgroundColor: themePurple }}>
+//                 {/* ... (Table head remains the same) */}
+//                  <TableRow>
+//                 <TableCell sx={{ fontWeight: "bold", color: "white" }}>
+//                   SR. NO.
+//                 </TableCell>
+//                 <TableCell sx={{ fontWeight: "bold", color: "white" }}>
+//                   DEPARTMENT
+//                 </TableCell>
+//                 <TableCell
+//                   align="right"
+//                   sx={{ fontWeight: "bold", color: "white" }}
+//                 >
+//                   NO OF EMPLOYEES
+//                 </TableCell>
+//               </TableRow>
+//             </TableHead>
+//             <TableBody>
+//               {loading
+//                 ? renderTableSkeletons(departmentRowsPerPage, 3)
+//                 : (departmentRowsPerPage > 0
+//                     ? filteredDepartments.slice(
+//                         departmentPage * departmentRowsPerPage,
+//                         departmentPage * departmentRowsPerPage +
+//                           departmentRowsPerPage
+//                       )
+//                     : filteredDepartments
+//                   ).map((dept, index) => (
+//                     <TableRow
+//                       key={dept.department_id}
+//                       sx={{
+//                         "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
+//                       }}
+//                     >
+//                       <TableCell sx={{ fontSize: "0.95rem" }}>
+//                         {departmentPage * departmentRowsPerPage + index + 1}
+//                       </TableCell>
+//                       <TableCell sx={{ fontSize: "0.95rem" }}>
+//                         {dept.department_name}
+//                       </TableCell>
+//                       <TableCell align="right" sx={{ fontSize: "0.95rem" }}>
+//                         {dept.active_employee_count}
+//                       </TableCell>
+//                     </TableRow>
+//                   ))}
+//               {!loading && filteredDepartments.length === 0 && (
+//                 <TableRow>
+//                   <TableCell colSpan={3} align="center">
+//                     No departments found.
+//                   </TableCell>
+//                 </TableRow>
+//               )}
+//             </TableBody>
+//           </Table>
+//         </TableContainer>
+
+//         {/* START: New Styled Pagination for Departments */}
+//         <Box sx={{ p: 2, borderTop: '1px solid rgba(224, 224, 224, 1)' }}>
+//           {loading ? (
+//               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+//                   <Skeleton variant="text" width={200} />
+//                   <Skeleton variant="rectangular" width={300} height={40} />
+//               </Box>
+//           ) : (
+//               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+//                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+//                       <FormControl variant="outlined" size="small">
+//                           <Select
+//                               value={departmentRowsPerPage}
+//                               onChange={handleDepartmentRowsPerPageChange}
+//                               sx={{
+//                                   backgroundColor: themePurple,
+//                                   color: 'white',
+//                                   borderRadius: '4px',
+//                                   '&:hover': { backgroundColor: themePurpleDark },
+//                                   '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+//                                   '& .MuiSvgIcon-root': { color: 'white' },
+//                               }}
+//                           >
+//                               {[5, 10, 15, 25].map((value) => ( <MenuItem key={value} value={value}>{value}</MenuItem> ))}
+//                           </Select>
+//                       </FormControl>
+//                       <Typography variant="body2" color="text.secondary">
+//                          {`Showing ${departmentStartEntry} to ${departmentEndEntry} of ${filteredDepartments.length} results`}
+//                       </Typography>
+//                   </Box>
+//                   <Pagination
+//                       count={Math.ceil(filteredDepartments.length / departmentRowsPerPage)}
+//                       page={departmentPage + 1}
+//                       onChange={handleDepartmentPaginationChange}
+//                       showFirstButton showLastButton
+//                       sx={{
+//                           '& .MuiPaginationItem-root:hover': { backgroundColor: themeOrange, color: 'white' },
+//                           '& .MuiPaginationItem-page': {
+//                               color: themePurple,
+//                               '&.Mui-selected': {
+//                                   backgroundColor: themePurple,
+//                                   color: 'white',
+//                                   '&:hover': { backgroundColor: themeOrange }
+//                               },
+//                           },
+//                            '& .MuiPaginationItem-icon': { color: themePurple }
+//                       }}
+//                   />
+//               </Box>
+//           )}
+//       </Box>
+//       {/* END: New Styled Pagination for Departments */}
+//       </Box>
+
+//       {/* Designation Section */}
+//       <Box component={Paper} p={3}>
+//         <Typography
+//           variant="h4"
+//           sx={{ color: themePurple, fontWeight: "bold", mb: 4 }}
+//         >
+//           Designation Wise Manpower
+//         </Typography>
+        
+//         {/* ... (Search bar remains the same) */}
+//         <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+//           <TextField
+//             size="small"
+//             placeholder="Search..."
+//             value={designationSearchTerm}
+//             onChange={(e) => {
+//               setDesignationSearchTerm(e.target.value);
+//               setDesignationPage(0);
+//             }}
+//             sx={{ width: isMobile ? "100%" : "auto" }}
+//             InputProps={{
+//               startAdornment: (
+//                 <InputAdornment position="start">
+//                   <SearchIcon />
+//                 </InputAdornment>
+//               ),
+//             }}
+//           />
+//         </Box>
+
+//         <TableContainer>
+//           <Table sx={{ minWidth: "100%", whiteSpace: "nowrap" }}>
+//             <TableHead sx={{ backgroundColor: themePurple }}>
+//               {/* ... (Table head remains the same) */}
+//                <TableRow>
+//                 <TableCell sx={{ fontWeight: "bold", color: "white" }}>
+//                   SR. NO.
+//                 </TableCell>
+//                 <TableCell sx={{ fontWeight: "bold", color: "white" }}>
+//                   DESIGNATION
+//                 </TableCell>
+//                 <TableCell
+//                   align="right"
+//                   sx={{ fontWeight: "bold", color: "white" }}
+//                 >
+//                   NO OF EMPLOYEES
+//                 </TableCell>
+//               </TableRow>
+//             </TableHead>
+//             <TableBody>
+//               {loading
+//                 ? renderTableSkeletons(designationRowsPerPage, 3)
+//                 : (designationRowsPerPage > 0
+//                     ? filteredDesignations.slice(
+//                         designationPage * designationRowsPerPage,
+//                         designationPage * designationRowsPerPage +
+//                           designationRowsPerPage
+//                       )
+//                     : filteredDesignations
+//                   ).map((desg, index) => (
+//                     <TableRow
+//                       key={desg.designation_id}
+//                       sx={{
+//                         "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
+//                       }}
+//                     >
+//                       <TableCell sx={{ fontSize: "0.95rem" }}>
+//                         {designationPage * designationRowsPerPage + index + 1}
+//                       </TableCell>
+//                       <TableCell sx={{ fontSize: "0.95rem" }}>
+//                         {desg.designation_name}
+//                       </TableCell>
+//                       <TableCell align="right" sx={{ fontSize: "0.95rem" }}>
+//                         {desg.total_users}
+//                       </TableCell>
+//                     </TableRow>
+//                   ))}
+//               {!loading && filteredDesignations.length === 0 && (
+//                 <TableRow>
+//                   <TableCell colSpan={3} align="center">
+//                     No designations found.
+//                   </TableCell>
+//                 </TableRow>
+//               )}
+//             </TableBody>
+//           </Table>
+//         </TableContainer>
+
+//         {/* START: New Styled Pagination for Designations */}
+//         <Box sx={{ p: 2, borderTop: '1px solid rgba(224, 224, 224, 1)' }}>
+//           {loading ? (
+//               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+//                   <Skeleton variant="text" width={200} />
+//                   <Skeleton variant="rectangular" width={300} height={40} />
+//               </Box>
+//           ) : (
+//               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+//                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+//                       <FormControl variant="outlined" size="small">
+//                           <Select
+//                               value={designationRowsPerPage}
+//                               onChange={handleDesignationRowsPerPageChange}
+//                               sx={{
+//                                   backgroundColor: themePurple,
+//                                   color: 'white',
+//                                   borderRadius: '4px',
+//                                   '&:hover': { backgroundColor: themePurpleDark },
+//                                   '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+//                                   '& .MuiSvgIcon-root': { color: 'white' },
+//                               }}
+//                           >
+//                               {[5, 10, 15, 25].map((value) => ( <MenuItem key={value} value={value}>{value}</MenuItem> ))}
+//                           </Select>
+//                       </FormControl>
+//                       <Typography variant="body2" color="text.secondary">
+//                          {`Showing ${designationStartEntry} to ${designationEndEntry} of ${filteredDesignations.length} results`}
+//                       </Typography>
+//                   </Box>
+//                   <Pagination
+//                       count={Math.ceil(filteredDesignations.length / designationRowsPerPage)}
+//                       page={designationPage + 1}
+//                       onChange={handleDesignationPaginationChange}
+//                       showFirstButton showLastButton
+//                       sx={{
+//                           '& .MuiPaginationItem-root:hover': { backgroundColor: themeOrange, color: 'white' },
+//                           '& .MuiPaginationItem-page': {
+//                               color: themePurple,
+//                               '&.Mui-selected': {
+//                                   backgroundColor: themePurple,
+//                                   color: 'white',
+//                                   '&:hover': { backgroundColor: themeOrange }
+//                               },
+//                           },
+//                            '& .MuiPaginationItem-icon': { color: themePurple }
+//                       }}
+//                   />
+//               </Box>
+//           )}
+//         </Box>
+//         {/* END: New Styled Pagination for Designations */}
+//       </Box>
+
+//       {/* Grade Section */}
+//       <Box component={Paper} p={3}>
+//         <Typography
+//           variant="h4"
+//           sx={{ color: themePurple, fontWeight: "bold", mb: 4 }}
+//         >
+//           Grade Wise Manpower
+//         </Typography>
+
+//         {/* ... (Search bar remains the same) */}
+//         <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+//           <TextField
+//             size="small"
+//             placeholder="Search..."
+//             value={gradeSearchTerm}
+//             onChange={(e) => {
+//               setGradeSearchTerm(e.target.value);
+//               setGradePage(0);
+//             }}
+//             sx={{ width: isMobile ? "100%" : "auto" }}
+//             InputProps={{
+//               startAdornment: (
+//                 <InputAdornment position="start">
+//                   <SearchIcon />
+//                 </InputAdornment>
+//               ),
+//             }}
+//           />
+//         </Box>
+
+//         <TableContainer>
+//           <Table sx={{ minWidth: "100%", whiteSpace: "nowrap" }}>
+//             <TableHead sx={{ backgroundColor: themePurple }}>
+//                {/* ... (Table head remains the same) */}
+//                <TableRow>
+//                 <TableCell sx={{ fontWeight: "bold", color: "white" }}>
+//                   SR. NO.
+//                 </TableCell>
+//                 <TableCell sx={{ fontWeight: "bold", color: "white" }}>
+//                   GRADE
+//                 </TableCell>
+//                 <TableCell
+//                   align="right"
+//                   sx={{ fontWeight: "bold", color: "white" }}
+//                 >
+//                   GRADE CODE
+//                 </TableCell>
+//               </TableRow>
+//             </TableHead>
+//             <TableBody>
+//               {loading
+//                 ? renderTableSkeletons(gradeRowsPerPage, 3)
+//                 : (gradeRowsPerPage > 0
+//                     ? filteredGrades.slice(
+//                         gradePage * gradeRowsPerPage,
+//                         gradePage * gradeRowsPerPage + gradeRowsPerPage
+//                       )
+//                     : filteredGrades
+//                   ).map((grade, index) => (
+//                     <TableRow
+//                       key={grade.grade_id}
+//                       sx={{
+//                         "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
+//                       }}
+//                     >
+//                       <TableCell sx={{ fontSize: "0.95rem" }}>
+//                         {gradePage * gradeRowsPerPage + index + 1}
+//                       </TableCell>
+//                       <TableCell sx={{ fontSize: "0.95rem" }}>
+//                         {grade.grade_name}
+//                       </TableCell>
+//                       <TableCell align="right" sx={{ fontSize: "0.95rem" }}>
+//                         {grade.grade_code}
+//                       </TableCell>
+//                     </TableRow>
+//                   ))}
+//               {!loading && filteredGrades.length === 0 && (
+//                 <TableRow>
+//                   <TableCell colSpan={3} align="center">
+//                     No grades found.
+//                   </TableCell>
+//                 </TableRow>
+//               )}
+//             </TableBody>
+//           </Table>
+//         </TableContainer>
+
+//         {/* START: New Styled Pagination for Grades */}
+//         <Box sx={{ p: 2, borderTop: '1px solid rgba(224, 224, 224, 1)' }}>
+//           {loading ? (
+//               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+//                   <Skeleton variant="text" width={200} />
+//                   <Skeleton variant="rectangular" width={300} height={40} />
+//               </Box>
+//           ) : (
+//               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+//                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+//                       <FormControl variant="outlined" size="small">
+//                           <Select
+//                               value={gradeRowsPerPage}
+//                               onChange={handleGradeRowsPerPageChange}
+//                               sx={{
+//                                   backgroundColor: themePurple,
+//                                   color: 'white',
+//                                   borderRadius: '4px',
+//                                   '&:hover': { backgroundColor: themePurpleDark },
+//                                   '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+//                                   '& .MuiSvgIcon-root': { color: 'white' },
+//                               }}
+//                           >
+//                               {[5, 10, 15, 25].map((value) => ( <MenuItem key={value} value={value}>{value}</MenuItem> ))}
+//                           </Select>
+//                       </FormControl>
+//                       <Typography variant="body2" color="text.secondary">
+//                          {`Showing ${gradeStartEntry} to ${gradeEndEntry} of ${filteredGrades.length} results`}
+//                       </Typography>
+//                   </Box>
+//                   <Pagination
+//                       count={Math.ceil(filteredGrades.length / gradeRowsPerPage)}
+//                       page={gradePage + 1}
+//                       onChange={handleGradePaginationChange}
+//                       showFirstButton showLastButton
+//                       sx={{
+//                           '& .MuiPaginationItem-root:hover': { backgroundColor: themeOrange, color: 'white' },
+//                           '& .MuiPaginationItem-page': {
+//                               color: themePurple,
+//                               '&.Mui-selected': {
+//                                   backgroundColor: themePurple,
+//                                   color: 'white',
+//                                   '&:hover': { backgroundColor: themeOrange }
+//                               },
+//                           },
+//                            '& .MuiPaginationItem-icon': { color: themePurple }
+//                       }}
+//                   />
+//               </Box>
+//           )}
+//         </Box>
+//         {/* END: New Styled Pagination for Grades */}
+//       </Box>
+//     </Box>
+//   );
+// }
+
+// export default DashboardCoreHr;
+
+
+
+
 import React, { useEffect, useState, useMemo } from "react";
 import {
   Box,
@@ -1933,46 +2526,39 @@ import {
   InputAdornment,
   useTheme,
   useMediaQuery,
-  FormControl, // Added import
-  Select,      // Added import
-  MenuItem,    // Added import
-  Pagination,  // Added import
+  FormControl,
+  Select,
+  MenuItem,
+  Pagination,
 } from "@mui/material";
 import { Search as SearchIcon } from "@mui/icons-material";
 import axios from "axios";
 
-// Define brand colors for easy reuse
 const themePurple = "#8C257C";
 const themePurpleDark = "#6d1d60";
 const themeOrange = "#F58E35";
 
 function DashboardCoreHr() {
-  // --- MUI Theme and Responsiveness ---
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // State for original data and loading
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
   const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // --- State for Department Table ---
   const [departmentSearchTerm, setDepartmentSearchTerm] = useState("");
   const [departmentPage, setDepartmentPage] = useState(0);
   const [departmentRowsPerPage, setDepartmentRowsPerPage] = useState(5);
 
-  // --- State for Designation Table ---
   const [designationSearchTerm, setDesignationSearchTerm] = useState("");
   const [designationPage, setDesignationPage] = useState(0);
   const [designationRowsPerPage, setDesignationRowsPerPage] = useState(5);
 
-  // --- State for Grade Table ---
   const [gradeSearchTerm, setGradeSearchTerm] = useState("");
   const [gradePage, setGradePage] = useState(0);
   const [gradeRowsPerPage, setGradeRowsPerPage] = useState(5);
 
-  // Fetch Department, Designation, and Grade data
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -1985,11 +2571,13 @@ function DashboardCoreHr() {
             axios.get(
               "https://tdtlworld.com/hrms-backend/get_designationwise_count/"
             ),
-            axios.get("https://tdtlworld.com/hrms-backend/api/grade/"),
+            axios.get(
+              "https://tdtlworld.com/hrms-backend/get_gradewise_count/"
+            ),
           ]);
         setDepartments(departmentResponse.data || []);
         setDesignations(designationResponse.data.data || []);
-        setGrades(gradeResponse.data || []);
+        setGrades(gradeResponse.data.data || []);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -1999,7 +2587,6 @@ function DashboardCoreHr() {
     fetchData();
   }, []);
 
-  // --- Memoized Filtering for Departments ---
   const filteredDepartments = useMemo(() => {
     return departments.filter((dept) =>
       dept.department_name
@@ -2008,7 +2595,6 @@ function DashboardCoreHr() {
     );
   }, [departments, departmentSearchTerm]);
 
-  // --- Memoized Filtering for Designations ---
   const filteredDesignations = useMemo(() => {
     return designations.filter((desg) =>
       desg.designation_name
@@ -2017,18 +2603,14 @@ function DashboardCoreHr() {
     );
   }, [designations, designationSearchTerm]);
 
-  // --- Memoized Filtering for Grades ---
   const filteredGrades = useMemo(() => {
-    return grades.filter(
-      (grade) =>
-        grade.grade_name
-          .toLowerCase()
-          .includes(gradeSearchTerm.toLowerCase()) ||
-        grade.grade_code.toLowerCase().includes(gradeSearchTerm.toLowerCase())
+    return grades.filter((grade) =>
+      grade.grade_name
+        .toLowerCase()
+        .includes(gradeSearchTerm.toLowerCase())
     );
   }, [grades, gradeSearchTerm]);
-    
-  // --- Department Pagination Logic ---
+
   const handleDepartmentPaginationChange = (event, newPage) => {
     setDepartmentPage(newPage - 1);
   };
@@ -2039,7 +2621,6 @@ function DashboardCoreHr() {
   const departmentStartEntry = filteredDepartments.length > 0 ? departmentPage * departmentRowsPerPage + 1 : 0;
   const departmentEndEntry = Math.min((departmentPage + 1) * departmentRowsPerPage, filteredDepartments.length);
 
-  // --- Designation Pagination Logic ---
   const handleDesignationPaginationChange = (event, newPage) => {
     setDesignationPage(newPage - 1);
   };
@@ -2050,7 +2631,6 @@ function DashboardCoreHr() {
   const designationStartEntry = filteredDesignations.length > 0 ? designationPage * designationRowsPerPage + 1 : 0;
   const designationEndEntry = Math.min((designationPage + 1) * designationRowsPerPage, filteredDesignations.length);
 
-  // --- Grade Pagination Logic ---
   const handleGradePaginationChange = (event, newPage) => {
     setGradePage(newPage - 1);
   };
@@ -2061,8 +2641,6 @@ function DashboardCoreHr() {
   const gradeStartEntry = filteredGrades.length > 0 ? gradePage * gradeRowsPerPage + 1 : 0;
   const gradeEndEntry = Math.min((gradePage + 1) * gradeRowsPerPage, filteredGrades.length);
 
-
-  // --- Render Table Body with Skeletons ---
   const renderTableSkeletons = (rows, columns) => {
     return Array.from(new Array(rows)).map((_, index) => (
       <TableRow key={index}>
@@ -2077,7 +2655,6 @@ function DashboardCoreHr() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      {/* Department Section */}
       <Box component={Paper} p={3}>
         <Typography
           variant="h4"
@@ -2086,7 +2663,6 @@ function DashboardCoreHr() {
           Department Wise Manpower
         </Typography>
         
-        {/* ... (Search bar remains the same) */}
         <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
           <TextField
             size="small"
@@ -2110,7 +2686,6 @@ function DashboardCoreHr() {
         <TableContainer>
           <Table sx={{ minWidth: "100%", whiteSpace: "nowrap" }}>
             <TableHead sx={{ backgroundColor: themePurple }}>
-                {/* ... (Table head remains the same) */}
                  <TableRow>
                 <TableCell sx={{ fontWeight: "bold", color: "white" }}>
                   SR. NO.
@@ -2165,7 +2740,6 @@ function DashboardCoreHr() {
           </Table>
         </TableContainer>
 
-        {/* START: New Styled Pagination for Departments */}
         <Box sx={{ p: 2, borderTop: '1px solid rgba(224, 224, 224, 1)' }}>
           {loading ? (
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -2216,10 +2790,8 @@ function DashboardCoreHr() {
               </Box>
           )}
       </Box>
-      {/* END: New Styled Pagination for Departments */}
       </Box>
 
-      {/* Designation Section */}
       <Box component={Paper} p={3}>
         <Typography
           variant="h4"
@@ -2228,7 +2800,6 @@ function DashboardCoreHr() {
           Designation Wise Manpower
         </Typography>
         
-        {/* ... (Search bar remains the same) */}
         <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
           <TextField
             size="small"
@@ -2252,7 +2823,6 @@ function DashboardCoreHr() {
         <TableContainer>
           <Table sx={{ minWidth: "100%", whiteSpace: "nowrap" }}>
             <TableHead sx={{ backgroundColor: themePurple }}>
-              {/* ... (Table head remains the same) */}
                <TableRow>
                 <TableCell sx={{ fontWeight: "bold", color: "white" }}>
                   SR. NO.
@@ -2307,7 +2877,6 @@ function DashboardCoreHr() {
           </Table>
         </TableContainer>
 
-        {/* START: New Styled Pagination for Designations */}
         <Box sx={{ p: 2, borderTop: '1px solid rgba(224, 224, 224, 1)' }}>
           {loading ? (
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -2358,10 +2927,8 @@ function DashboardCoreHr() {
               </Box>
           )}
         </Box>
-        {/* END: New Styled Pagination for Designations */}
       </Box>
 
-      {/* Grade Section */}
       <Box component={Paper} p={3}>
         <Typography
           variant="h4"
@@ -2370,7 +2937,6 @@ function DashboardCoreHr() {
           Grade Wise Manpower
         </Typography>
 
-        {/* ... (Search bar remains the same) */}
         <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
           <TextField
             size="small"
@@ -2394,7 +2960,6 @@ function DashboardCoreHr() {
         <TableContainer>
           <Table sx={{ minWidth: "100%", whiteSpace: "nowrap" }}>
             <TableHead sx={{ backgroundColor: themePurple }}>
-               {/* ... (Table head remains the same) */}
                <TableRow>
                 <TableCell sx={{ fontWeight: "bold", color: "white" }}>
                   SR. NO.
@@ -2406,7 +2971,7 @@ function DashboardCoreHr() {
                   align="right"
                   sx={{ fontWeight: "bold", color: "white" }}
                 >
-                  GRADE CODE
+                  NO OF EMPLOYEES
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -2433,7 +2998,7 @@ function DashboardCoreHr() {
                         {grade.grade_name}
                       </TableCell>
                       <TableCell align="right" sx={{ fontSize: "0.95rem" }}>
-                        {grade.grade_code}
+                        {grade.total_users}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -2448,7 +3013,6 @@ function DashboardCoreHr() {
           </Table>
         </TableContainer>
 
-        {/* START: New Styled Pagination for Grades */}
         <Box sx={{ p: 2, borderTop: '1px solid rgba(224, 224, 224, 1)' }}>
           {loading ? (
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -2499,7 +3063,6 @@ function DashboardCoreHr() {
               </Box>
           )}
         </Box>
-        {/* END: New Styled Pagination for Grades */}
       </Box>
     </Box>
   );
