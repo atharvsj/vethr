@@ -2063,296 +2063,626 @@
 
 
 
+// import React, { useEffect, useState, useContext } from 'react';
+// import {
+//     Box, Tabs, Tab, Typography, TextField, MenuItem, Button,
+//     InputAdornment, Grid, CircularProgress
+// } from '@mui/material';
+// import FacebookIcon from '@mui/icons-material/Facebook';
+// import TwitterIcon from '@mui/icons-material/Twitter';
+// import GoogleIcon from '@mui/icons-material/Google';
+// import LinkedInIcon from '@mui/icons-material/LinkedIn';
+// import PersonIcon from '@mui/icons-material/Person';
+// import EmailIcon from '@mui/icons-material/Email';
+// import axiosInstance from '../../utils/axiosInstance';
+// import { EmployeeContext } from '../../SuperAdmin/Employee/EmployeeContext';
+// import Swal from 'sweetalert2';
+
+// function TabPanel({ children, value, index }) {
+//     return (
+//         <div role="tabpanel" hidden={value !== index}>
+//             {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
+//         </div>
+//     );
+// }
+
+// const PersonalInformation = () => {
+//     const { employeeId } = useContext(EmployeeContext);
+//     const userId = employeeId;
+//     const [tabIndex, setTabIndex] = useState(0);
+//     const [isLoading, setIsLoading] = useState(false);
+//     const [isSubmitting, setIsSubmitting] = useState(false);
+
+//     const initialFormData = {
+//         bio: { bio: '', experience: '' },
+//         social: { fb_profile: '', twitter_profile: '', gplus_profile: '', linkedin_profile: '' },
+//         bank: { account_title: '', account_number: '', bank_name: '', iban: '', bank_branch: '' },
+//         contact: { contact_full_name: '', contact_phone_no_1: '', contact_phone_no_2: '', contact_email: '', contact_address: '' },
+//         other: { uan_number: '', pf_no: '', esic_no: '', pan_no: '', aadhar_no: '', passport_no: '', vehicle_no: '', driving_licence_no: '' },
+//         policeStation: { police_station_address: '', police_station_state: '', police_station_state_id: null, police_station_district: '', police_station_village: '', police_station_pincode: '' }
+//     };
+
+//     const [formData, setFormData] = useState(initialFormData);
+//     const [errors, setErrors] = useState({});
+//     const [countries, setCountries] = useState([]);
+//     const [states, setStates] = useState([]);
+//     const [selectedCountry, setSelectedCountry] = useState('');
+
+//     const fetchData = async (type) => {
+//         if (!userId) return;
+//         setIsLoading(true);
+//         try {
+//             const res = await axiosInstance.post('/api/personal_info/', { user_id: userId, type });
+//             const data = res.data.personal_details || {};
+           
+//             setFormData(prev => {
+//                 switch (type) {
+//                     case 1: return { ...prev, bio: { bio: data.bio || '', experience: data.experience || '' } };
+//                     case 2: return { ...prev, social: { fb_profile: data.fb_profile || '', twitter_profile: data.twitter_profile || '', gplus_profile: data.gplus_profile || '', linkedin_profile: data.linkedin_profile || '' } };
+//                     case 3: return { ...prev, bank: { account_title: data.account_title || '', account_number: data.account_number || '', bank_name: data.bank_name || '', iban: data.iban || '', bank_branch: data.bank_branch || '' } };
+//                     case 4: return { ...prev, contact: { contact_full_name: data.contact_full_name || '', contact_phone_no_1: data.contact_phone_no_1 || '', contact_phone_no_2: data.contact_phone_no_2 || '', contact_email: data.contact_email || '', contact_address: data.contact_address || '' } };
+//                     case 5: return { ...prev, other: { uan_number: data.uan_number || '', pf_no: data.pf_no || '', esic_no: data.esic_no || '', pan_no: data.pan_no || '', aadhar_no: data.aadhar_no || '', passport_no: data.passport_no || '', vehicle_no: data.vehicle_no || '', driving_licence_no: data.driving_licence_no || '' } };
+//                     case 6:
+//                         if (data.police_station_country) setSelectedCountry(data.police_station_country);
+//                         return { ...prev, policeStation: { police_station_address: data.police_station_address || '', police_station_state: data.police_station_state || '', police_station_state_id: data.police_station_state_id || null, police_station_district: data.police_station_district || '', police_station_village: data.police_station_village || '', police_station_pincode: data.police_station_pincode || '' } };
+//                     default: return prev;
+//                 }
+//             });
+//         } catch (err) {
+//             Swal.fire({ icon: 'error', title: 'Fetch Error', text: 'Failed to load data. Please refresh the page.' });
+//         } finally {
+//             setIsLoading(false);
+//         }
+//     };
+
+//     useEffect(() => {
+//         const fetchCountries = async () => {
+//             try {
+//                 const res = await axiosInstance.get('/api/countries/');
+//                 const fetchedCountries = res.data.data;
+//                 setCountries(fetchedCountries);
+//                 const india = fetchedCountries.find(c => c.country_name === 'India');
+//                 setSelectedCountry(india ? 'India' : (fetchedCountries[0]?.country_name || ''));
+//             } catch (err) { console.error('Failed to fetch countries:', err); }
+//         };
+//         fetchCountries();
+//     }, []);
+   
+//     useEffect(() => {
+//         if (userId) {
+//             setErrors({});
+//             fetchData(tabIndex + 1);
+//         }
+//     }, [tabIndex, userId]);
+   
+//     useEffect(() => {
+//         if (selectedCountry) {
+//             const fetchStates = async () => {
+//                 try {
+//                     const res = await axiosInstance.get(`/api/states/?country_name=${selectedCountry}`);
+//                     setStates(res.data.data);
+//                 } catch (err) { console.error('Failed to fetch states:', err); }
+//             };
+//             fetchStates();
+//         } else {
+//             setStates([]);
+//         }
+//     }, [selectedCountry]);
+   
+//     const handleChange = (form, name, value) => {
+//         setFormData(prev => ({ ...prev, [form]: { ...prev[form], [name]: value } }));
+//         if (errors[name]) {
+//             setErrors(prev => ({ ...prev, [name]: null }));
+//         }
+//     };
+
+//     const validate = (data, type) => {
+//         const newErrors = {};
+//         const digitsOnly = /^[0-9]+$/;
+//         const charsOnly = /^[a-zA-Z\s]+$/;
+//         const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+//         const alphanumeric = /^[a-zA-Z0-9\s-]+$/;
+
+//         const requiredFields = {
+//             1: ['bio', 'experience'],
+//             2: ['fb_profile', 'twitter_profile', 'gplus_profile', 'linkedin_profile'],
+//             3: ['account_title', 'account_number', 'bank_name', 'iban', 'bank_branch'],
+//             4: ['contact_full_name', 'contact_phone_no_1', 'contact_phone_no_2', 'contact_email', 'contact_address'],
+//             5: ['uan_number', 'pf_no', 'esic_no', 'pan_no', 'aadhar_no', 'passport_no', 'vehicle_no', 'driving_licence_no'],
+//             6: ['police_station_address', 'police_station_state_id', 'police_station_district', 'police_station_village', 'police_station_pincode']
+//         };
+
+//         if (requiredFields[type]) {
+//             requiredFields[type].forEach(field => {
+//                 if (!data[field]) newErrors[field] = 'This field is required.';
+//             });
+//         }
+       
+//         if (type === 3) {
+//             if (data.account_title && !charsOnly.test(data.account_title)) newErrors.account_title = 'Only characters are allowed.';
+//             if (data.account_number && !digitsOnly.test(data.account_number)) newErrors.account_number = 'Only digits are allowed.';
+//             if (data.bank_name && !charsOnly.test(data.bank_name)) newErrors.bank_name = 'Only characters are allowed.';
+//             if (data.bank_branch && !charsOnly.test(data.bank_branch)) newErrors.bank_branch = 'Only characters are allowed.';
+//         }
+       
+//         if (type === 4) {
+//             if (data.contact_full_name && !charsOnly.test(data.contact_full_name)) newErrors.contact_full_name = 'Only characters are allowed.';
+//             if (data.contact_email && !/\S+@\S+\.\S+/.test(data.contact_email)) newErrors.contact_email = 'Please enter a valid email address.';
+//         }
+
+//         if (type === 5) {
+//             if (data.uan_number && !digitsOnly.test(data.uan_number)) newErrors.uan_number = 'Only digits are allowed.';
+//             if (data.pf_no && !digitsOnly.test(data.pf_no)) newErrors.pf_no = 'Only digits are allowed.';
+//             if (data.esic_no && !digitsOnly.test(data.esic_no)) newErrors.esic_no = 'Only digits are allowed.';
+//             if (data.pan_no && !panRegex.test(data.pan_no.toUpperCase())) newErrors.pan_no = 'Invalid PAN format. (e.g., ABCDE1234F)';
+//             if (data.aadhar_no && !digitsOnly.test(data.aadhar_no)) newErrors.aadhar_no = 'Only digits are allowed.';
+//             if (data.passport_no && !alphanumeric.test(data.passport_no)) newErrors.passport_no = 'Only alphanumeric characters are allowed.';
+//             if (data.vehicle_no && !alphanumeric.test(data.vehicle_no)) newErrors.vehicle_no = 'Only alphanumeric characters are allowed.';
+//             if (data.driving_licence_no && !alphanumeric.test(data.driving_licence_no)) newErrors.driving_licence_no = 'Only alphanumeric characters are allowed.';
+//         }
+
+//         if (type === 6) {
+//             if (data.police_station_district && !charsOnly.test(data.police_station_district)) newErrors.police_station_district = 'Only characters are allowed.';
+//             if (data.police_station_village && !charsOnly.test(data.police_station_village)) newErrors.police_station_village = 'Only characters are allowed.';
+//         }
+
+//         setErrors(newErrors);
+//         return Object.keys(newErrors).length === 0;
+//     };
+
+//     const handleSubmit = async (type) => {
+//         const dataMap = { 1: formData.bio, 2: formData.social, 3: formData.bank, 4: formData.contact, 5: formData.other, 6: formData.policeStation };
+//         const dataToSubmit = dataMap[type];
+
+//         if (!validate(dataToSubmit, type)) {
+//             Swal.fire({ icon: 'error', title: 'Validation Error', text: 'Please fill in all required fields correctly.' });
+//             return;
+//         }
+
+//         setIsSubmitting(true);
+//         Swal.fire({ title: 'Updating...', text: 'Please wait...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+//         try {
+//             const payload = { user_id: userId, type, ...dataToSubmit };
+//             if (type === 5) {
+//                 payload.pf_number = payload.pf_no; delete payload.pf_no;
+//                 payload.esic_number = payload.esic_no; delete payload.esic_no;
+//                 payload.pan_number = payload.pan_no; delete payload.pan_no;
+//                 payload.aadhar_number = payload.aadhar_no; delete payload.aadhar_no;
+//                 payload.passport_number = payload.passport_no; delete payload.passport_no;
+//                 payload.vehicle_number = payload.vehicle_no; delete payload.vehicle_no;
+//                 payload.driving_licence_number = payload.driving_licence_no; delete payload.driving_licence_no;
+//             }
+//             if (type === 6) payload.police_station_state = payload.police_station_state_id;
+
+//             await axiosInstance.patch('/api/personal_info/', payload);
+//             Swal.fire({ icon: 'success', title: 'Updated!', text: 'Your information has been updated successfully.' });
+
+//         } catch (err) {
+//             const errorMessage = err.response?.data?.message || 'Failed to update information.';
+//             Swal.fire({ icon: 'error', title: 'Update Failed', text: errorMessage });
+//         } finally {
+//             setIsSubmitting(false);
+//         }
+//     };
+   
+
+    
+//     return (
+//         <Box sx={{ p: 3 }}>
+//             <Typography variant="h6" gutterBottom>👤 Personal Information</Typography>
+//             <Tabs value={tabIndex} onChange={(e, newValue) => setTabIndex(newValue)} sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }} textColor="primary" indicatorColor="primary" variant="scrollable" scrollButtons="auto">
+//                 <Tab label="Bio" /> <Tab label="Social Profile" /> <Tab label="Bank Account" /> <Tab label="Emergency Contact" /> <Tab label="Identification Details" /> <Tab label="Police Station Details" />
+//             </Tabs>
+           
+//             {isLoading ? <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress /></Box> :
+//             <>
+//                 <TabPanel value={tabIndex} index={0}>
+//                     <TextField label="Bio" name="bio" value={formData.bio.bio} onChange={(e) => handleChange('bio', e.target.name, e.target.value)} fullWidth multiline minRows={3} sx={{ mb: 3 }} error={!!errors.bio} helperText={errors.bio} />
+//                     <TextField label="Experience" name="experience" value={formData.bio.experience} onChange={(e) => handleChange('bio', e.target.name, e.target.value)} select fullWidth sx={{ mb: 3 }} error={!!errors.experience} helperText={errors.experience}>
+//                         {Array.from({ length: 50 }, (_, i) => (<MenuItem key={i + 1} value={i + 1}>{i + 1} {i + 1 === 1 ? 'Year' : 'Years'}</MenuItem>))}
+//                     </TextField>
+//                     <Box textAlign="right"><Button variant="contained" sx={{ px: 4 }} onClick={() => handleSubmit(1)} disabled={isSubmitting}>Update Bio</Button></Box>
+//                 </TabPanel>
+
+//                 <TabPanel value={tabIndex} index={1}>
+//                     <Box sx={{ maxWidth: 600 }}>
+//                         {[ { label: 'Facebook', name: 'fb_profile', icon: <FacebookIcon sx={{ color: '#3b5998' }} /> }, { label: 'Twitter', name: 'twitter_profile', icon: <TwitterIcon sx={{ color: '#00acee' }} /> }, { label: 'Google Plus', name: 'gplus_profile', icon: <GoogleIcon sx={{ color: '#db4437' }} /> }, { label: 'LinkedIn', name: 'linkedin_profile', icon: <LinkedInIcon sx={{ color: '#0e76a8' }} /> }, ].map(({ label, name, icon }) => (
+//                             <Box key={name} sx={{ mb: 2 }}>
+//                                 <TextField label={label} fullWidth name={name} value={formData.social[name]} onChange={(e) => handleChange('social', e.target.name, e.target.value)} InputProps={{ startAdornment: <InputAdornment position="start">{icon}</InputAdornment> }} error={!!errors[name]} helperText={errors[name]}/>
+//                             </Box>
+//                         ))}
+//                         <Button variant="contained" onClick={() => handleSubmit(2)} disabled={isSubmitting}>Update Social</Button>
+//                     </Box>
+//                 </TabPanel>
+
+//                 <TabPanel value={tabIndex} index={2}>
+//                     <Grid container spacing={2} maxWidth={800}>
+//                         <Grid item xs={12} sm={6}><TextField label="Account Holder Name" name="account_title" value={formData.bank.account_title} onChange={(e) => handleChange('bank', e.target.name, e.target.value.replace(/[^a-zA-Z\s]/g, ''))} fullWidth error={!!errors.account_title} helperText={errors.account_title} /></Grid>
+//                         <Grid item xs={12} sm={6}><TextField label="Account Number" name="account_number" value={formData.bank.account_number} onChange={(e) => handleChange('bank', e.target.name, e.target.value.replace(/[^0-9]/g, ''))} fullWidth error={!!errors.account_number} helperText={errors.account_number} /></Grid>
+//                         <Grid item xs={12} sm={6}><TextField label="Bank Name" name="bank_name" value={formData.bank.bank_name} onChange={(e) => handleChange('bank', e.target.name, e.target.value.replace(/[^a-zA-Z\s]/g, ''))} fullWidth error={!!errors.bank_name} helperText={errors.bank_name} /></Grid>
+//                         <Grid item xs={12} sm={6}><TextField label="IFSC Code" name="iban" value={formData.bank.iban} onChange={(e) => handleChange('bank', e.target.name, e.target.value)} fullWidth error={!!errors.iban} helperText={errors.iban} /></Grid>
+//                         <Grid item xs={12}><TextField label="Bank Branch" name="bank_branch" value={formData.bank.bank_branch} onChange={(e) => handleChange('bank', e.target.name, e.target.value.replace(/[^a-zA-Z\s]/g, ''))} fullWidth error={!!errors.bank_branch} helperText={errors.bank_branch} /></Grid>
+//                         <Grid item xs={12}><Button variant="contained" onClick={() => handleSubmit(3)} disabled={isSubmitting}>Update Bank Info</Button></Grid>
+//                     </Grid>
+//                 </TabPanel>
+
+//                 <TabPanel value={tabIndex} index={3}>
+//                     <Grid container spacing={2} maxWidth={800}>
+//                         <Grid item xs={12}><TextField label="Full Name" name="contact_full_name" value={formData.contact.contact_full_name} onChange={(e) => handleChange('contact', e.target.name, e.target.value.replace(/[^a-zA-Z\s]/g, ''))} fullWidth error={!!errors.contact_full_name} helperText={errors.contact_full_name} InputProps={{ startAdornment: <InputAdornment position="start"><PersonIcon /></InputAdornment> }} /></Grid>
+//                         <Grid item xs={12} sm={6}><TextField label="Emergency Contact 1" name="contact_phone_no_1" value={formData.contact.contact_phone_no_1} onChange={(e) => handleChange('contact', e.target.name, e.target.value.replace(/[^0-9]/g, '').slice(0, 10))} fullWidth type="tel" error={!!errors.contact_phone_no_1} helperText={errors.contact_phone_no_1} /></Grid>
+//                         <Grid item xs={12} sm={6}><TextField label="Emergency Contact 2" name="contact_phone_no_2" value={formData.contact.contact_phone_no_2} onChange={(e) => handleChange('contact', e.target.name, e.target.value.replace(/[^0-9]/g, '').slice(0, 10))} fullWidth type="tel" error={!!errors.contact_phone_no_2} helperText={errors.contact_phone_no_2} /></Grid>
+//                         <Grid item xs={12}><TextField label="Email" name="contact_email" value={formData.contact.contact_email} onChange={(e) => handleChange('contact', e.target.name, e.target.value)} fullWidth error={!!errors.contact_email} helperText={errors.contact_email} InputProps={{ startAdornment: <InputAdornment position="start"><EmailIcon /></InputAdornment> }} /></Grid>
+//                         <Grid item xs={12}><TextField label="Address" name="contact_address" value={formData.contact.contact_address} onChange={(e) => handleChange('contact', e.target.name, e.target.value)} fullWidth multiline minRows={2} error={!!errors.contact_address} helperText={errors.contact_address} /></Grid>
+//                         <Grid item xs={12}><Button variant="contained" onClick={() => handleSubmit(4)} disabled={isSubmitting}>Update Contact</Button></Grid>
+//                     </Grid>
+//                 </TabPanel>
+               
+//                 <TabPanel value={tabIndex} index={4}>
+//                     <Grid container spacing={2} maxWidth={800}>
+//                         <Grid item xs={12} sm={6}><TextField label="UAN No." name="uan_number" value={formData.other.uan_number} onChange={(e) => handleChange('other', e.target.name, e.target.value.replace(/[^0-9]/g, ''))} fullWidth error={!!errors.uan_number} helperText={errors.uan_number} /></Grid>
+//                         <Grid item xs={12} sm={6}><TextField label="PF No." name="pf_no" value={formData.other.pf_no} onChange={(e) => handleChange('other', e.target.name, e.target.value.replace(/[^0-9]/g, ''))} fullWidth error={!!errors.pf_no} helperText={errors.pf_no} /></Grid>
+//                         <Grid item xs={12} sm={6}><TextField label="ESIC No." name="esic_no" value={formData.other.esic_no} onChange={(e) => handleChange('other', e.target.name, e.target.value.replace(/[^0-9]/g, ''))} fullWidth error={!!errors.esic_no} helperText={errors.esic_no} /></Grid>
+//                         <Grid item xs={12} sm={6}><TextField label="PAN No." name="pan_no" value={formData.other.pan_no} onChange={(e) => handleChange('other', e.target.name, e.target.value.toUpperCase())} fullWidth error={!!errors.pan_no} helperText={errors.pan_no} inputProps={{ maxLength: 10 }} /></Grid>
+//                         <Grid item xs={12} sm={6}><TextField label="Aadhar No." name="aadhar_no" value={formData.other.aadhar_no} onChange={(e) => handleChange('other', e.target.name, e.target.value.replace(/[^0-9]/g, ''))} fullWidth error={!!errors.aadhar_no} helperText={errors.aadhar_no} /></Grid>
+//                         <Grid item xs={12} sm={6}><TextField label="Passport No." name="passport_no" value={formData.other.passport_no} onChange={(e) => handleChange('other', e.target.name, e.target.value)} fullWidth error={!!errors.passport_no} helperText={errors.passport_no} /></Grid>
+//                         <Grid item xs={12} sm={6}><TextField label="Vehicle No." name="vehicle_no" value={formData.other.vehicle_no} onChange={(e) => handleChange('other', e.target.name, e.target.value)} fullWidth error={!!errors.vehicle_no} helperText={errors.vehicle_no} /></Grid>
+//                         <Grid item xs={12} sm={6}><TextField label="Driving Licence No." name="driving_licence_no" value={formData.other.driving_licence_no} onChange={(e) => handleChange('other', e.target.name, e.target.value)} fullWidth error={!!errors.driving_licence_no} helperText={errors.driving_licence_no} /></Grid>
+//                         <Grid item xs={12}><Button variant="contained" onClick={() => handleSubmit(5)} disabled={isSubmitting}>Update Other Details</Button></Grid>
+//                     </Grid>
+//                 </TabPanel>
+
+//                 <TabPanel value={tabIndex} index={5}>
+//                     <Grid container spacing={2} maxWidth={800}>
+//                         <Grid item xs={12}><TextField label="Police Station Address" name="police_station_address" value={formData.policeStation.police_station_address} onChange={(e) => handleChange('policeStation', e.target.name, e.target.value)} fullWidth error={!!errors.police_station_address} helperText={errors.police_station_address} /></Grid>
+//                         <Grid item xs={12} sm={6}><TextField select label="Country" value={selectedCountry} onChange={(e) => setSelectedCountry(e.target.value)} fullWidth>{countries.map(c => <MenuItem key={c.country_id} value={c.country_name}>{c.country_name}</MenuItem>)}</TextField></Grid>
+//                         <Grid item xs={12} sm={6}>
+//                             <TextField select label="State" name="police_station_state" value={formData.policeStation.police_station_state}
+//                                 onChange={(e) => {
+//                                     const stateName = e.target.value; const stateObj = states.find(s => s.state_name === stateName);
+//                                     setFormData(prev => ({ ...prev, policeStation: { ...prev.policeStation, police_station_state: stateName, police_station_state_id: stateObj ? stateObj.state_id : null } }));
+//                                 }} fullWidth disabled={!selectedCountry || states.length === 0} error={!!errors.police_station_state_id} helperText={errors.police_station_state_id}>
+//                                 {states.length > 0 ? states.map(s => <MenuItem key={s.state_id} value={s.state_name}>{s.state_name}</MenuItem>) : <MenuItem disabled>No States Available</MenuItem>}
+//                             </TextField>
+//                         </Grid>
+//                         <Grid item xs={12} sm={6}><TextField label="District" name="police_station_district" value={formData.policeStation.police_station_district} onChange={(e) => handleChange('policeStation', e.target.name, e.target.value.replace(/[^a-zA-Z\s]/g, ''))} fullWidth error={!!errors.police_station_district} helperText={errors.police_station_district} /></Grid>
+//                         <Grid item xs={12} sm={6}><TextField label="Village/City" name="police_station_village" value={formData.policeStation.police_station_village} onChange={(e) => handleChange('policeStation', e.target.name, e.target.value.replace(/[^a-zA-Z\s]/g, ''))} fullWidth error={!!errors.police_station_village} helperText={errors.police_station_village} /></Grid>
+//                         <Grid item xs={12} sm={6}><TextField label="Pincode" name="police_station_pincode" value={formData.policeStation.police_station_pincode} onChange={(e) => handleChange('policeStation', e.target.name, e.target.value.replace(/[^0-9]/g, '').slice(0, 6))} fullWidth type="tel" error={!!errors.police_station_pincode} helperText={errors.police_station_pincode} /></Grid>
+//                         <Grid item xs={12}><Button variant="contained" sx={{ px: 4 }} onClick={() => handleSubmit(6)} disabled={isSubmitting}>Update Police Station Details</Button></Grid>
+//                     </Grid>
+//                 </TabPanel>
+//             </>
+//             }
+//         </Box>
+//     );
+// };
+ 
+// export default PersonalInformation;
+
+
 import React, { useEffect, useState, useContext } from 'react';
-import {
-    Box, Tabs, Tab, Typography, TextField, MenuItem, Button,
-    InputAdornment, Grid, CircularProgress
+import { 
+    Box, Typography, TextField, MenuItem, Button, Grid, CircularProgress, 
+    Stepper, Step, StepButton, FormControl, FormLabel, RadioGroup, 
+    FormControlLabel, Radio, InputAdornment, Paper
 } from '@mui/material';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import TwitterIcon from '@mui/icons-material/Twitter';
-import GoogleIcon from '@mui/icons-material/Google';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import PersonIcon from '@mui/icons-material/Person';
-import EmailIcon from '@mui/icons-material/Email';
+import { Facebook, Twitter, LinkedIn, Google } from '@mui/icons-material';
 import axiosInstance from '../../utils/axiosInstance';
-import { EmployeeContext } from '../../SuperAdmin/Employee/EmployeeContext';
+import { EmployeeContext } from './EmployeeContext';
 import Swal from 'sweetalert2';
 
-function TabPanel({ children, value, index }) {
-    return (
-        <div role="tabpanel" hidden={value !== index}>
-            {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
-        </div>
-    );
-}
+// --- THEME COLORS ---
+const PRIMARY_COLOR = "#8C257C"; // Purple
+const GRADIENT_BTN = `linear-gradient(135deg, ${PRIMARY_COLOR} 0%, #6d1d60 100%)`;
 
-const PersonalInformation = () => {
+const PersonalInformation = ({ onNext, onBack }) => {
     const { employeeId } = useContext(EmployeeContext);
     const userId = employeeId;
-    const [tabIndex, setTabIndex] = useState(0);
+    
+    const steps = [
+        "Professional Information", 
+        "Bank Account", 
+        "Identification Details", 
+        "Emergency Contact", 
+        "Police Station", 
+        "Social Profile"
+    ];
+    
+    const [activeStep, setActiveStep] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const initialFormData = {
-        bio: { bio: '', experience: '' },
-        social: { fb_profile: '', twitter_profile: '', gplus_profile: '', linkedin_profile: '' },
-        bank: { account_title: '', account_number: '', bank_name: '', iban: '', bank_branch: '' },
-        contact: { contact_full_name: '', contact_phone_no_1: '', contact_phone_no_2: '', contact_email: '', contact_address: '' },
-        other: { uan_number: '', pf_no: '', esic_no: '', pan_no: '', aadhar_no: '', passport_no: '', vehicle_no: '', driving_licence_no: '' },
-        policeStation: { police_station_address: '', police_station_state: '', police_station_state_id: null, police_station_district: '', police_station_village: '', police_station_pincode: '' }
-    };
-
-    const [formData, setFormData] = useState(initialFormData);
-    const [errors, setErrors] = useState({});
+    
+    // States for Dropdowns
     const [countries, setCountries] = useState([]);
     const [states, setStates] = useState([]);
     const [selectedCountry, setSelectedCountry] = useState('');
 
-    const fetchData = async (type) => {
-        if (!userId) return;
-        setIsLoading(true);
-        try {
-            const res = await axiosInstance.post('/api/personal_info/', { user_id: userId, type });
-            const data = res.data.personal_details || {};
-           
-            setFormData(prev => {
-                switch (type) {
-                    case 1: return { ...prev, bio: { bio: data.bio || '', experience: data.experience || '' } };
-                    case 2: return { ...prev, social: { fb_profile: data.fb_profile || '', twitter_profile: data.twitter_profile || '', gplus_profile: data.gplus_profile || '', linkedin_profile: data.linkedin_profile || '' } };
-                    case 3: return { ...prev, bank: { account_title: data.account_title || '', account_number: data.account_number || '', bank_name: data.bank_name || '', iban: data.iban || '', bank_branch: data.bank_branch || '' } };
-                    case 4: return { ...prev, contact: { contact_full_name: data.contact_full_name || '', contact_phone_no_1: data.contact_phone_no_1 || '', contact_phone_no_2: data.contact_phone_no_2 || '', contact_email: data.contact_email || '', contact_address: data.contact_address || '' } };
-                    case 5: return { ...prev, other: { uan_number: data.uan_number || '', pf_no: data.pf_no || '', esic_no: data.esic_no || '', pan_no: data.pan_no || '', aadhar_no: data.aadhar_no || '', passport_no: data.passport_no || '', vehicle_no: data.vehicle_no || '', driving_licence_no: data.driving_licence_no || '' } };
-                    case 6:
-                        if (data.police_station_country) setSelectedCountry(data.police_station_country);
-                        return { ...prev, policeStation: { police_station_address: data.police_station_address || '', police_station_state: data.police_station_state || '', police_station_state_id: data.police_station_state_id || null, police_station_district: data.police_station_district || '', police_station_village: data.police_station_village || '', police_station_pincode: data.police_station_pincode || '' } };
-                    default: return prev;
-                }
-            });
-        } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Fetch Error', text: 'Failed to load data. Please refresh the page.' });
-        } finally {
-            setIsLoading(false);
+    const initialFormData = {
+        bio: { bio: '', experience: '', degree: '', is_fresher: 'fresher', exp_years: '', exp_months: '' },
+        social: { fb_profile: '', twitter_profile: '', gplus_profile: '', linkedin_profile: '' },
+        bank: { account_title: '', account_number: '', bank_name: '', iban: '', bank_branch: '' },
+        contact: { contact_full_name: '', contact_phone_no_1: '', contact_phone_no_2: '', contact_email: '', contact_address: '', relationship: '' },
+        other: { uan_number: '', pf_no: '', esic_no: '', pan_no: '', aadhar_no: '', passport_no: '', vehicle_no: '', driving_licence_no: '' },
+        policeStation: { police_station_address: '', police_station_state: '', police_station_state_id: null, police_station_district: '', police_station_village: '', police_station_pincode: '' }
+    };
+    
+    const [formData, setFormData] = useState(initialFormData);
+
+    // API Type mapping
+    const getApiType = (index) => {
+        switch(index) {
+            case 0: return 1; // Bio
+            case 1: return 3; // Bank
+            case 2: return 5; // Other/ID
+            case 3: return 4; // Contact
+            case 4: return 6; // Police
+            case 5: return 2; // Social
+            default: return 1;
         }
     };
 
+    // --- FETCH DATA ---
     useEffect(() => {
         const fetchCountries = async () => {
             try {
                 const res = await axiosInstance.get('/api/countries/');
-                const fetchedCountries = res.data.data;
-                setCountries(fetchedCountries);
-                const india = fetchedCountries.find(c => c.country_name === 'India');
-                setSelectedCountry(india ? 'India' : (fetchedCountries[0]?.country_name || ''));
-            } catch (err) { console.error('Failed to fetch countries:', err); }
+                setCountries(res.data.data || []);
+            } catch (e) {}
         };
         fetchCountries();
     }, []);
-   
+
     useEffect(() => {
-        if (userId) {
-            setErrors({});
-            fetchData(tabIndex + 1);
-        }
-    }, [tabIndex, userId]);
-   
+        if (!userId) return;
+        const fetchStepData = async () => {
+            setIsLoading(true);
+            const type = getApiType(activeStep);
+            try {
+                const res = await axiosInstance.post('/api/personal_info/', { user_id: userId, type });
+                const data = res.data.personal_details || {};
+                
+                setFormData(prev => {
+                    const newState = { ...prev };
+                    if (type === 1) newState.bio = { ...prev.bio, bio: data.bio || '', experience: data.experience || '' };
+                    else if (type === 2) newState.social = { fb_profile: data.fb_profile, twitter_profile: data.twitter_profile, linkedin_profile: data.linkedin_profile, gplus_profile: data.gplus_profile };
+                    else if (type === 3) newState.bank = { account_title: data.account_title, account_number: data.account_number, bank_name: data.bank_name, iban: data.iban, bank_branch: data.bank_branch };
+                    else if (type === 4) newState.contact = { 
+                        contact_full_name: data.contact_full_name, 
+                        contact_phone_no_1: data.contact_phone_no_1, 
+                        contact_phone_no_2: data.contact_phone_no_2, 
+                        contact_email: data.contact_email, 
+                        contact_address: data.contact_address,
+                        relationship: prev.contact.relationship 
+                    };
+                    else if (type === 5) newState.other = { uan_number: data.uan_number, pf_no: data.pf_no, esic_no: data.esic_no, pan_no: data.pan_no, aadhar_no: data.aadhar_no, passport_no: data.passport_no, vehicle_no: data.vehicle_no, driving_licence_no: data.driving_licence_no };
+                    else if (type === 6) {
+                        if (data.police_station_country) setSelectedCountry(data.police_station_country);
+                        newState.policeStation = { 
+                            police_station_address: data.police_station_address, 
+                            police_station_state: data.police_station_state, 
+                            police_station_state_id: data.police_station_state_id, 
+                            police_station_district: data.police_station_district,
+                            police_station_village: data.police_station_village,
+                            police_station_pincode: data.police_station_pincode
+                        };
+                    }
+                    return newState;
+                });
+            } catch (err) { console.error(err); } 
+            finally { setIsLoading(false); }
+        };
+        fetchStepData();
+    }, [activeStep, userId]);
+
+    // Fetch States when Country changes
     useEffect(() => {
         if (selectedCountry) {
-            const fetchStates = async () => {
-                try {
-                    const res = await axiosInstance.get(`/api/states/?country_name=${selectedCountry}`);
-                    setStates(res.data.data);
-                } catch (err) { console.error('Failed to fetch states:', err); }
-            };
-            fetchStates();
-        } else {
-            setStates([]);
+            axiosInstance.get(`/api/states/?country_name=${selectedCountry}`)
+                .then(res => setStates(res.data.data || []))
+                .catch(() => {});
         }
     }, [selectedCountry]);
-   
-    const handleChange = (form, name, value) => {
-        setFormData(prev => ({ ...prev, [form]: { ...prev[form], [name]: value } }));
-        if (errors[name]) {
-            setErrors(prev => ({ ...prev, [name]: null }));
-        }
+
+    const handleChange = (section, field, value) => {
+        setFormData(prev => ({ ...prev, [section]: { ...prev[section], [field]: value } }));
     };
 
-    const validate = (data, type) => {
-        const newErrors = {};
-        const digitsOnly = /^[0-9]+$/;
-        const charsOnly = /^[a-zA-Z\s]+$/;
-        const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-        const alphanumeric = /^[a-zA-Z0-9\s-]+$/;
-
-        const requiredFields = {
-            1: ['bio', 'experience'],
-            2: ['fb_profile', 'twitter_profile', 'gplus_profile', 'linkedin_profile'],
-            3: ['account_title', 'account_number', 'bank_name', 'iban', 'bank_branch'],
-            4: ['contact_full_name', 'contact_phone_no_1', 'contact_phone_no_2', 'contact_email', 'contact_address'],
-            5: ['uan_number', 'pf_no', 'esic_no', 'pan_no', 'aadhar_no', 'passport_no', 'vehicle_no', 'driving_licence_no'],
-            6: ['police_station_address', 'police_station_state_id', 'police_station_district', 'police_station_village', 'police_station_pincode']
-        };
-
-        if (requiredFields[type]) {
-            requiredFields[type].forEach(field => {
-                if (!data[field]) newErrors[field] = 'This field is required.';
-            });
-        }
-       
-        if (type === 3) {
-            if (data.account_title && !charsOnly.test(data.account_title)) newErrors.account_title = 'Only characters are allowed.';
-            if (data.account_number && !digitsOnly.test(data.account_number)) newErrors.account_number = 'Only digits are allowed.';
-            if (data.bank_name && !charsOnly.test(data.bank_name)) newErrors.bank_name = 'Only characters are allowed.';
-            if (data.bank_branch && !charsOnly.test(data.bank_branch)) newErrors.bank_branch = 'Only characters are allowed.';
-        }
-       
-        if (type === 4) {
-            if (data.contact_full_name && !charsOnly.test(data.contact_full_name)) newErrors.contact_full_name = 'Only characters are allowed.';
-            if (data.contact_email && !/\S+@\S+\.\S+/.test(data.contact_email)) newErrors.contact_email = 'Please enter a valid email address.';
-        }
-
-        if (type === 5) {
-            if (data.uan_number && !digitsOnly.test(data.uan_number)) newErrors.uan_number = 'Only digits are allowed.';
-            if (data.pf_no && !digitsOnly.test(data.pf_no)) newErrors.pf_no = 'Only digits are allowed.';
-            if (data.esic_no && !digitsOnly.test(data.esic_no)) newErrors.esic_no = 'Only digits are allowed.';
-            if (data.pan_no && !panRegex.test(data.pan_no.toUpperCase())) newErrors.pan_no = 'Invalid PAN format. (e.g., ABCDE1234F)';
-            if (data.aadhar_no && !digitsOnly.test(data.aadhar_no)) newErrors.aadhar_no = 'Only digits are allowed.';
-            if (data.passport_no && !alphanumeric.test(data.passport_no)) newErrors.passport_no = 'Only alphanumeric characters are allowed.';
-            if (data.vehicle_no && !alphanumeric.test(data.vehicle_no)) newErrors.vehicle_no = 'Only alphanumeric characters are allowed.';
-            if (data.driving_licence_no && !alphanumeric.test(data.driving_licence_no)) newErrors.driving_licence_no = 'Only alphanumeric characters are allowed.';
-        }
-
-        if (type === 6) {
-            if (data.police_station_district && !charsOnly.test(data.police_station_district)) newErrors.police_station_district = 'Only characters are allowed.';
-            if (data.police_station_village && !charsOnly.test(data.police_station_village)) newErrors.police_station_village = 'Only characters are allowed.';
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handleSubmit = async (type) => {
-        const dataMap = { 1: formData.bio, 2: formData.social, 3: formData.bank, 4: formData.contact, 5: formData.other, 6: formData.policeStation };
-        const dataToSubmit = dataMap[type];
-
-        if (!validate(dataToSubmit, type)) {
-            Swal.fire({ icon: 'error', title: 'Validation Error', text: 'Please fill in all required fields correctly.' });
-            return;
-        }
-
-        setIsSubmitting(true);
-        Swal.fire({ title: 'Updating...', text: 'Please wait...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    // --- SAVE LOGIC ---
+    const handleSaveStep = async () => {
+        const type = getApiType(activeStep);
+        let payload = { user_id: userId, type };
+        
+        // Construct payload
+        if (activeStep === 0) payload = { ...payload, ...formData.bio };
+        else if (activeStep === 1) payload = { ...payload, ...formData.bank };
+        else if (activeStep === 2) {
+            const d = formData.other;
+            payload = { 
+                ...payload, 
+                uan_number: d.uan_number, pf_number: d.pf_no, esic_number: d.esic_no, 
+                pan_number: d.pan_no, aadhar_number: d.aadhar_no, passport_number: d.passport_no, 
+                vehicle_number: d.vehicle_no, driving_licence_number: d.driving_licence_no 
+            };
+        } else if (activeStep === 3) payload = { ...payload, ...formData.contact };
+        else if (activeStep === 4) {
+            payload = { ...payload, ...formData.policeStation };
+            payload.police_station_state = formData.policeStation.police_station_state_id;
+        } else if (activeStep === 5) payload = { ...payload, ...formData.social };
 
         try {
-            const payload = { user_id: userId, type, ...dataToSubmit };
-            if (type === 5) {
-                payload.pf_number = payload.pf_no; delete payload.pf_no;
-                payload.esic_number = payload.esic_no; delete payload.esic_no;
-                payload.pan_number = payload.pan_no; delete payload.pan_no;
-                payload.aadhar_number = payload.aadhar_no; delete payload.aadhar_no;
-                payload.passport_number = payload.passport_no; delete payload.passport_no;
-                payload.vehicle_number = payload.vehicle_no; delete payload.vehicle_no;
-                payload.driving_licence_number = payload.driving_licence_no; delete payload.driving_licence_no;
-            }
-            if (type === 6) payload.police_station_state = payload.police_station_state_id;
-
+            Swal.showLoading();
             await axiosInstance.patch('/api/personal_info/', payload);
-            Swal.fire({ icon: 'success', title: 'Updated!', text: 'Your information has been updated successfully.' });
-
+            Swal.close();
+            
+            if (activeStep < steps.length - 1) {
+                setActiveStep(prev => prev + 1);
+            } else {
+                if(onNext) onNext();
+            }
         } catch (err) {
-            const errorMessage = err.response?.data?.message || 'Failed to update information.';
-            Swal.fire({ icon: 'error', title: 'Update Failed', text: errorMessage });
-        } finally {
-            setIsSubmitting(false);
+            Swal.fire("Error", "Failed to save details.", "error");
         }
     };
-   
-    return (
-        <Box sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>👤 Personal Information</Typography>
-            <Tabs value={tabIndex} onChange={(e, newValue) => setTabIndex(newValue)} sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }} textColor="primary" indicatorColor="primary" variant="scrollable" scrollButtons="auto">
-                <Tab label="Bio" /> <Tab label="Social Profile" /> <Tab label="Bank Account" /> <Tab label="Emergency Contact" /> <Tab label="Identification Details" /> <Tab label="Police Station Details" />
-            </Tabs>
-           
-            {isLoading ? <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress /></Box> :
-            <>
-                <TabPanel value={tabIndex} index={0}>
-                    <TextField label="Bio" name="bio" value={formData.bio.bio} onChange={(e) => handleChange('bio', e.target.name, e.target.value)} fullWidth multiline minRows={3} sx={{ mb: 3 }} error={!!errors.bio} helperText={errors.bio} />
-                    <TextField label="Experience" name="experience" value={formData.bio.experience} onChange={(e) => handleChange('bio', e.target.name, e.target.value)} select fullWidth sx={{ mb: 3 }} error={!!errors.experience} helperText={errors.experience}>
-                        {Array.from({ length: 50 }, (_, i) => (<MenuItem key={i + 1} value={i + 1}>{i + 1} {i + 1 === 1 ? 'Year' : 'Years'}</MenuItem>))}
-                    </TextField>
-                    <Box textAlign="right"><Button variant="contained" sx={{ px: 4 }} onClick={() => handleSubmit(1)} disabled={isSubmitting}>Update Bio</Button></Box>
-                </TabPanel>
 
-                <TabPanel value={tabIndex} index={1}>
-                    <Box sx={{ maxWidth: 600 }}>
-                        {[ { label: 'Facebook', name: 'fb_profile', icon: <FacebookIcon sx={{ color: '#3b5998' }} /> }, { label: 'Twitter', name: 'twitter_profile', icon: <TwitterIcon sx={{ color: '#00acee' }} /> }, { label: 'Google Plus', name: 'gplus_profile', icon: <GoogleIcon sx={{ color: '#db4437' }} /> }, { label: 'LinkedIn', name: 'linkedin_profile', icon: <LinkedInIcon sx={{ color: '#0e76a8' }} /> }, ].map(({ label, name, icon }) => (
-                            <Box key={name} sx={{ mb: 2 }}>
-                                <TextField label={label} fullWidth name={name} value={formData.social[name]} onChange={(e) => handleChange('social', e.target.name, e.target.value)} InputProps={{ startAdornment: <InputAdornment position="start">{icon}</InputAdornment> }} error={!!errors[name]} helperText={errors[name]}/>
-                            </Box>
-                        ))}
-                        <Button variant="contained" onClick={() => handleSubmit(2)} disabled={isSubmitting}>Update Social</Button>
-                    </Box>
-                </TabPanel>
+    const handleInternalBack = () => {
+        if (activeStep > 0) {
+            setActiveStep(prev => prev - 1);
+        } else {
+            if(onBack) onBack();
+        }
+    };
 
-                <TabPanel value={tabIndex} index={2}>
-                    <Grid container spacing={2} maxWidth={800}>
-                        <Grid item xs={12} sm={6}><TextField label="Account Holder Name" name="account_title" value={formData.bank.account_title} onChange={(e) => handleChange('bank', e.target.name, e.target.value.replace(/[^a-zA-Z\s]/g, ''))} fullWidth error={!!errors.account_title} helperText={errors.account_title} /></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="Account Number" name="account_number" value={formData.bank.account_number} onChange={(e) => handleChange('bank', e.target.name, e.target.value.replace(/[^0-9]/g, ''))} fullWidth error={!!errors.account_number} helperText={errors.account_number} /></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="Bank Name" name="bank_name" value={formData.bank.bank_name} onChange={(e) => handleChange('bank', e.target.name, e.target.value.replace(/[^a-zA-Z\s]/g, ''))} fullWidth error={!!errors.bank_name} helperText={errors.bank_name} /></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="IFSC Code" name="iban" value={formData.bank.iban} onChange={(e) => handleChange('bank', e.target.name, e.target.value)} fullWidth error={!!errors.iban} helperText={errors.iban} /></Grid>
-                        <Grid item xs={12}><TextField label="Bank Branch" name="bank_branch" value={formData.bank.bank_branch} onChange={(e) => handleChange('bank', e.target.name, e.target.value.replace(/[^a-zA-Z\s]/g, ''))} fullWidth error={!!errors.bank_branch} helperText={errors.bank_branch} /></Grid>
-                        <Grid item xs={12}><Button variant="contained" onClick={() => handleSubmit(3)} disabled={isSubmitting}>Update Bank Info</Button></Grid>
-                    </Grid>
-                </TabPanel>
+    // --- RENDER FORMS ---
+    const renderForm = () => {
+        if(isLoading) return <Box display="flex" justifyContent="center" p={4}><CircularProgress sx={{ color: PRIMARY_COLOR }} /></Box>;
 
-                <TabPanel value={tabIndex} index={3}>
-                    <Grid container spacing={2} maxWidth={800}>
-                        <Grid item xs={12}><TextField label="Full Name" name="contact_full_name" value={formData.contact.contact_full_name} onChange={(e) => handleChange('contact', e.target.name, e.target.value.replace(/[^a-zA-Z\s]/g, ''))} fullWidth error={!!errors.contact_full_name} helperText={errors.contact_full_name} InputProps={{ startAdornment: <InputAdornment position="start"><PersonIcon /></InputAdornment> }} /></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="Emergency Contact 1" name="contact_phone_no_1" value={formData.contact.contact_phone_no_1} onChange={(e) => handleChange('contact', e.target.name, e.target.value.replace(/[^0-9]/g, '').slice(0, 10))} fullWidth type="tel" error={!!errors.contact_phone_no_1} helperText={errors.contact_phone_no_1} /></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="Emergency Contact 2" name="contact_phone_no_2" value={formData.contact.contact_phone_no_2} onChange={(e) => handleChange('contact', e.target.name, e.target.value.replace(/[^0-9]/g, '').slice(0, 10))} fullWidth type="tel" error={!!errors.contact_phone_no_2} helperText={errors.contact_phone_no_2} /></Grid>
-                        <Grid item xs={12}><TextField label="Email" name="contact_email" value={formData.contact.contact_email} onChange={(e) => handleChange('contact', e.target.name, e.target.value)} fullWidth error={!!errors.contact_email} helperText={errors.contact_email} InputProps={{ startAdornment: <InputAdornment position="start"><EmailIcon /></InputAdornment> }} /></Grid>
-                        <Grid item xs={12}><TextField label="Address" name="contact_address" value={formData.contact.contact_address} onChange={(e) => handleChange('contact', e.target.name, e.target.value)} fullWidth multiline minRows={2} error={!!errors.contact_address} helperText={errors.contact_address} /></Grid>
-                        <Grid item xs={12}><Button variant="contained" onClick={() => handleSubmit(4)} disabled={isSubmitting}>Update Contact</Button></Grid>
-                    </Grid>
-                </TabPanel>
-               
-                <TabPanel value={tabIndex} index={4}>
-                    <Grid container spacing={2} maxWidth={800}>
-                        <Grid item xs={12} sm={6}><TextField label="UAN No." name="uan_number" value={formData.other.uan_number} onChange={(e) => handleChange('other', e.target.name, e.target.value.replace(/[^0-9]/g, ''))} fullWidth error={!!errors.uan_number} helperText={errors.uan_number} /></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="PF No." name="pf_no" value={formData.other.pf_no} onChange={(e) => handleChange('other', e.target.name, e.target.value.replace(/[^0-9]/g, ''))} fullWidth error={!!errors.pf_no} helperText={errors.pf_no} /></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="ESIC No." name="esic_no" value={formData.other.esic_no} onChange={(e) => handleChange('other', e.target.name, e.target.value.replace(/[^0-9]/g, ''))} fullWidth error={!!errors.esic_no} helperText={errors.esic_no} /></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="PAN No." name="pan_no" value={formData.other.pan_no} onChange={(e) => handleChange('other', e.target.name, e.target.value.toUpperCase())} fullWidth error={!!errors.pan_no} helperText={errors.pan_no} inputProps={{ maxLength: 10 }} /></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="Aadhar No." name="aadhar_no" value={formData.other.aadhar_no} onChange={(e) => handleChange('other', e.target.name, e.target.value.replace(/[^0-9]/g, ''))} fullWidth error={!!errors.aadhar_no} helperText={errors.aadhar_no} /></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="Passport No." name="passport_no" value={formData.other.passport_no} onChange={(e) => handleChange('other', e.target.name, e.target.value)} fullWidth error={!!errors.passport_no} helperText={errors.passport_no} /></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="Vehicle No." name="vehicle_no" value={formData.other.vehicle_no} onChange={(e) => handleChange('other', e.target.name, e.target.value)} fullWidth error={!!errors.vehicle_no} helperText={errors.vehicle_no} /></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="Driving Licence No." name="driving_licence_no" value={formData.other.driving_licence_no} onChange={(e) => handleChange('other', e.target.name, e.target.value)} fullWidth error={!!errors.driving_licence_no} helperText={errors.driving_licence_no} /></Grid>
-                        <Grid item xs={12}><Button variant="contained" onClick={() => handleSubmit(5)} disabled={isSubmitting}>Update Other Details</Button></Grid>
-                    </Grid>
-                </TabPanel>
-
-                <TabPanel value={tabIndex} index={5}>
-                    <Grid container spacing={2} maxWidth={800}>
-                        <Grid item xs={12}><TextField label="Police Station Address" name="police_station_address" value={formData.policeStation.police_station_address} onChange={(e) => handleChange('policeStation', e.target.name, e.target.value)} fullWidth error={!!errors.police_station_address} helperText={errors.police_station_address} /></Grid>
-                        <Grid item xs={12} sm={6}><TextField select label="Country" value={selectedCountry} onChange={(e) => setSelectedCountry(e.target.value)} fullWidth>{countries.map(c => <MenuItem key={c.country_id} value={c.country_name}>{c.country_name}</MenuItem>)}</TextField></Grid>
+        switch(activeStep) {
+            case 0: // Professional
+                return (
+                    <Grid container spacing={3} maxWidth={900} mx="auto">
+                        <Grid item xs={12}><TextField fullWidth label="Bio / Summary" multiline rows={3} value={formData.bio.bio} onChange={(e) => handleChange('bio', 'bio', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6}><TextField fullWidth label="Education Degree" value={formData.bio.degree} onChange={(e) => handleChange('bio', 'degree', e.target.value)} /></Grid>
                         <Grid item xs={12} sm={6}>
-                            <TextField select label="State" name="police_station_state" value={formData.policeStation.police_station_state}
-                                onChange={(e) => {
-                                    const stateName = e.target.value; const stateObj = states.find(s => s.state_name === stateName);
-                                    setFormData(prev => ({ ...prev, policeStation: { ...prev.policeStation, police_station_state: stateName, police_station_state_id: stateObj ? stateObj.state_id : null } }));
-                                }} fullWidth disabled={!selectedCountry || states.length === 0} error={!!errors.police_station_state_id} helperText={errors.police_station_state_id}>
-                                {states.length > 0 ? states.map(s => <MenuItem key={s.state_id} value={s.state_name}>{s.state_name}</MenuItem>) : <MenuItem disabled>No States Available</MenuItem>}
+                            <FormControl component="fieldset" sx={{ ml: 1 }}>
+                                <FormLabel component="legend" sx={{ fontSize: '0.875rem' }}>Experience Type</FormLabel>
+                                <RadioGroup row value={formData.bio.is_fresher} onChange={(e) => handleChange('bio', 'is_fresher', e.target.value)}>
+                                    <FormControlLabel value="fresher" control={<Radio sx={{color: PRIMARY_COLOR, '&.Mui-checked': {color: PRIMARY_COLOR}}} />} label="Fresher" />
+                                    <FormControlLabel value="experienced" control={<Radio sx={{color: PRIMARY_COLOR, '&.Mui-checked': {color: PRIMARY_COLOR}}} />} label="Experienced" />
+                                </RadioGroup>
+                            </FormControl>
+                        </Grid>
+                        {formData.bio.is_fresher === 'experienced' && (
+                            <>
+                                <Grid item xs={6}><TextField fullWidth label="Years" type="number" value={formData.bio.exp_years} onChange={(e) => handleChange('bio', 'exp_years', e.target.value)} /></Grid>
+                                <Grid item xs={6}><TextField fullWidth label="Months" type="number" value={formData.bio.exp_months} onChange={(e) => handleChange('bio', 'exp_months', e.target.value)} /></Grid>
+                            </>
+                        )}
+                        <Grid item xs={12}>
+                            <TextField select fullWidth label="Total Experience (Legacy)" value={formData.bio.experience} onChange={(e)=>handleChange('bio', 'experience', e.target.value)}>
+                                {Array.from({length:30}, (_,i)=> <MenuItem key={i} value={i+1}>{i+1} Years</MenuItem>)}
                             </TextField>
                         </Grid>
-                        <Grid item xs={12} sm={6}><TextField label="District" name="police_station_district" value={formData.policeStation.police_station_district} onChange={(e) => handleChange('policeStation', e.target.name, e.target.value.replace(/[^a-zA-Z\s]/g, ''))} fullWidth error={!!errors.police_station_district} helperText={errors.police_station_district} /></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="Village/City" name="police_station_village" value={formData.policeStation.police_station_village} onChange={(e) => handleChange('policeStation', e.target.name, e.target.value.replace(/[^a-zA-Z\s]/g, ''))} fullWidth error={!!errors.police_station_village} helperText={errors.police_station_village} /></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="Pincode" name="police_station_pincode" value={formData.policeStation.police_station_pincode} onChange={(e) => handleChange('policeStation', e.target.name, e.target.value.replace(/[^0-9]/g, '').slice(0, 6))} fullWidth type="tel" error={!!errors.police_station_pincode} helperText={errors.police_station_pincode} /></Grid>
-                        <Grid item xs={12}><Button variant="contained" sx={{ px: 4 }} onClick={() => handleSubmit(6)} disabled={isSubmitting}>Update Police Station Details</Button></Grid>
                     </Grid>
-                </TabPanel>
-            </>
-            }
+                );
+            case 1: // Bank
+                return (
+                    <Grid container spacing={3} maxWidth={900} mx="auto">
+                         <Grid item xs={12} sm={6}><TextField fullWidth label="Account Holder" value={formData.bank.account_title} onChange={(e)=>handleChange('bank','account_title',e.target.value)} /></Grid>
+                         <Grid item xs={12} sm={6}><TextField fullWidth label="Account Number" value={formData.bank.account_number} onChange={(e)=>handleChange('bank','account_number',e.target.value)} /></Grid>
+                         <Grid item xs={12} sm={6}><TextField fullWidth label="Bank Name" value={formData.bank.bank_name} onChange={(e)=>handleChange('bank','bank_name',e.target.value)} /></Grid>
+                         <Grid item xs={12} sm={6}><TextField fullWidth label="IFSC Code" value={formData.bank.iban} onChange={(e)=>handleChange('bank','iban',e.target.value)} /></Grid>
+                         <Grid item xs={12}><TextField fullWidth label="Branch" value={formData.bank.bank_branch} onChange={(e)=>handleChange('bank','bank_branch',e.target.value)} /></Grid>
+                    </Grid>
+                );
+            case 2: // ID
+                return (
+                    <Grid container spacing={3} maxWidth={900} mx="auto">
+                        <Grid item xs={12} sm={6}><TextField fullWidth label="PAN No" value={formData.other.pan_no} onChange={(e)=>handleChange('other','pan_no',e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6}><TextField fullWidth label="Aadhar No" value={formData.other.aadhar_no} onChange={(e)=>handleChange('other','aadhar_no',e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6}><TextField fullWidth label="UAN" value={formData.other.uan_number} onChange={(e)=>handleChange('other','uan_number',e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6}><TextField fullWidth label="PF No" value={formData.other.pf_no} onChange={(e)=>handleChange('other','pf_no',e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6}><TextField fullWidth label="ESIC No" value={formData.other.esic_no} onChange={(e)=>handleChange('other','esic_no',e.target.value)} /></Grid>
+                    </Grid>
+                );
+            case 3: // Emergency
+                return (
+                    <Grid container spacing={3} maxWidth={900} mx="auto">
+                        <Grid item xs={12}><TextField fullWidth label="Full Name" value={formData.contact.contact_full_name} onChange={(e)=>handleChange('contact','contact_full_name',e.target.value)} /></Grid>
+                        <Grid item xs={12}><TextField fullWidth label="Relationship" value={formData.contact.relationship} onChange={(e)=>handleChange('contact','relationship',e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6}><TextField fullWidth label="Phone 1" value={formData.contact.contact_phone_no_1} onChange={(e)=>handleChange('contact','contact_phone_no_1',e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6}><TextField fullWidth label="Phone 2" value={formData.contact.contact_phone_no_2} onChange={(e)=>handleChange('contact','contact_phone_no_2',e.target.value)} /></Grid>
+                        <Grid item xs={12}><TextField fullWidth label="Address" value={formData.contact.contact_address} onChange={(e)=>handleChange('contact','contact_address',e.target.value)} /></Grid>
+                    </Grid>
+                );
+            case 4: // Police
+                return (
+                    <Grid container spacing={3} maxWidth={900} mx="auto">
+                        <Grid item xs={12}><TextField fullWidth label="Station Address" value={formData.policeStation.police_station_address} onChange={(e)=>handleChange('policeStation','police_station_address',e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField select fullWidth label="Country" value={selectedCountry} onChange={(e)=>setSelectedCountry(e.target.value)}>
+                                {countries.map(c => <MenuItem key={c.country_id} value={c.country_name}>{c.country_name}</MenuItem>)}
+                            </TextField>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField select fullWidth label="State" value={formData.policeStation.police_station_state} onChange={(e) => {
+                                const s = states.find(st=>st.state_name === e.target.value);
+                                setFormData(prev=>({...prev, policeStation: {...prev.policeStation, police_station_state: e.target.value, police_station_state_id: s?.state_id}}));
+                            }}>
+                                {states.map(s=><MenuItem key={s.state_id} value={s.state_name}>{s.state_name}</MenuItem>)}
+                            </TextField>
+                        </Grid>
+                        <Grid item xs={12} sm={6}><TextField fullWidth label="District" value={formData.policeStation.police_station_district} onChange={(e)=>handleChange('policeStation','police_station_district',e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6}><TextField fullWidth label="Pincode" value={formData.policeStation.police_station_pincode} onChange={(e)=>handleChange('policeStation','police_station_pincode',e.target.value)} /></Grid>
+                    </Grid>
+                );
+            case 5: // Social
+                return (
+                    <Box maxWidth={600} mx="auto">
+                        <TextField fullWidth label="Facebook" sx={{mb:3}} value={formData.social.fb_profile} onChange={(e)=>handleChange('social','fb_profile',e.target.value)} InputProps={{startAdornment: <Facebook color="primary" sx={{mr:1}}/>}} />
+                        <TextField fullWidth label="Twitter" sx={{mb:3}} value={formData.social.twitter_profile} onChange={(e)=>handleChange('social','twitter_profile',e.target.value)} InputProps={{startAdornment: <Twitter color="primary" sx={{mr:1}}/>}} />
+                        <TextField fullWidth label="LinkedIn" sx={{mb:3}} value={formData.social.linkedin_profile} onChange={(e)=>handleChange('social','linkedin_profile',e.target.value)} InputProps={{startAdornment: <LinkedIn color="primary" sx={{mr:1}}/>}} />
+                        <TextField fullWidth label="Google Plus" sx={{mb:3}} value={formData.social.gplus_profile} onChange={(e)=>handleChange('social','gplus_profile',e.target.value)} InputProps={{startAdornment: <Google color="primary" sx={{mr:1}}/>}} />
+                    </Box>
+                );
+            default: return null;
+        }
+    };
+
+    return (
+        <Box sx={{ p: 2 }}>
+            {/* CLICKABLE INTERNAL STEPPER WITH PURPLE THEME */}
+            <Stepper activeStep={activeStep} alternativeLabel nonLinear sx={{ 
+                mb: 5,
+                '& .MuiStepConnector-line': { borderColor: '#e0e0e0' },
+                '& .MuiStepIcon-root': { color: '#ccc' },
+                '& .MuiStepIcon-root.Mui-active': { color: PRIMARY_COLOR },
+                '& .MuiStepIcon-root.Mui-completed': { color: PRIMARY_COLOR },
+                '& .MuiStepLabel-label': { fontWeight: 500 },
+                '& .MuiStepLabel-label.Mui-active': { color: PRIMARY_COLOR, fontWeight: 700 }
+            }}>
+                {steps.map((label, index) => (
+                    <Step key={label}>
+                        <StepButton onClick={() => setActiveStep(index)}>
+                            {label}
+                        </StepButton>
+                    </Step>
+                ))}
+            </Stepper>
+            
+            <Paper elevation={0} sx={{ mt: 2, minHeight: '300px', p: 2, border: '1px solid #f0f0f0', borderRadius: 2 }}>
+                <Typography variant="h6" gutterBottom color={PRIMARY_COLOR} fontWeight="bold" sx={{borderBottom: `2px solid ${PRIMARY_COLOR}`, display:'inline-block', mb: 3}}>
+                    {steps[activeStep]}
+                </Typography>
+                
+                {renderForm()}
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 5 }}>
+                    <Button 
+                        onClick={handleInternalBack} 
+                        variant="outlined" 
+                        sx={{ 
+                            borderRadius: '8px', 
+                            borderColor: '#ccc', 
+                            color: '#555', 
+                            '&:hover': { borderColor: PRIMARY_COLOR, color: PRIMARY_COLOR } 
+                        }}
+                    >
+                        Back
+                    </Button>
+                    <Button 
+                        variant="contained" 
+                        onClick={handleSaveStep} 
+                        sx={{ 
+                            background: GRADIENT_BTN, 
+                            color: 'white', 
+                            borderRadius: '8px',
+                            px: 3
+                        }}
+                    >
+                        {activeStep === steps.length - 1 ? "Save & Next" : "Save & Next"}
+                    </Button>
+                </Box>
+            </Paper>
         </Box>
     );
 };
- 
 export default PersonalInformation;
