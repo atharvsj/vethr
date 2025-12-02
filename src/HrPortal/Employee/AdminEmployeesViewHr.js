@@ -1275,7 +1275,6 @@ import {
   TableHead,
   TableRow,
   TextField,
-  FormControl,
   Avatar,
   Chip,
   IconButton,
@@ -2007,7 +2006,7 @@ export default function EmployeesView() {
                 <TableRow key={employee.user_id} onMouseEnter={() => setHoveredRowId(employee.user_id)} onMouseLeave={() => setHoveredRowId(null)} hover>
                   <TableCell sx={{ fontSize: '0.95rem' }}>{page * rowsPerPage + index + 1}</TableCell>
                   <TableCell sx={{ fontSize: '0.95rem' }}><Typography variant="body2">{employee.employee_name}</Typography></TableCell>
-                  <TableCell sx={{ padding: '0 8px', textAlign: 'center' }}>{hoveredRowId === employee.user_id && (<IconButton onClick={() => navigate(`/hrms/admindashboard/employeedetail/${employee.user_id}`)} size="small" sx={{ color: primaryColor }}><ArrowForwardIcon fontSize="small" /></IconButton>)}</TableCell>
+                  <TableCell sx={{ padding: '0 8px', textAlign: 'center' }}>{hoveredRowId === employee.user_id && (<IconButton onClick={() => navigate(`/hrms/hrpanel/employeedetailHr/${employee.user_id}`)} size="small" sx={{ color: primaryColor }}><ArrowForwardIcon fontSize="small" /></IconButton>)}</TableCell>
                   <TableCell sx={{ fontSize: '0.95rem' }}>{employee.department_name || 'N/A'}</TableCell>
                   <TableCell sx={{ fontSize: '0.95rem' }}>{employee.designation_name || 'N/A'}</TableCell>
                   <TableCell sx={{ fontSize: '0.95rem' }}>{formatDate(employee.join_date)}</TableCell>
