@@ -5940,7 +5940,44 @@ function App() {
                   element: <MarksHR/>,
                 },
                 {path:"MetricsForm",element:<MetricsForm/>},
-                { path: "revenue-expense", element: <RevenueExpenseManagement /> }
+                { path: "revenue-expense", element: <RevenueExpenseManagement /> },
+                // Core HR Section Routes
+                { path: "corehrdashboard", element: <CoreHrDashboard /> },
+                { path: "companydetails", element: <CompanyDetails /> },
+                { path: "employeehub", element: <EmployeeHub /> },
+                { path: "department", element: <Department /> },
+                { path: "designation", element: <Designation /> },
+                { path: "division", element: <Division /> },
+                { path: "grade", element: <Grade /> },
+                { path: "payrollSetup", element: <PayrollSetup /> },
+                { path: "headquaters", element: <Headquarters /> },
+                { path: "makeannouncement", element: <MakeAnnouncement /> },
+                // Additional HR Master routes
+                { path: "role", element: <RolesView /> },
+                { path: "holidaysadmin", element: <HolidaysAdmin /> },
+                { path: "shifts", element: <ShiftsView /> },
+                { path: "assestadmin", element: <AssestAdmin /> },
+                { path: "employees", element: <AdminEmployeesView /> },
+                { path: "awardsadmin", element: <AwardsAdmin /> },
+                { path: "leaveSetup", element: <LeaveSetup /> },
+                { path: "parametercreation", element: <Parameter /> },
+                // Policy Management routes
+                { path: "policies", element: <Policies /> },
+                { path: "policyDashboard", element: <PolicyDashboard /> },
+                { path: "policyallocation", element: <PolicyAllocation /> },
+                // Employee Confirmation routes
+                { path: "employeeconfirmationMain", element: <ConfirmationMain /> },
+                { path: "performanceTable", element: <PerformanceTable /> },
+                { path: "dashboardConfirmation", element: <DashboardConfirmation /> },
+                { path: "confirmation", element: <PerformanceTableHR /> },
+                // Leave Management routes
+                { path: "mainLeave", element: <MainLeave /> },
+                // Payroll routes
+                { path: "DashboardPayroll", element: <DashboardPayroll /> },
+                // Reports routes
+                { path: "newJoinerReport", element: <NewJoinerReport /> },
+                { path: "annualManpowerReport", element: <EmployeeMasterReport /> },
+                { path: "employeeAttritionReport", element: <DesignationDepartmentReport /> }
               ],
             },
           ],
