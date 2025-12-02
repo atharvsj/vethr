@@ -4323,6 +4323,581 @@
 
 
 
+// import React, { useState, useContext, useEffect } from 'react';
+// import { EmployeeContext } from './EmployeeContext';
+// import axiosInstance from "../../utils/axiosInstance";
+// import {
+//   Box, Grid, TextField, Typography, MenuItem, Button, FormControl,
+//   InputLabel, Select, CircularProgress, Checkbox, FormControlLabel
+// } from '@mui/material';
+// import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+// import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+// import dayjs from 'dayjs';
+// import Swal from 'sweetalert2';
+
+// const PRIMARY_COLOR = "#8C257C";
+
+// const BasicInformation = ({ onNext, onBack }) => {
+//   const { employeeId } = useContext(EmployeeContext);
+//   const [loading, setLoading] = useState(true);
+  
+//   // State
+//   const [roleOptions, setRoleOptions] = useState([]);
+//   const [countriesList, setCountriesList] = useState([]);
+//   const [employeeHubs, setEmployeeHubs] = useState([]);
+//   const [permStatesList, setPermStatesList] = useState([]);
+//   const [corrStatesList, setCorrStatesList] = useState([]);
+//   const [isSameAddress, setIsSameAddress] = useState(false);
+
+//   const [formData, setFormData] = useState({
+//     first_name: '', middle_name: '', last_name: '',
+//     date_of_birth: null, age: '', gender: '', marital_status: 0,
+//     blood_group: '', contact_number: '', employee_id: '',
+//     role_id: '', employee_hub_id: '', is_active: 1,
+//     address_1: '', country_id: '', state_id: '', city: '', zip_code: '',
+//     corr_address_1: '', corr_country_id: '', corr_state_id: '', corr_city: '', corr_zip_code: '',
+//   });
+
+//   const genderStringToValue = (str) => {
+//     if (!str) return '';
+//     const s = str.toLowerCase();
+//     return s === 'male' ? 1 : s === 'female' ? 2 : 3;
+//   };
+//   const genderValueToString = (v) => (v === 1 ? 'male' : v === 2 ? 'female' : 'other');
+
+//   useEffect(() => {
+//     const fetchDropdowns = async () => {
+//       try {
+//         const [roleRes, countryRes, hubRes] = await Promise.all([
+//           axiosInstance.get('/roles/'),
+//           axiosInstance.get('/api/countries/'),
+//           axiosInstance.get('/api/employee_hub/')
+//         ]);
+//         setRoleOptions(roleRes.data || []);
+//         if (countryRes.data.status === 'success') setCountriesList(countryRes.data.data || []);
+//         if (hubRes.data.status === 'success') setEmployeeHubs(hubRes.data.data || []);
+//       } catch (error) { console.error(error); }
+//     };
+//     fetchDropdowns();
+//   }, []);
+
+//   useEffect(() => {
+//     if (!employeeId) return;
+//     setLoading(true);
+//     axiosInstance.post('/api/emp_basic_info/', { user_id: employeeId })
+//       .then((res) => {
+//         const data = res.data?.data?.[0];
+//         if (data) {
+//           const selectedHub = employeeHubs.find(h => h.employee_hub_name === data.employee_hub_name);
+//           setFormData({
+//             first_name: data.first_name || '',
+//             middle_name: data.middle_name || '',
+//             last_name: data.last_name || '',
+//             date_of_birth: data.date_of_birth ? dayjs(data.date_of_birth) : null,
+//             gender: genderStringToValue(data.gender),
+//             marital_status: data.marital_status?.toLowerCase() === 'married' ? 1 : 0,
+//             blood_group: data.blood_group || '',
+//             contact_number: data.contact_number || '',
+//             employee_id: data.employee_id || '',
+//             is_active: data.is_active?.toLowerCase() === 'yes' ? 1 : 0,
+//             role_id: Number(data.role_id || ''),
+//             employee_hub_id: selectedHub ? selectedHub.employee_hub_id : '',
+//             address_1: data.address_1 || '',
+//             country_id: Number(data.country_id || ''),
+//             state_id: Number(data.state_id || ''),
+//             city: data.city || '',
+//             zip_code: data.zipcode || '',
+//             corr_address_1: data.address_2 || '',
+//             corr_country_id: Number(data.correspondence_country || ''),
+//             corr_state_id: Number(data.correspondence_state || ''),
+//             corr_city: data.correspondence_city || '',
+//             corr_zip_code: data.correspondence_pincode || '',
+//           });
+//         }
+//       })
+//       .finally(() => setLoading(false));
+//   }, [employeeId, employeeHubs]);
+
+//   useEffect(() => {
+//     if (formData.country_id && countriesList.length) {
+//       const c = countriesList.find(x => x.country_id === formData.country_id);
+//       if (c) axiosInstance.get(`/api/states/?country_name=${c.country_name}`).then(r => setPermStatesList(r.data.data));
+//     }
+//   }, [formData.country_id, countriesList]);
+
+//   useEffect(() => {
+//     if (formData.corr_country_id && countriesList.length) {
+//       const c = countriesList.find(x => x.country_id === formData.corr_country_id);
+//       if (c) axiosInstance.get(`/api/states/?country_name=${c.country_name}`).then(r => setCorrStatesList(r.data.data));
+//     }
+//   }, [formData.corr_country_id, countriesList]);
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData(prev => ({ ...prev, [name]: value }));
+//   };
+
+//   const handleDateChange = (val) => {
+//     setFormData(prev => ({ ...prev, date_of_birth: val }));
+//     if (val) {
+//       const age = dayjs().diff(val, 'year');
+//       setFormData(prev => ({ ...prev, age: age >= 0 ? age : '' }));
+//     }
+//   };
+
+//   const handleSubmit = async () => {
+//     if (!formData.first_name || !formData.last_name) {
+//       Swal.fire('Error', 'First and Last Name are required', 'error');
+//       return;
+//     }
+
+//     const payload = {
+//       user_id: employeeId,
+//       ...formData,
+//       date_of_birth: formData.date_of_birth ? formData.date_of_birth.format('YYYY-MM-DD') : null,
+//       gender: genderValueToString(formData.gender),
+//       marital_status: formData.marital_status === 1 ? 'married' : 'single',
+//       address_2: formData.corr_address_1,
+//       correspondence_city: formData.corr_city,
+//       correspondence_pincode: formData.corr_zip_code,
+//       correspondence_state: formData.corr_state_id,
+//       correspondence_country: formData.corr_country_id,
+//       zipcode: formData.zip_code
+//     };
+
+//     try {
+//       Swal.showLoading();
+//       await axiosInstance.patch('/api/emp_basic_info/', payload);
+//       Swal.close();
+//       if (onNext) onNext();
+//     } catch (error) {
+//       Swal.fire('Error', 'Failed to update profile.', 'error');
+//     }
+//   };
+
+//   if (loading) return <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>;
+
+//   return (
+//     <Box sx={{ p: 2 }}>
+//       <Typography variant="h6" gutterBottom color={PRIMARY_COLOR} fontWeight="bold">Basic Information</Typography>
+      
+//       <Grid container spacing={2} sx={{ mb: 3 }}>
+//           <Grid item xs={12} sm={4}><TextField fullWidth label="First Name" name="first_name" value={formData.first_name} onChange={handleChange} required /></Grid>
+//           <Grid item xs={12} sm={4}><TextField fullWidth label="Middle Name" name="middle_name" value={formData.middle_name} onChange={handleChange} /></Grid>
+//           <Grid item xs={12} sm={4}><TextField fullWidth label="Last Name" name="last_name" value={formData.last_name} onChange={handleChange} required /></Grid>
+          
+//           <Grid item xs={12} sm={4}>
+//             <LocalizationProvider dateAdapter={AdapterDayjs}>
+//                 <DatePicker label="Date of Birth" value={formData.date_of_birth} onChange={handleDateChange} slotProps={{ textField: { fullWidth: true } }}/>
+//             </LocalizationProvider>
+//           </Grid>
+//           <Grid item xs={12} sm={2}><TextField fullWidth label="Age" value={formData.age} InputProps={{ readOnly: true }} /></Grid>
+          
+//           <Grid item xs={12} sm={3}>
+//             <FormControl fullWidth><InputLabel>Gender</InputLabel>
+//                 <Select name="gender" value={formData.gender} onChange={handleChange} label="Gender">
+//                     <MenuItem value={1}>Male</MenuItem><MenuItem value={2}>Female</MenuItem><MenuItem value={3}>Other</MenuItem>
+//                 </Select>
+//             </FormControl>
+//           </Grid>
+//           <Grid item xs={12} sm={3}>
+//             <FormControl fullWidth><InputLabel>Marital Status</InputLabel>
+//                 <Select name="marital_status" value={formData.marital_status} onChange={handleChange} label="Marital Status">
+//                     <MenuItem value={0}>Single</MenuItem><MenuItem value={1}>Married</MenuItem>
+//                 </Select>
+//             </FormControl>
+//           </Grid>
+          
+//           <Grid item xs={12} sm={6}><TextField fullWidth label="Contact" name="contact_number" value={formData.contact_number} onChange={handleChange} /></Grid>
+//           <Grid item xs={12} sm={6}>
+//             <FormControl fullWidth><InputLabel>Blood Group</InputLabel>
+//                 <Select name="blood_group" value={formData.blood_group} onChange={handleChange} label="Blood Group">
+//                     {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(b => <MenuItem key={b} value={b}>{b}</MenuItem>)}
+//                 </Select>
+//             </FormControl>
+//           </Grid>
+//       </Grid>
+
+//       <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Addresses</Typography>
+//       <Grid container spacing={2}>
+//         <Grid item xs={12}><TextField fullWidth label="Permanent Address" name="address_1" value={formData.address_1} onChange={handleChange} /></Grid>
+//         <Grid item xs={6} md={3}>
+//             <TextField select fullWidth label="Country" name="country_id" value={formData.country_id} onChange={handleChange}>
+//                 {countriesList.map(c => <MenuItem key={c.country_id} value={c.country_id}>{c.country_name}</MenuItem>)}
+//             </TextField>
+//         </Grid>
+//         <Grid item xs={6} md={3}>
+//             <TextField select fullWidth label="State" name="state_id" value={formData.state_id} onChange={handleChange}>
+//                 {permStatesList.map(s => <MenuItem key={s.state_id} value={s.state_id}>{s.state_name}</MenuItem>)}
+//             </TextField>
+//         </Grid>
+//         <Grid item xs={6} md={3}><TextField fullWidth label="City" name="city" value={formData.city} onChange={handleChange} /></Grid>
+//         <Grid item xs={6} md={3}><TextField fullWidth label="Zip Code" name="zip_code" value={formData.zip_code} onChange={handleChange} /></Grid>
+//       </Grid>
+      
+//       <Box mt={2} mb={2}>
+//          <FormControlLabel control={<Checkbox checked={isSameAddress} onChange={(e) => {
+//              setIsSameAddress(e.target.checked);
+//              if(e.target.checked) {
+//                  setFormData(prev => ({
+//                      ...prev,
+//                      corr_address_1: prev.address_1, corr_country_id: prev.country_id,
+//                      corr_state_id: prev.state_id, corr_city: prev.city, corr_zip_code: prev.zip_code
+//                  }));
+//              }
+//          }} />} label="Correspondence same as Permanent" />
+//       </Box>
+      
+//       {!isSameAddress && (
+//         <Grid container spacing={2}>
+//              <Grid item xs={12}><TextField fullWidth label="Correspondence Address" name="corr_address_1" value={formData.corr_address_1} onChange={handleChange} /></Grid>
+//              <Grid item xs={6} md={3}>
+//                 <TextField select fullWidth label="Country" name="corr_country_id" value={formData.corr_country_id} onChange={handleChange}>
+//                     {countriesList.map(c => <MenuItem key={c.country_id} value={c.country_id}>{c.country_name}</MenuItem>)}
+//                 </TextField>
+//              </Grid>
+//              <Grid item xs={6} md={3}>
+//                 <TextField select fullWidth label="State" name="corr_state_id" value={formData.corr_state_id} onChange={handleChange}>
+//                     {corrStatesList.map(s => <MenuItem key={s.state_id} value={s.state_id}>{s.state_name}</MenuItem>)}
+//                 </TextField>
+//              </Grid>
+//              <Grid item xs={6} md={3}><TextField fullWidth label="City" name="corr_city" value={formData.corr_city} onChange={handleChange} /></Grid>
+//              <Grid item xs={6} md={3}><TextField fullWidth label="Zip Code" name="corr_zip_code" value={formData.corr_zip_code} onChange={handleChange} /></Grid>
+//         </Grid>
+//       )}
+
+//       {/* Buttons */}
+//       <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
+//         <Button onClick={onBack} variant="outlined" sx={{ 
+//   borderRadius: '8px', 
+//   borderColor: '#ccc', 
+//   color: '#555',
+//   '&:hover': { borderColor: '#8C257C', color: '#8C257C' } 
+// }}>Back</Button>
+//         <Button variant="contained" onClick={handleSubmit} sx={{ 
+//   background: 'linear-gradient(135deg, #8C257C 0%, #6d1d60 100%)', 
+//   color: 'white',
+//   boxShadow: '0 4px 12px rgba(140, 37, 124, 0.3)',
+//   borderRadius: '8px' 
+// }}>
+//             Save & Next
+//         </Button>
+//       </Box>
+//     </Box>
+//   );
+// };
+
+// export default BasicInformation;
+
+
+
+// import React, { useState, useContext, useEffect } from 'react';
+// import { EmployeeContext } from './EmployeeContext';
+// import axiosInstance from "../../utils/axiosInstance";
+// import {
+//   Box, Grid, TextField, Typography, MenuItem, Button, FormControl,
+//   InputLabel, Select, CircularProgress, Checkbox, FormControlLabel, FormHelperText
+// } from '@mui/material';
+// import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+// import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+// import dayjs from 'dayjs';
+// import Swal from 'sweetalert2';
+
+// const PRIMARY_COLOR = "#8C257C";
+
+// const BasicInformation = ({ onNext, onBack }) => {
+//   const { employeeId } = useContext(EmployeeContext);
+//   const [loading, setLoading] = useState(true);
+  
+//   // State
+//   const [countriesList, setCountriesList] = useState([]);
+//   const [employeeHubs, setEmployeeHubs] = useState([]);
+//   const [permStatesList, setPermStatesList] = useState([]);
+//   const [corrStatesList, setCorrStatesList] = useState([]);
+//   const [isSameAddress, setIsSameAddress] = useState(false);
+  
+//   // Errors State
+//   const [errors, setErrors] = useState({});
+
+//   const [formData, setFormData] = useState({
+//     first_name: '', middle_name: '', last_name: '',
+//     date_of_birth: null, age: '', gender: '', marital_status: '',
+//     blood_group: '', contact_number: '', employee_id: '',
+//     address_1: '', country_id: '', state_id: '', city: '', zip_code: '',
+//     corr_address_1: '', corr_country_id: '', corr_state_id: '', corr_city: '', corr_zip_code: '',
+//   });
+
+//   const genderStringToValue = (str) => {
+//     if (!str) return '';
+//     const s = str.toLowerCase();
+//     return s === 'male' ? 1 : s === 'female' ? 2 : 3;
+//   };
+//   const genderValueToString = (v) => (v === 1 ? 'male' : v === 2 ? 'female' : 'other');
+
+//   useEffect(() => {
+//     const fetchDropdowns = async () => {
+//       try {
+//         const [countryRes, hubRes] = await Promise.all([
+//           axiosInstance.get('/api/countries/'),
+//           axiosInstance.get('/api/employee_hub/')
+//         ]);
+//         if (countryRes.data.status === 'success') setCountriesList(countryRes.data.data || []);
+//         if (hubRes.data.status === 'success') setEmployeeHubs(hubRes.data.data || []);
+//       } catch (error) { console.error(error); }
+//     };
+//     fetchDropdowns();
+//   }, []);
+
+//   useEffect(() => {
+//     if (!employeeId) return;
+//     setLoading(true);
+//     axiosInstance.post('/api/emp_basic_info/', { user_id: employeeId })
+//       .then((res) => {
+//         const data = res.data?.data?.[0];
+//         if (data) {
+//           setFormData(prev => ({
+//             ...prev,
+//             first_name: data.first_name || '',
+//             middle_name: data.middle_name || '',
+//             last_name: data.last_name || '',
+//             date_of_birth: data.date_of_birth ? dayjs(data.date_of_birth) : null,
+//             gender: genderStringToValue(data.gender),
+//             marital_status: data.marital_status?.toLowerCase() === 'married' ? 1 : 0,
+//             blood_group: data.blood_group || '',
+//             contact_number: data.contact_number || '',
+//             employee_id: data.employee_id || '',
+//             address_1: data.address_1 || '',
+//             country_id: Number(data.country_id || ''),
+//             state_id: Number(data.state_id || ''),
+//             city: data.city || '',
+//             zip_code: data.zipcode || '',
+//             corr_address_1: data.address_2 || '',
+//             corr_country_id: Number(data.correspondence_country || ''),
+//             corr_state_id: Number(data.correspondence_state || ''),
+//             corr_city: data.correspondence_city || '',
+//             corr_zip_code: data.correspondence_pincode || '',
+//           }));
+//         }
+//       })
+//       .finally(() => setLoading(false));
+//   }, [employeeId]);
+
+//   useEffect(() => {
+//     if (formData.country_id && countriesList.length) {
+//       const c = countriesList.find(x => x.country_id === formData.country_id);
+//       if (c) axiosInstance.get(`/api/states/?country_name=${c.country_name}`).then(r => setPermStatesList(r.data.data));
+//     }
+//   }, [formData.country_id, countriesList]);
+
+//   useEffect(() => {
+//     if (formData.corr_country_id && countriesList.length) {
+//       const c = countriesList.find(x => x.country_id === formData.corr_country_id);
+//       if (c) axiosInstance.get(`/api/states/?country_name=${c.country_name}`).then(r => setCorrStatesList(r.data.data));
+//     }
+//   }, [formData.corr_country_id, countriesList]);
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData(prev => ({ ...prev, [name]: value }));
+//     if(errors[name]) setErrors(prev => ({...prev, [name]: false}));
+//   };
+
+//   const handleDateChange = (val) => {
+//     setFormData(prev => ({ ...prev, date_of_birth: val }));
+//     if(errors.date_of_birth) setErrors(prev => ({...prev, date_of_birth: false}));
+//     if (val) {
+//       const age = dayjs().diff(val, 'year');
+//       setFormData(prev => ({ ...prev, age: age >= 0 ? age : '' }));
+//     }
+//   };
+
+//   const validate = () => {
+//     const newErrors = {};
+//     let isValid = true;
+//     const fieldsToCheck = [
+//         'first_name', 'last_name', 'gender', 'marital_status', 
+//         'contact_number', 'blood_group', 'address_1', 'country_id', 
+//         'state_id', 'city', 'zip_code'
+//     ];
+
+//     fieldsToCheck.forEach(field => {
+//         if (!formData[field] || formData[field] === '') {
+//             newErrors[field] = true;
+//             isValid = false;
+//         }
+//     });
+
+//     if (!formData.date_of_birth) { newErrors.date_of_birth = true; isValid = false; }
+
+//     if (!isSameAddress) {
+//         const corrFields = ['corr_address_1', 'corr_country_id', 'corr_state_id', 'corr_city', 'corr_zip_code'];
+//         corrFields.forEach(field => {
+//             if (!formData[field] || formData[field] === '') {
+//                 newErrors[field] = true;
+//                 isValid = false;
+//             }
+//         });
+//     }
+
+//     setErrors(newErrors);
+
+//     if (!isValid) {
+//         Swal.fire({
+//             icon: 'error',
+//             title: 'Incomplete Details',
+//             text: 'Please fill all the required fields before continuing.',
+//             confirmButtonColor: PRIMARY_COLOR
+//         });
+//         setTimeout(() => {
+//             const el = document.querySelector('.Mui-error');
+//             if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+//         }, 100);
+//     }
+//     return isValid;
+//   };
+
+//   const handleSubmit = async () => {
+//     if (!validate()) return;
+
+//     const payload = {
+//       user_id: employeeId,
+//       ...formData,
+//       date_of_birth: formData.date_of_birth ? formData.date_of_birth.format('YYYY-MM-DD') : null,
+//       gender: genderValueToString(formData.gender),
+//       marital_status: formData.marital_status === 1 ? 'married' : 'single',
+//       address_2: isSameAddress ? formData.address_1 : formData.corr_address_1,
+//       correspondence_city: isSameAddress ? formData.city : formData.corr_city,
+//       correspondence_pincode: isSameAddress ? formData.zip_code : formData.corr_zip_code,
+//       correspondence_state: isSameAddress ? formData.state_id : formData.corr_state_id,
+//       correspondence_country: isSameAddress ? formData.country_id : formData.corr_country_id,
+//       zipcode: formData.zip_code
+//     };
+
+//     try {
+//       Swal.showLoading();
+//       await axiosInstance.patch('/api/emp_basic_info/', payload);
+//       Swal.close();
+//       if (onNext) onNext();
+//     } catch (error) {
+//       Swal.fire('Error', 'Failed to update profile.', 'error');
+//     }
+//   };
+
+//   if (loading) return <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>;
+
+//   return (
+//     <Box sx={{ p: 2 }}>
+//       <Typography variant="h6" gutterBottom color={PRIMARY_COLOR} fontWeight="bold">Basic Information</Typography>
+      
+//       <Grid container spacing={2} sx={{ mb: 3 }}>
+//           <Grid item xs={12} sm={4}><TextField fullWidth label="First Name" name="first_name" value={formData.first_name} onChange={handleChange} error={!!errors.first_name} /></Grid>
+//           <Grid item xs={12} sm={4}><TextField fullWidth label="Middle Name" name="middle_name" value={formData.middle_name} onChange={handleChange} /></Grid>
+//           <Grid item xs={12} sm={4}><TextField fullWidth label="Last Name" name="last_name" value={formData.last_name} onChange={handleChange} error={!!errors.last_name} /></Grid>
+          
+//           <Grid item xs={12} sm={4}>
+//             <LocalizationProvider dateAdapter={AdapterDayjs}>
+//                 <DatePicker 
+//                     label="Date of Birth" 
+//                     value={formData.date_of_birth} 
+//                     onChange={handleDateChange} 
+//                     slotProps={{ textField: { fullWidth: true, error: !!errors.date_of_birth } }}
+//                 />
+//             </LocalizationProvider>
+//           </Grid>
+//           <Grid item xs={12} sm={2}><TextField fullWidth label="Age" value={formData.age} InputProps={{ readOnly: true }} /></Grid>
+          
+//           <Grid item xs={12} sm={3}>
+//             <FormControl fullWidth error={!!errors.gender}>
+//                 <InputLabel>Gender</InputLabel>
+//                 <Select name="gender" value={formData.gender} onChange={handleChange} label="Gender">
+//                     <MenuItem value={1}>Male</MenuItem><MenuItem value={2}>Female</MenuItem><MenuItem value={3}>Other</MenuItem>
+//                 </Select>
+//             </FormControl>
+//           </Grid>
+//           <Grid item xs={12} sm={3}>
+//             <FormControl fullWidth error={!!errors.marital_status}>
+//                 <InputLabel>Marital Status</InputLabel>
+//                 <Select name="marital_status" value={formData.marital_status} onChange={handleChange} label="Marital Status">
+//                     <MenuItem value={0}>Single</MenuItem><MenuItem value={1}>Married</MenuItem>
+//                 </Select>
+//             </FormControl>
+//           </Grid>
+          
+//           <Grid item xs={12} sm={6}><TextField fullWidth label="Contact" name="contact_number" value={formData.contact_number} onChange={handleChange} error={!!errors.contact_number} /></Grid>
+//           <Grid item xs={12} sm={6}>
+//             <FormControl fullWidth error={!!errors.blood_group}>
+//                 <InputLabel>Blood Group</InputLabel>
+//                 <Select name="blood_group" value={formData.blood_group} onChange={handleChange} label="Blood Group">
+//                     {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(b => <MenuItem key={b} value={b}>{b}</MenuItem>)}
+//                 </Select>
+//             </FormControl>
+//           </Grid>
+//       </Grid>
+
+//       <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Permanent Address</Typography>
+//       <Grid container spacing={2}>
+//         <Grid item xs={12}><TextField fullWidth label="Address Line 1" name="address_1" value={formData.address_1} onChange={handleChange} error={!!errors.address_1} /></Grid>
+//         <Grid item xs={6} md={3}>
+//             <TextField select fullWidth label="Country" name="country_id" value={formData.country_id} onChange={handleChange} error={!!errors.country_id}>
+//                 {countriesList.map(c => <MenuItem key={c.country_id} value={c.country_id}>{c.country_name}</MenuItem>)}
+//             </TextField>
+//         </Grid>
+//         <Grid item xs={6} md={3}>
+//             <TextField select fullWidth label="State" name="state_id" value={formData.state_id} onChange={handleChange} error={!!errors.state_id}>
+//                 {permStatesList.map(s => <MenuItem key={s.state_id} value={s.state_id}>{s.state_name}</MenuItem>)}
+//             </TextField>
+//         </Grid>
+//         <Grid item xs={6} md={3}><TextField fullWidth label="City" name="city" value={formData.city} onChange={handleChange} error={!!errors.city} /></Grid>
+//         <Grid item xs={6} md={3}><TextField fullWidth label="Zip Code" name="zip_code" value={formData.zip_code} onChange={handleChange} error={!!errors.zip_code} /></Grid>
+//       </Grid>
+      
+//       <Box mt={2} mb={2}>
+//          <FormControlLabel control={<Checkbox checked={isSameAddress} onChange={(e) => {
+//              setIsSameAddress(e.target.checked);
+//              if (e.target.checked) {
+//                  setErrors(prev => ({
+//                      ...prev, 
+//                      corr_address_1: false, corr_country_id: false, corr_state_id: false, corr_city: false, corr_zip_code: false 
+//                  }));
+//              }
+//          }} />} label="Correspondence same as Permanent" />
+//       </Box>
+      
+//       {!isSameAddress && (
+//         <>
+//             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Correspondence Address</Typography>
+//             <Grid container spacing={2}>
+//                  <Grid item xs={12}><TextField fullWidth label="Address Line 1" name="corr_address_1" value={formData.corr_address_1} onChange={handleChange} error={!!errors.corr_address_1} /></Grid>
+//                  <Grid item xs={6} md={3}>
+//                     <TextField select fullWidth label="Country" name="corr_country_id" value={formData.corr_country_id} onChange={handleChange} error={!!errors.corr_country_id}>
+//                         {countriesList.map(c => <MenuItem key={c.country_id} value={c.country_id}>{c.country_name}</MenuItem>)}
+//                     </TextField>
+//                  </Grid>
+//                  <Grid item xs={6} md={3}>
+//                     <TextField select fullWidth label="State" name="corr_state_id" value={formData.corr_state_id} onChange={handleChange} error={!!errors.corr_state_id}>
+//                         {corrStatesList.map(s => <MenuItem key={s.state_id} value={s.state_id}>{s.state_name}</MenuItem>)}
+//                     </TextField>
+//                  </Grid>
+//                  <Grid item xs={6} md={3}><TextField fullWidth label="City" name="corr_city" value={formData.corr_city} onChange={handleChange} error={!!errors.corr_city} /></Grid>
+//                  <Grid item xs={6} md={3}><TextField fullWidth label="Zip Code" name="corr_zip_code" value={formData.corr_zip_code} onChange={handleChange} error={!!errors.corr_zip_code} /></Grid>
+//             </Grid>
+//         </>
+//       )}
+
+//       <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
+//         <Button onClick={onBack} variant="outlined" sx={{ borderRadius: '8px', borderColor: '#ccc', color: '#555', '&:hover': { borderColor: '#8C257C', color: '#8C257C' } }}>Back</Button>
+//         <Button variant="contained" onClick={handleSubmit} sx={{ background: `linear-gradient(135deg, ${PRIMARY_COLOR} 0%, #6d1d60 100%)`, color: 'white', borderRadius: '8px' }}>Save & Next</Button>
+//       </Box>
+//     </Box>
+//   );
+// };
+
+// export default BasicInformation;
+
+
+
 import React, { useState, useContext, useEffect } from 'react';
 import { EmployeeContext } from './EmployeeContext';
 import axiosInstance from "../../utils/axiosInstance";
@@ -4342,19 +4917,18 @@ const BasicInformation = ({ onNext, onBack }) => {
   const { employeeId } = useContext(EmployeeContext);
   const [loading, setLoading] = useState(true);
   
-  // State
-  const [roleOptions, setRoleOptions] = useState([]);
   const [countriesList, setCountriesList] = useState([]);
   const [employeeHubs, setEmployeeHubs] = useState([]);
   const [permStatesList, setPermStatesList] = useState([]);
   const [corrStatesList, setCorrStatesList] = useState([]);
   const [isSameAddress, setIsSameAddress] = useState(false);
+  
+  const [errors, setErrors] = useState({});
 
   const [formData, setFormData] = useState({
     first_name: '', middle_name: '', last_name: '',
-    date_of_birth: null, age: '', gender: '', marital_status: 0,
+    date_of_birth: null, age: '', gender: '', marital_status: '',
     blood_group: '', contact_number: '', employee_id: '',
-    role_id: '', employee_hub_id: '', is_active: 1,
     address_1: '', country_id: '', state_id: '', city: '', zip_code: '',
     corr_address_1: '', corr_country_id: '', corr_state_id: '', corr_city: '', corr_zip_code: '',
   });
@@ -4369,12 +4943,10 @@ const BasicInformation = ({ onNext, onBack }) => {
   useEffect(() => {
     const fetchDropdowns = async () => {
       try {
-        const [roleRes, countryRes, hubRes] = await Promise.all([
-          axiosInstance.get('/roles/'),
+        const [countryRes, hubRes] = await Promise.all([
           axiosInstance.get('/api/countries/'),
           axiosInstance.get('/api/employee_hub/')
         ]);
-        setRoleOptions(roleRes.data || []);
         if (countryRes.data.status === 'success') setCountriesList(countryRes.data.data || []);
         if (hubRes.data.status === 'success') setEmployeeHubs(hubRes.data.data || []);
       } catch (error) { console.error(error); }
@@ -4389,20 +4961,18 @@ const BasicInformation = ({ onNext, onBack }) => {
       .then((res) => {
         const data = res.data?.data?.[0];
         if (data) {
-          const selectedHub = employeeHubs.find(h => h.employee_hub_name === data.employee_hub_name);
-          setFormData({
+          setFormData(prev => ({
+            ...prev,
             first_name: data.first_name || '',
             middle_name: data.middle_name || '',
             last_name: data.last_name || '',
             date_of_birth: data.date_of_birth ? dayjs(data.date_of_birth) : null,
+            age: data.age || '',
             gender: genderStringToValue(data.gender),
             marital_status: data.marital_status?.toLowerCase() === 'married' ? 1 : 0,
             blood_group: data.blood_group || '',
             contact_number: data.contact_number || '',
             employee_id: data.employee_id || '',
-            is_active: data.is_active?.toLowerCase() === 'yes' ? 1 : 0,
-            role_id: Number(data.role_id || ''),
-            employee_hub_id: selectedHub ? selectedHub.employee_hub_id : '',
             address_1: data.address_1 || '',
             country_id: Number(data.country_id || ''),
             state_id: Number(data.state_id || ''),
@@ -4413,11 +4983,11 @@ const BasicInformation = ({ onNext, onBack }) => {
             corr_state_id: Number(data.correspondence_state || ''),
             corr_city: data.correspondence_city || '',
             corr_zip_code: data.correspondence_pincode || '',
-          });
+          }));
         }
       })
       .finally(() => setLoading(false));
-  }, [employeeId, employeeHubs]);
+  }, [employeeId]);
 
   useEffect(() => {
     if (formData.country_id && countriesList.length) {
@@ -4436,21 +5006,65 @@ const BasicInformation = ({ onNext, onBack }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    if(errors[name]) setErrors(prev => ({...prev, [name]: false}));
   };
 
   const handleDateChange = (val) => {
     setFormData(prev => ({ ...prev, date_of_birth: val }));
+    if(errors.date_of_birth) setErrors(prev => ({...prev, date_of_birth: false}));
     if (val) {
       const age = dayjs().diff(val, 'year');
       setFormData(prev => ({ ...prev, age: age >= 0 ? age : '' }));
     }
   };
 
-  const handleSubmit = async () => {
-    if (!formData.first_name || !formData.last_name) {
-      Swal.fire('Error', 'First and Last Name are required', 'error');
-      return;
+  const validate = () => {
+    const newErrors = {};
+    let isValid = true;
+    const fieldsToCheck = [
+        'first_name', 'last_name', 'gender', 'marital_status', 
+        'contact_number', 'blood_group', 'address_1', 'country_id', 
+        'state_id', 'city', 'zip_code'
+    ];
+
+    fieldsToCheck.forEach(field => {
+        if (formData[field] === '' || formData[field] === null || formData[field] === undefined) {
+            newErrors[field] = true;
+            isValid = false;
+        }
+    });
+
+    if (!formData.date_of_birth) { newErrors.date_of_birth = true; isValid = false; }
+
+    if (!isSameAddress) {
+        const corrFields = ['corr_address_1', 'corr_country_id', 'corr_state_id', 'corr_city', 'corr_zip_code'];
+        corrFields.forEach(field => {
+            if (formData[field] === '' || formData[field] === null || formData[field] === undefined) {
+                newErrors[field] = true;
+                isValid = false;
+            }
+        });
     }
+
+    setErrors(newErrors);
+
+    if (!isValid) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Incomplete Details',
+            text: 'Please fill all the required fields before continuing.',
+            confirmButtonColor: PRIMARY_COLOR
+        });
+        setTimeout(() => {
+            const el = document.querySelector('.Mui-error');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    }
+    return isValid;
+  };
+
+  const handleSubmit = async () => {
+    if (!validate()) return;
 
     const payload = {
       user_id: employeeId,
@@ -4458,11 +5072,11 @@ const BasicInformation = ({ onNext, onBack }) => {
       date_of_birth: formData.date_of_birth ? formData.date_of_birth.format('YYYY-MM-DD') : null,
       gender: genderValueToString(formData.gender),
       marital_status: formData.marital_status === 1 ? 'married' : 'single',
-      address_2: formData.corr_address_1,
-      correspondence_city: formData.corr_city,
-      correspondence_pincode: formData.corr_zip_code,
-      correspondence_state: formData.corr_state_id,
-      correspondence_country: formData.corr_country_id,
+      address_2: isSameAddress ? formData.address_1 : formData.corr_address_1,
+      correspondence_city: isSameAddress ? formData.city : formData.corr_city,
+      correspondence_pincode: isSameAddress ? formData.zip_code : formData.corr_zip_code,
+      correspondence_state: isSameAddress ? formData.state_id : formData.corr_state_id,
+      correspondence_country: isSameAddress ? formData.country_id : formData.corr_country_id,
       zipcode: formData.zip_code
     };
 
@@ -4483,35 +5097,43 @@ const BasicInformation = ({ onNext, onBack }) => {
       <Typography variant="h6" gutterBottom color={PRIMARY_COLOR} fontWeight="bold">Basic Information</Typography>
       
       <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={4}><TextField fullWidth label="First Name" name="first_name" value={formData.first_name} onChange={handleChange} required /></Grid>
+          <Grid item xs={12} sm={4}><TextField fullWidth label="First Name" name="first_name" value={formData.first_name} onChange={handleChange} error={!!errors.first_name} /></Grid>
           <Grid item xs={12} sm={4}><TextField fullWidth label="Middle Name" name="middle_name" value={formData.middle_name} onChange={handleChange} /></Grid>
-          <Grid item xs={12} sm={4}><TextField fullWidth label="Last Name" name="last_name" value={formData.last_name} onChange={handleChange} required /></Grid>
+          <Grid item xs={12} sm={4}><TextField fullWidth label="Last Name" name="last_name" value={formData.last_name} onChange={handleChange} error={!!errors.last_name} /></Grid>
           
           <Grid item xs={12} sm={4}>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker label="Date of Birth" value={formData.date_of_birth} onChange={handleDateChange} slotProps={{ textField: { fullWidth: true } }}/>
+                <DatePicker 
+                    label="Date of Birth" 
+                    value={formData.date_of_birth} 
+                    onChange={handleDateChange} 
+                    slotProps={{ textField: { fullWidth: true, error: !!errors.date_of_birth } }}
+                />
             </LocalizationProvider>
           </Grid>
-          <Grid item xs={12} sm={2}><TextField fullWidth label="Age" value={formData.age} InputProps={{ readOnly: true }} /></Grid>
+          <Grid item xs={12} sm={2}><TextField fullWidth label="Age" name="age" value={formData.age} onChange={handleChange} /></Grid>
           
           <Grid item xs={12} sm={3}>
-            <FormControl fullWidth><InputLabel>Gender</InputLabel>
+            <FormControl fullWidth error={!!errors.gender}>
+                <InputLabel>Gender</InputLabel>
                 <Select name="gender" value={formData.gender} onChange={handleChange} label="Gender">
                     <MenuItem value={1}>Male</MenuItem><MenuItem value={2}>Female</MenuItem><MenuItem value={3}>Other</MenuItem>
                 </Select>
             </FormControl>
           </Grid>
           <Grid item xs={12} sm={3}>
-            <FormControl fullWidth><InputLabel>Marital Status</InputLabel>
+            <FormControl fullWidth error={!!errors.marital_status}>
+                <InputLabel>Marital Status</InputLabel>
                 <Select name="marital_status" value={formData.marital_status} onChange={handleChange} label="Marital Status">
                     <MenuItem value={0}>Single</MenuItem><MenuItem value={1}>Married</MenuItem>
                 </Select>
             </FormControl>
           </Grid>
           
-          <Grid item xs={12} sm={6}><TextField fullWidth label="Contact" name="contact_number" value={formData.contact_number} onChange={handleChange} /></Grid>
+          <Grid item xs={12} sm={6}><TextField fullWidth label="Contact" name="contact_number" value={formData.contact_number} onChange={handleChange} error={!!errors.contact_number} /></Grid>
           <Grid item xs={12} sm={6}>
-            <FormControl fullWidth><InputLabel>Blood Group</InputLabel>
+            <FormControl fullWidth error={!!errors.blood_group}>
+                <InputLabel>Blood Group</InputLabel>
                 <Select name="blood_group" value={formData.blood_group} onChange={handleChange} label="Blood Group">
                     {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(b => <MenuItem key={b} value={b}>{b}</MenuItem>)}
                 </Select>
@@ -4519,70 +5141,59 @@ const BasicInformation = ({ onNext, onBack }) => {
           </Grid>
       </Grid>
 
-      <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Addresses</Typography>
+      <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Permanent Address</Typography>
       <Grid container spacing={2}>
-        <Grid item xs={12}><TextField fullWidth label="Permanent Address" name="address_1" value={formData.address_1} onChange={handleChange} /></Grid>
+        <Grid item xs={12}><TextField fullWidth label="Address Line 1" name="address_1" value={formData.address_1} onChange={handleChange} error={!!errors.address_1} /></Grid>
         <Grid item xs={6} md={3}>
-            <TextField select fullWidth label="Country" name="country_id" value={formData.country_id} onChange={handleChange}>
+            <TextField select fullWidth label="Country" name="country_id" value={formData.country_id} onChange={handleChange} error={!!errors.country_id}>
                 {countriesList.map(c => <MenuItem key={c.country_id} value={c.country_id}>{c.country_name}</MenuItem>)}
             </TextField>
         </Grid>
         <Grid item xs={6} md={3}>
-            <TextField select fullWidth label="State" name="state_id" value={formData.state_id} onChange={handleChange}>
+            <TextField select fullWidth label="State" name="state_id" value={formData.state_id} onChange={handleChange} error={!!errors.state_id}>
                 {permStatesList.map(s => <MenuItem key={s.state_id} value={s.state_id}>{s.state_name}</MenuItem>)}
             </TextField>
         </Grid>
-        <Grid item xs={6} md={3}><TextField fullWidth label="City" name="city" value={formData.city} onChange={handleChange} /></Grid>
-        <Grid item xs={6} md={3}><TextField fullWidth label="Zip Code" name="zip_code" value={formData.zip_code} onChange={handleChange} /></Grid>
+        <Grid item xs={6} md={3}><TextField fullWidth label="City" name="city" value={formData.city} onChange={handleChange} error={!!errors.city} /></Grid>
+        <Grid item xs={6} md={3}><TextField fullWidth label="Zip Code" name="zip_code" value={formData.zip_code} onChange={handleChange} error={!!errors.zip_code} /></Grid>
       </Grid>
       
       <Box mt={2} mb={2}>
          <FormControlLabel control={<Checkbox checked={isSameAddress} onChange={(e) => {
              setIsSameAddress(e.target.checked);
-             if(e.target.checked) {
-                 setFormData(prev => ({
-                     ...prev,
-                     corr_address_1: prev.address_1, corr_country_id: prev.country_id,
-                     corr_state_id: prev.state_id, corr_city: prev.city, corr_zip_code: prev.zip_code
+             if (e.target.checked) {
+                 setErrors(prev => ({
+                     ...prev, 
+                     corr_address_1: false, corr_country_id: false, corr_state_id: false, corr_city: false, corr_zip_code: false 
                  }));
              }
          }} />} label="Correspondence same as Permanent" />
       </Box>
       
       {!isSameAddress && (
-        <Grid container spacing={2}>
-             <Grid item xs={12}><TextField fullWidth label="Correspondence Address" name="corr_address_1" value={formData.corr_address_1} onChange={handleChange} /></Grid>
-             <Grid item xs={6} md={3}>
-                <TextField select fullWidth label="Country" name="corr_country_id" value={formData.corr_country_id} onChange={handleChange}>
-                    {countriesList.map(c => <MenuItem key={c.country_id} value={c.country_id}>{c.country_name}</MenuItem>)}
-                </TextField>
-             </Grid>
-             <Grid item xs={6} md={3}>
-                <TextField select fullWidth label="State" name="corr_state_id" value={formData.corr_state_id} onChange={handleChange}>
-                    {corrStatesList.map(s => <MenuItem key={s.state_id} value={s.state_id}>{s.state_name}</MenuItem>)}
-                </TextField>
-             </Grid>
-             <Grid item xs={6} md={3}><TextField fullWidth label="City" name="corr_city" value={formData.corr_city} onChange={handleChange} /></Grid>
-             <Grid item xs={6} md={3}><TextField fullWidth label="Zip Code" name="corr_zip_code" value={formData.corr_zip_code} onChange={handleChange} /></Grid>
-        </Grid>
+        <>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Correspondence Address</Typography>
+            <Grid container spacing={2}>
+                 <Grid item xs={12}><TextField fullWidth label="Address Line 1" name="corr_address_1" value={formData.corr_address_1} onChange={handleChange} error={!!errors.corr_address_1} /></Grid>
+                 <Grid item xs={6} md={3}>
+                    <TextField select fullWidth label="Country" name="corr_country_id" value={formData.corr_country_id} onChange={handleChange} error={!!errors.corr_country_id}>
+                        {countriesList.map(c => <MenuItem key={c.country_id} value={c.country_id}>{c.country_name}</MenuItem>)}
+                    </TextField>
+                 </Grid>
+                 <Grid item xs={6} md={3}>
+                    <TextField select fullWidth label="State" name="corr_state_id" value={formData.corr_state_id} onChange={handleChange} error={!!errors.corr_state_id}>
+                        {corrStatesList.map(s => <MenuItem key={s.state_id} value={s.state_id}>{s.state_name}</MenuItem>)}
+                    </TextField>
+                 </Grid>
+                 <Grid item xs={6} md={3}><TextField fullWidth label="City" name="corr_city" value={formData.corr_city} onChange={handleChange} error={!!errors.corr_city} /></Grid>
+                 <Grid item xs={6} md={3}><TextField fullWidth label="Zip Code" name="corr_zip_code" value={formData.corr_zip_code} onChange={handleChange} error={!!errors.corr_zip_code} /></Grid>
+            </Grid>
+        </>
       )}
 
-      {/* Buttons */}
       <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
-        <Button onClick={onBack} variant="outlined" sx={{ 
-  borderRadius: '8px', 
-  borderColor: '#ccc', 
-  color: '#555',
-  '&:hover': { borderColor: '#8C257C', color: '#8C257C' } 
-}}>Back</Button>
-        <Button variant="contained" onClick={handleSubmit} sx={{ 
-  background: 'linear-gradient(135deg, #8C257C 0%, #6d1d60 100%)', 
-  color: 'white',
-  boxShadow: '0 4px 12px rgba(140, 37, 124, 0.3)',
-  borderRadius: '8px' 
-}}>
-            Save & Next
-        </Button>
+        <Button onClick={onBack} variant="outlined" sx={{ borderRadius: '8px', borderColor: '#ccc', color: '#555', '&:hover': { borderColor: '#8C257C', color: '#8C257C' } }}>Back</Button>
+        <Button variant="contained" onClick={handleSubmit} sx={{ background: `linear-gradient(135deg, ${PRIMARY_COLOR} 0%, #6d1d60 100%)`, color: 'white', borderRadius: '8px' }}>Save & Next</Button>
       </Box>
     </Box>
   );

@@ -288,6 +288,93 @@
 
 
 
+// import React, { useEffect, useState, useContext } from 'react';
+// import { Box, Typography, Button, Grid, TextField, InputAdornment, InputLabel } from '@mui/material';
+// import PersonIcon from '@mui/icons-material/Person';
+// import EmailIcon from '@mui/icons-material/Email';
+// import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
+// import { EmployeeContext } from './EmployeeContext';
+// import axiosInstance from '../../utils/axiosInstance';
+// import Swal from 'sweetalert2';
+
+// const PRIMARY_COLOR = "#8C257C";
+
+// const AccountInformation = ({ onNext, onBack }) => {
+//   const [username, setUsername] = useState('');
+//   const [email, setEmail] = useState('');
+//   const { employeeId } = useContext(EmployeeContext);
+//   const userId = employeeId;
+
+//   useEffect(() => {
+//     const fetchAccountInfo = async () => {
+//       if (!userId) return;
+//       try {
+//         const response = await axiosInstance.post('/api/account_info/', { user_id: userId });
+//         if (response.data.status === 'success') {
+//           const { username, email } = response.data.data;
+//           setUsername(username || '');
+//           setEmail(email || '');
+//         }
+//       } catch (error) { console.error(error); }
+//     };
+//     fetchAccountInfo();
+//   }, [userId]);
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     Swal.fire({ title: 'Saving...', didOpen: () => Swal.showLoading() });
+//     try {
+//       await axiosInstance.patch('/api/account_info/', { user_id: userId, username, email });
+//       Swal.close();
+//       if (onNext) onNext();
+//     } catch (error) {
+//       Swal.fire('Error', 'Failed to save account information.', 'error');
+//     }
+//   };
+
+//   return (
+//     <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 700, p: 3 }}>
+//       <Box display="flex" alignItems="center" gap={1} mb={2}>
+//         <PhoneIphoneIcon sx={{ color: PRIMARY_COLOR }} />
+//         <Typography variant="h6" color={PRIMARY_COLOR} fontWeight="bold">Account Information</Typography>
+//       </Box>
+
+//       <Grid container spacing={3}>
+//         <Grid item xs={12} sm={6}>
+//           <InputLabel required sx={{ mb: 1 }}>Username</InputLabel>
+//           <TextField fullWidth size="small" value={username} onChange={(e) => setUsername(e.target.value)} required InputProps={{ startAdornment: (<InputAdornment position="start"><PersonIcon /></InputAdornment>) }} />
+//         </Grid>
+//         <Grid item xs={12} sm={6}>
+//           <InputLabel required sx={{ mb: 1 }}>Account Email</InputLabel>
+//           <TextField fullWidth size="small" value={email} type="email" onChange={(e) => setEmail(e.target.value)} required InputProps={{ startAdornment: (<InputAdornment position="start"><EmailIcon /></InputAdornment>) }} />
+//         </Grid>
+//       </Grid>
+
+//       {/* Buttons */}
+//       <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
+//         <Button onClick={onBack} variant="outlined" sx={{ 
+//   borderRadius: '8px', 
+//   borderColor: '#ccc', 
+//   color: '#555',
+//   '&:hover': { borderColor: '#8C257C', color: '#8C257C' } 
+// }}>Back</Button>
+//         <Button type="submit" variant="contained" sx={{ 
+//   background: 'linear-gradient(135deg, #8C257C 0%, #6d1d60 100%)', 
+//   color: 'white',
+//   boxShadow: '0 4px 12px rgba(140, 37, 124, 0.3)',
+//   borderRadius: '8px' 
+// }}>
+//           Save & Next
+//         </Button>
+//       </Box>
+//     </Box>
+//   );
+// };
+
+// export default AccountInformation;
+
+
+
 import React, { useEffect, useState, useContext } from 'react';
 import { Box, Typography, Button, Grid, TextField, InputAdornment, InputLabel } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
@@ -302,6 +389,7 @@ const PRIMARY_COLOR = "#8C257C";
 const AccountInformation = ({ onNext, onBack }) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [errors, setErrors] = useState({});
   const { employeeId } = useContext(EmployeeContext);
   const userId = employeeId;
 
@@ -320,8 +408,33 @@ const AccountInformation = ({ onNext, onBack }) => {
     fetchAccountInfo();
   }, [userId]);
 
+  const validate = () => {
+    const newErrors = {};
+    let isValid = true;
+    if(!username.trim()) { newErrors.username = true; isValid = false; }
+    if(!email.trim()) { newErrors.email = true; isValid = false; }
+
+    setErrors(newErrors);
+
+    if (!isValid) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Incomplete Details',
+            text: 'Please fill all the required fields before continuing.',
+            confirmButtonColor: PRIMARY_COLOR
+        });
+        setTimeout(() => {
+            const el = document.querySelector('.Mui-error');
+            if(el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    }
+    return isValid;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if(!validate()) return;
+
     Swal.fire({ title: 'Saving...', didOpen: () => Swal.showLoading() });
     try {
       await axiosInstance.patch('/api/account_info/', { user_id: userId, username, email });
@@ -342,30 +455,31 @@ const AccountInformation = ({ onNext, onBack }) => {
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6}>
           <InputLabel required sx={{ mb: 1 }}>Username</InputLabel>
-          <TextField fullWidth size="small" value={username} onChange={(e) => setUsername(e.target.value)} required InputProps={{ startAdornment: (<InputAdornment position="start"><PersonIcon /></InputAdornment>) }} />
+          <TextField 
+            fullWidth size="small" 
+            value={username} 
+            onChange={(e) => { setUsername(e.target.value); setErrors(p => ({...p, username: false})); }} 
+            error={!!errors.username}
+            required 
+            InputProps={{ startAdornment: (<InputAdornment position="start"><PersonIcon /></InputAdornment>) }} 
+          />
         </Grid>
         <Grid item xs={12} sm={6}>
           <InputLabel required sx={{ mb: 1 }}>Account Email</InputLabel>
-          <TextField fullWidth size="small" value={email} type="email" onChange={(e) => setEmail(e.target.value)} required InputProps={{ startAdornment: (<InputAdornment position="start"><EmailIcon /></InputAdornment>) }} />
+          <TextField 
+            fullWidth size="small" type="email"
+            value={email} 
+            onChange={(e) => { setEmail(e.target.value); setErrors(p => ({...p, email: false})); }} 
+            error={!!errors.email}
+            required 
+            InputProps={{ startAdornment: (<InputAdornment position="start"><EmailIcon /></InputAdornment>) }} 
+          />
         </Grid>
       </Grid>
 
-      {/* Buttons */}
       <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
-        <Button onClick={onBack} variant="outlined" sx={{ 
-  borderRadius: '8px', 
-  borderColor: '#ccc', 
-  color: '#555',
-  '&:hover': { borderColor: '#8C257C', color: '#8C257C' } 
-}}>Back</Button>
-        <Button type="submit" variant="contained" sx={{ 
-  background: 'linear-gradient(135deg, #8C257C 0%, #6d1d60 100%)', 
-  color: 'white',
-  boxShadow: '0 4px 12px rgba(140, 37, 124, 0.3)',
-  borderRadius: '8px' 
-}}>
-          Save & Next
-        </Button>
+        <Button onClick={onBack} variant="outlined" sx={{ borderRadius: '8px', borderColor: '#ccc', color: '#555', '&:hover': { borderColor: '#8C257C', color: '#8C257C' } }}>Back</Button>
+        <Button type="submit" variant="contained" sx={{ background: `linear-gradient(135deg, ${PRIMARY_COLOR} 0%, #6d1d60 100%)`, color: 'white', borderRadius: '8px' }}>Save & Next</Button>
       </Box>
     </Box>
   );
