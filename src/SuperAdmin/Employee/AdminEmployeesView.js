@@ -13829,6 +13829,1051 @@
 
 
 
+// import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+// import axios from "axios";
+// import {
+//   Box,
+//   Typography,
+//   Button,
+//   Paper,
+//   Table,
+//   TableBody,
+//   TableCell,
+//   TableContainer,
+//   TableHead,
+//   TableRow,
+//   TextField,
+//   FormControl,
+//   InputLabel,
+//   Select,
+//   MenuItem,
+//   Avatar,
+//   Chip,
+//   IconButton,
+//   Dialog,
+//   DialogTitle,
+//   DialogContent,
+//   DialogActions,
+//   Grid,
+//   CircularProgress,
+//   Autocomplete,
+//   InputAdornment,
+//   useTheme,
+//   useMediaQuery,
+//   Skeleton,
+//   Pagination,
+// } from "@mui/material";
+// import {
+//   Edit as EditIcon,
+//   Delete as DeleteIcon,
+//   Add as AddIcon,
+//   Close as CloseIcon,
+//   Download as DownloadIcon,
+//   ArrowForward as ArrowForwardIcon,
+//   SupervisorAccount as ChangeManagerIcon,
+//   Link as LinkIcon,
+//   Visibility,
+//   VisibilityOff,
+//   Search as SearchIcon,
+// } from "@mui/icons-material";
+// import * as XLSX from "xlsx";
+// import { useNavigate } from "react-router-dom";
+// import axiosInstance from "../../utils/axiosInstance";
+// import Swal from "sweetalert2";
+
+// const RESUME_BASE_URL = "https://raasbackend.vetrinahealthcare.com/";
+// const statusOptions = [{ value: 1, label: "Active" }, { value: 0, label: "Inactive" }];
+// const probationOptions = [{ value: "y", label: "Yes" }, { value: "n", label: "No" }];
+// const genderOptions = [{ value: "Male", label: "Male" }, { value: "Female", label: "Female" }, { value: "Other", label: "Other" }];
+// const subDivisionOptions = [{ value: "VetBiz", label: "VetBiz" }, { value: "TredBiz", label: "TredBiz" }, { value: " ", label: "TredBiz Mix" }];
+
+// export default function EmployeesView() {
+//   const employeeDialogRef = useRef(null);
+//   const changeManagerDialogRef = useRef(null);
+//   const muiTheme = useTheme();
+//   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
+//   const themePurple = "#8C257C";
+//   const themePurpleHover = "#6d1d60";
+//   const themeOrange = "#F58E35";
+
+//   const purpleButtonSx = {
+//     backgroundColor: themePurple,
+//     color: "white",
+//     "&:hover": {
+//       backgroundColor: themePurpleHover,
+//     },
+//   };
+//   const cancelButtonSx = {
+//     color: "#757575",
+//     "&:hover": {
+//       backgroundColor: "rgba(0, 0, 0, 0.04)",
+//     },
+//   };
+
+//   const [loading, setLoading] = useState(true);
+//   const [departments, setDepartments] = useState([]);
+//   const [designations, setDesignations] = useState([]);
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [openChangeManagerForm, setOpenChangeManagerForm] = useState(false);
+//   const [currentPage, setCurrentPage] = useState(0);
+//   const [rowsPerPage, setRowsPerPage] = useState(10);
+//   const [newManager, setNewManager] = useState("");
+//   const [selectedEmployeeForManagerChange, setSelectedEmployeeForManagerChange] = useState("");
+//   const [employees, setEmployees] = useState([]);
+//   const [hoveredRowId, setHoveredRowId] = useState(null);
+//   const [officeShifts, setOfficeShifts] = useState([]);
+//   const [isEditMode, setIsEditMode] = useState(false);
+//   const [roles, setRoles] = useState([]);
+//   const [countries, setCountries] = useState([]);
+//   const [states, setStates] = useState([]);
+//   const [employeeHubs, setEmployeeHubs] = useState([]);
+//   const [headquarters, setHeadquarters] = useState([]);
+//   const [divisions, setDivisions] = useState([]);
+//   const [allEmployeesForDropdown, setAllEmployeesForDropdown] = useState([]);
+//   const [talentPool, setTalentPool] = useState([]);
+//   const [isFetchingDocs, setIsFetchingDocs] = useState(false);
+//   const [employeeDocuments, setEmployeeDocuments] = useState(null);
+//   const [showPassword, setShowPassword] = useState(false);
+//   const [isSaving, setIsSaving] = useState(false);
+//   const [salaryConfig, setSalaryConfig] = useState(null);
+
+//   const [currentEmployee, setCurrentEmployee] = useState({
+//     id: null,
+//     firstName: "",
+//     middleName: "",
+//     lastName: "",
+//     email: "",
+//     phone: "",
+//     address: "",
+//     employee_id: "",
+//     join_date: "",
+//     status: 1,
+//     avatar: null,
+//     country_id: "",
+//     state_id: "",
+//     employee_hub_id: "",
+//     headquarter_id: "",
+//     division_id: "",
+//     subDivision: "",
+//     role: "",
+//     is_probation: "n",
+//     resumeUrl: "",
+//     password: "",
+//     gender: "",
+//     username: "",
+//     grossSalary: "",
+//     department_id: "",
+//     designation_id: "",
+//     manager_id: "",
+//     officeShift: "",
+//     grossSalaryYearly: "",
+//     ctcMonthly: "",
+//     ctcYearly: "",
+//   });
+
+//   const [openEmployeeForm, setOpenEmployeeForm] = useState(false);
+
+//   // Initial Data Fetch
+//   useEffect(() => {
+//     const requests = [
+//       axiosInstance.get("api/desig_dept_dropdown/"),
+//       axiosInstance.get("employee-dropdown/"),
+//       // Removed generic office shift fetch here to support hub-dependent logic
+//       axiosInstance.get("api/countries/"),
+//       axiosInstance.get("api/employee_hub/"),
+//       axiosInstance.get("api/division/"),
+//       axiosInstance.get("api/role_list/"),
+//       axiosInstance.get("api/search_by_email_vet_talent/"),
+//       axios.get("https://tdtlworld.com/hrms-backend/api/headquarters/"),
+//       axios.get("https://tdtlworld.com/hrms-backend/api/payroll_setup_configuration/"),
+//     ];
+
+//     (async () => {
+//       try {
+//         const results = await Promise.allSettled(requests);
+//         const valueAt = (index) => (results[index]?.status === "fulfilled" ? results[index].value : undefined);
+
+//         const depts = valueAt(0);
+//         const empDropdown = valueAt(1);
+//         const countriesRes = valueAt(2);
+//         const hubs = valueAt(3);
+//         const divs = valueAt(4);
+//         const rolesRes = valueAt(5);
+//         const talent = valueAt(6);
+//         const headquartersRes = valueAt(7);
+//         const salaryConf = valueAt(8);
+
+//         if (depts?.data) setDepartments(depts.data.dept_data ?? []);
+//         if (empDropdown?.data) setAllEmployeesForDropdown(empDropdown.data ?? []);
+//         if (countriesRes?.data && countriesRes.data.status === "success") setCountries(countriesRes.data.data ?? []);
+//         if (divs?.data) setDivisions(divs.data ?? []);
+//         if (rolesRes?.data?.status === "success") setRoles(rolesRes.data.data ?? []);
+//         if (headquartersRes?.data) setHeadquarters(headquartersRes.data ?? []);
+//         if (talent?.data?.data) setTalentPool(talent.data.data ?? []);
+
+//         // Salary Config Logic
+//         let configData = null;
+//         if (Array.isArray(salaryConf?.data)) {
+//           configData = salaryConf.data.reduce((acc, item) => {
+//             if (item?.particulars) acc[item.particulars] = parseFloat(item.value) || 0;
+//             return acc;
+//           }, {});
+//           setSalaryConfig(configData);
+//         } else {
+//           setSalaryConfig({ hra: 0.25, basic_plus_da: 0.6, pf_employer_contribution: 0.12, esic_employer_contribution: 0.0325 });
+//         }
+//       } catch (outerError) {
+//         console.error("Unexpected error in fetchInitialData:", outerError);
+//       }
+//     })();
+//   }, []);
+
+//   const fetchEmployees = useCallback(() => {
+//     setLoading(true);
+//     axiosInstance
+//       .get("api/employee_details/")
+//       .then((response) => setEmployees(Array.isArray(response.data.data) ? response.data.data : []))
+//       .catch((error) => {
+//         console.error("Error fetching employees:", error);
+//         setEmployees([]);
+//       })
+//       .finally(() => setLoading(false));
+//   }, []);
+
+//   useEffect(() => {
+//     fetchEmployees();
+//   }, [fetchEmployees]);
+
+//   // --- NEW FUNCTION: Fetch Office Shifts by Hub ---
+//   const fetchOfficeShifts = async (hubId) => {
+//     if (!hubId) {
+//       setOfficeShifts([]);
+//       return [];
+//     }
+//     try {
+//       const response = await axios.get(`https://tdtlworld.com/hrms-backend/api/office_shift_dropdown/${hubId}/`);
+//       const shifts = response.data.data || response.data.office_shift_data || [];
+//       setOfficeShifts(shifts);
+//       return shifts; // Return for use in await calls
+//     } catch (error) {
+//       console.error("Error fetching office shifts:", error);
+//       setOfficeShifts([]);
+//       return [];
+//     }
+//   };
+
+//   // CTC Calculator Effect
+//   useEffect(() => {
+//     if (!salaryConfig || !currentEmployee.grossSalary) {
+//       setCurrentEmployee((prev) => ({ ...prev, grossSalaryYearly: "", ctcMonthly: "", ctcYearly: "" }));
+//       return;
+//     }
+
+//     const parseNumberOrPercent = (v, fallback = 0) => {
+//       if (v === null || v === undefined || v === "") return fallback;
+//       if (typeof v === "number") return v;
+//       const s = String(v).trim();
+//       if (s.endsWith("%")) {
+//         const num = parseFloat(s.slice(0, -1));
+//         return isNaN(num) ? fallback : num / 100;
+//       }
+//       const n = parseFloat(s);
+//       return isNaN(n) ? fallback : n;
+//     };
+
+//     const grossSalaryMonthly = parseFloat(currentEmployee.grossSalary);
+//     if (isNaN(grossSalaryMonthly) || grossSalaryMonthly <= 0) {
+//       setCurrentEmployee((prev) => ({ ...prev, grossSalaryYearly: "", ctcMonthly: "", ctcYearly: "" }));
+//       return;
+//     }
+
+//     const hraRate = parseNumberOrPercent(salaryConfig.hra, 0.25);
+//     const basicPlusDaRate = parseNumberOrPercent(salaryConfig.basic_plus_da, 0.6);
+//     let pfRate = parseNumberOrPercent(salaryConfig.pf_employer_contribution, 0.12);
+//     if (pfRate > 1) pfRate = pfRate / 100;
+//     let esicRate = parseNumberOrPercent(salaryConfig.esic_employer_contribution, 0.0);
+//     if (esicRate > 1) esicRate = esicRate / 100;
+
+//     const grossSalaryYearly = grossSalaryMonthly * 12;
+//     const hra = grossSalaryMonthly * hraRate;
+//     let baseForPf = grossSalaryMonthly - hra;
+//     if (baseForPf < 0) baseForPf = 0;
+//     let pf_employer = baseForPf * pfRate;
+//     const PF_CAP = 1800;
+//     if (pf_employer > PF_CAP) pf_employer = PF_CAP;
+//     const esic_applicable = grossSalaryMonthly <= 21000;
+//     const esic_employer = esic_applicable ? grossSalaryMonthly * esicRate : 0;
+
+//     let no_of_employment_year = 0;
+//     const joinDateStr = currentEmployee.join_date;
+//     if (joinDateStr) {
+//       try {
+//         const date_of_joining = new Date(joinDateStr);
+//         const now = new Date();
+//         if (!isNaN(date_of_joining.getTime()) && date_of_joining <= now) {
+//           no_of_employment_year = (now.getTime() - date_of_joining.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+//         }
+//       } catch (e) {
+//         no_of_employment_year = 0;
+//       }
+//     }
+//     no_of_employment_year = Math.max(0, no_of_employment_year);
+
+//     let gratuityMonthly = 0;
+//     try {
+//       const basic_plus_da_amount = grossSalaryMonthly * basicPlusDaRate;
+//       const completedYears = Math.floor(no_of_employment_year);
+//       if (completedYears > 5 && basic_plus_da_amount > 0) {
+//         const annualGratuity = (basic_plus_da_amount * 15) / 26 * completedYears;
+//         gratuityMonthly = annualGratuity / 12;
+//       }
+//     } catch (e) {
+//       gratuityMonthly = 0;
+//     }
+//     gratuityMonthly = Math.max(0, gratuityMonthly);
+
+//     const total_benefit = pf_employer + esic_employer + gratuityMonthly;
+//     const ctc_monthly = grossSalaryMonthly + total_benefit;
+//     const ctc_yearly = ctc_monthly * 12;
+
+//     const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+
+//     setCurrentEmployee((prev) => ({
+//       ...prev,
+//       grossSalaryYearly: round2(grossSalaryYearly).toFixed(2),
+//       ctcMonthly: round2(ctc_monthly).toFixed(2),
+//       ctcYearly: round2(ctc_yearly).toFixed(2),
+//     }));
+//   }, [currentEmployee.grossSalary, currentEmployee.join_date, salaryConfig]);
+
+//   // Handlers
+//   const handleCountryChange = (selectedCountry) => {
+//     const countryId = selectedCountry ? selectedCountry.country_id : "";
+//     const countryName = selectedCountry ? selectedCountry.country_name : null;
+//     setCurrentEmployee((prev) => ({ ...prev, country_id: countryId, state_id: "", employee_hub_id: "", officeShift: "" }));
+//     setStates([]);
+//     setEmployeeHubs([]);
+//     setOfficeShifts([]); // Clear shifts if country changes
+//     if (countryName) {
+//       axiosInstance
+//         .get(`api/states/?country_name=${countryName}`)
+//         .then((res) => {
+//           if (res.data.status === "success") setStates(res.data.data || []);
+//         })
+//         .catch((err) => console.error("Error fetching states:", err));
+//     }
+//   };
+
+//   const handleStateChange = (selectedState) => {
+//     const stateId = selectedState ? selectedState.state_id : "";
+//     setCurrentEmployee((prev) => ({ ...prev, state_id: stateId, employee_hub_id: "", officeShift: "" }));
+//     setEmployeeHubs([]);
+//     setOfficeShifts([]); // Clear shifts if state changes
+//     if (stateId) {
+//       axiosInstance
+//         .get(`api/employee_hub_dropdown/${stateId}/`)
+//         .then((res) => {
+//           if (res.data.status === "success") setEmployeeHubs(res.data.data || []);
+//         })
+//         .catch((err) => console.error("Error fetching employee hubs:", err));
+//     }
+//   };
+
+//   const handleDeptChange = (selectedDept) => {
+//     const deptId = selectedDept ? selectedDept.dept_id : "";
+//     setCurrentEmployee((prev) => ({ ...prev, department_id: deptId, designation_id: "" }));
+//     if (deptId) {
+//       axiosInstance
+//         .get(`api/desig_dept_dropdown/?dept_id=${deptId}/`)
+//         .then((res) => setDesignations(res.data.desig_data || []))
+//         .catch((err) => console.error("Error fetching designations:", err));
+//     } else {
+//       setDesignations([]);
+//     }
+//   };
+
+//   const handleDivisionChange = (selectedDivision) => {
+//     const divisionId = selectedDivision ? selectedDivision.division_id : "";
+//     if (selectedDivision && selectedDivision.division_name !== "Livestock") {
+//       setCurrentEmployee((prev) => ({ ...prev, division_id: divisionId, subDivision: "" }));
+//     } else {
+//       setCurrentEmployee((prev) => ({ ...prev, division_id: divisionId }));
+//     }
+//   };
+
+//   const handleChangeManager = async () => {
+//     if (!selectedEmployeeForManagerChange || !newManager) {
+//       Swal.fire({ icon: "warning", title: "Incomplete Selection", text: "Please select an employee and a new manager.", target: changeManagerDialogRef.current });
+//       return;
+//     }
+//     try {
+//       await axiosInstance.put("api/change_manager/", { user_id: selectedEmployeeForManagerChange, manager_id: newManager });
+//       await fetchEmployees();
+//       Swal.fire({ icon: "success", title: "Success", text: "Manager changed successfully!", timer: 3000, showConfirmButton: false });
+//       setOpenChangeManagerForm(false);
+//       setSelectedEmployeeForManagerChange("");
+//       setNewManager("");
+//     } catch (error) {
+//       console.error("Error changing manager:", error);
+//       Swal.fire({ icon: "error", title: "Operation Failed", text: `Error changing manager: ${error.response?.data?.message || "An error occurred."}`, target: changeManagerDialogRef.current });
+//     }
+//   };
+
+//   const navigate = useNavigate();
+//   const handleArrowClick = (id) => navigate(`/hrms/admindashboard/employeedetail/${id}`);
+
+//   const handleInputChange = (event) => {
+//     const { name, value } = event.target;
+//     setCurrentEmployee((prev) => ({ ...prev, [name]: value }));
+//   };
+
+//   const handleAddEmployee = async () => {
+//     try {
+//       const maxIdResponse = await axios.get("https://tdtlworld.com/hrms-backend/api/get_max_employee_id/");
+//       const newEmpId = maxIdResponse.data.employee_id;
+//       setCurrentEmployee({
+//         emp_id: newEmpId,
+//         firstName: "",
+//         middleName: "",
+//         lastName: "",
+//         email: "",
+//         phone: "",
+//         address: "",
+//         avatar: null,
+//         officeShift: "",
+//         status: 1,
+//         join_date: "",
+//         gender: "",
+//         username: newEmpId,
+//         password: "",
+//         role: "",
+//         grossSalary: "",
+//         department_id: "",
+//         designation_id: "",
+//         manager_id: "",
+//         country_id: "",
+//         state_id: "",
+//         employee_hub_id: "",
+//         headquarter_id: "",
+//         division_id: "",
+//         company_id: 2,
+//         is_probation: "n",
+//         resumeUrl: "",
+//         subDivision: "",
+//         grossSalaryYearly: "",
+//         ctcMonthly: "",
+//         ctcYearly: "",
+//         employee_id: "",
+//       });
+//       setDesignations([]);
+//       setStates([]);
+//       setEmployeeHubs([]);
+//       setOfficeShifts([]); // Reset shifts
+//       setEmployeeDocuments(null);
+//       setIsEditMode(false);
+//       setShowPassword(false);
+//       setOpenEmployeeForm(true);
+//     } catch (error) {
+//       console.error("Error fetching max employee ID:", error);
+//       Swal.fire({ icon: "error", title: "Error", text: "Failed to initialize employee form.", timer: 3000, showConfirmButton: false });
+//     }
+//   };
+
+//   const handleTalentSelect = async (event, selectedOption) => {
+//     setEmployeeDocuments(null);
+//     setCurrentEmployee((prev) => ({ ...prev, resumeUrl: "" }));
+//     setOfficeShifts([]); // Reset shifts on new talent select
+
+//     if (!selectedOption) {
+//       setCurrentEmployee((prev) => ({ ...prev, firstName: "", middleName: "", lastName: "", email: "", phone: "", gender: "", country_id: "", state_id: "", officeShift: "" }));
+//       return;
+//     }
+//     const talent = talentPool.find((p) => p.email === selectedOption.email);
+//     if (!talent) return;
+//     const selectedCountry = countries.find((c) => c.country_name === talent.country);
+//     const resumeLink = talent.resume ? `${RESUME_BASE_URL}${talent.resume}` : "";
+//     setCurrentEmployee((prev) => ({
+//       ...prev,
+//       firstName: talent.first_name || "",
+//       middleName: talent.middle_name || "",
+//       lastName: talent.last_name || "",
+//       email: talent.email || "",
+//       phone: talent.phone || "",
+//       gender: talent.gender || "",
+//       address: talent.address || "", 
+//       country_id: selectedCountry ? selectedCountry.country_id : "",
+//       state_id: "",
+//       employee_hub_id: "",
+//       officeShift: "", // Reset
+//       resumeUrl: resumeLink,
+//     }));
+    
+//     if (selectedCountry) {
+//         try {
+//           const statesRes = await axiosInstance.get(`api/states/?country_name=${selectedCountry.country_name}`);
+//           if (statesRes.data.status === "success") {
+//             const fetchedStates = statesRes.data.data || [];
+//             setStates(fetchedStates);
+//             const selectedState = fetchedStates.find((s) => s.state_name === talent.state);
+//             if (selectedState) {
+//               setCurrentEmployee((prev) => ({ ...prev, state_id: selectedState.state_id }));
+//               const hubsRes = await axiosInstance.get(`api/employee_hub_dropdown/${selectedState.state_id}/`);
+//               if (hubsRes.data.status === "success") setEmployeeHubs(hubsRes.data.data || []);
+//             }
+//           }
+//         } catch (err) { console.error(err); }
+//     }
+//     setIsFetchingDocs(true);
+//     try {
+//       const docResponse = await axios.post("https://raasbackend.vetrinahealthcare.com/fetch_documents/", { email_id: talent.email });
+//       setEmployeeDocuments(docResponse.data.status === "success" && docResponse.data.documents ? docResponse.data.documents : null);
+//     } catch (error) {
+//       console.error("Error fetching documents:", error);
+//       setEmployeeDocuments(null);
+//     } finally {
+//       setIsFetchingDocs(false);
+//     }
+//   };
+
+//   const handleEditEmployee = async (employee) => {
+//     if (!employee || !employee.user_id) return;
+//     try {
+//       const response = await axiosInstance.get(`api/edit_employee/${employee.user_id}/`);
+//       if (response.data.status !== "success" || response.data.data.length === 0) {
+//         Swal.fire({ icon: "error", title: "Error", text: "Failed to load employee details.", timer: 3000, showConfirmButton: false });
+//         return;
+//       }
+//       const empData = response.data.data[0];
+      
+//       // Fetch dependencies
+//       const [desigRes, statesRes, hubsRes] = await Promise.all([
+//         axiosInstance.get(`api/desig_dept_dropdown/?dept_id=${empData.department_id}/`),
+//         empData.country_name ? axiosInstance.get(`api/states/?country_name=${empData.country_name}`) : Promise.resolve({ data: { data: [] } }),
+//         empData.state ? axiosInstance.get(`api/employee_hub_dropdown/${empData.state}/`) : Promise.resolve({ data: { data: [] } }),
+//       ]);
+
+//       setDesignations(desigRes.data.desig_data || []);
+//       setStates(statesRes.data.data || []);
+//       setEmployeeHubs(hubsRes.data.data || []);
+
+//       // Fetch Office Shifts specifically for this user's Hub
+//       let validOfficeShifts = [];
+//       if (empData.employee_hub_id) {
+//           validOfficeShifts = await fetchOfficeShifts(empData.employee_hub_id);
+//       } else {
+//           setOfficeShifts([]);
+//       }
+
+//       const officeShiftObj = validOfficeShifts.find((s) => s.office_shift_name === empData.office_shift);
+//       const nameParts = (empData.emp_name || "").split(" ");
+//       const selectedCountry = countries.find((c) => c.country_name === empData.country_name);
+//       const selectedHeadquarter = headquarters.find((hq) => hq.headquarter_name === empData.headquarter);
+//       let finalSubDivisionValue = empData.sub_division || "";
+//       if (finalSubDivisionValue === "Tred") finalSubDivisionValue = "TredBiz";
+
+//       setCurrentEmployee({
+//         id: employee.user_id,
+//         firstName: nameParts[0] || "",
+//         middleName: nameParts.length > 2 ? nameParts.slice(1, -1).join(" ") : "",
+//         lastName: nameParts.length > 1 ? nameParts[nameParts.length - 1] : "",
+//         email: empData.email || "",
+//         employee_id: empData.employee_id || "",
+//         phone: empData.phone || "",
+//         address: empData.address || "",
+//         manager_id: empData.manager_id ? Number(empData.manager_id) : "",
+//         designation_id: empData.designation_id ? Number(empData.designation_id) : "",
+//         department_id: empData.department_id ? Number(empData.department_id) : "",
+//         headquarter_id: selectedHeadquarter ? selectedHeadquarter.headquarter_id : "",
+//         subDivision: finalSubDivisionValue,
+//         division_id: empData.division_id ? Number(empData.division_id) : "",
+//         state_id: empData.state ? Number(empData.state) : "",
+//         employee_hub_id: empData.employee_hub_id ? Number(empData.employee_hub_id) : "",
+//         role: empData.role_id ? Number(empData.role_id) : "",
+//         officeShift: officeShiftObj ? Number(officeShiftObj.office_shift_id) : "",
+//         status: Number(empData.status),
+//         join_date: empData.join_date ? empData.join_date.split(" ")[0] : "",
+//         country_id: selectedCountry ? Number(selectedCountry.country_id) : "",
+//         avatar: empData.profile_photo || "",
+//         is_probation: empData.probation?.toLowerCase() === "y" ? "y" : "n",
+//         resumeUrl: "",
+//       });
+//       setIsEditMode(true);
+//       setOpenEmployeeForm(true);
+//       setShowPassword(false);
+//     } catch (error) {
+//       console.error("Error fetching employee details for edit:", error);
+//       Swal.fire({ icon: "error", title: "Error", text: "Failed to fetch complete employee details.", timer: 3000, showConfirmButton: false });
+//     }
+//   };
+
+//   const handleSaveEmployee = async () => {
+//     if (!isEditMode) {
+//       const requiredFields = {
+//         firstName: "First Name",
+//         lastName: "Last Name",
+//         email: "Email",
+//         phone: "Mobile Number",
+//         country_id: "Country",
+//         state_id: "State",
+//         role: "User (Role)",
+//         department_id: "Department",
+//         division_id: "Division",
+//         designation_id: "Designation",
+//         headquarter_id: "Headquarter",
+//         manager_id: "Line Manager",
+//         employee_hub_id: "Holiday Hub",
+//         officeShift: "Shift & Scheduling",
+//         join_date: "Join Date",
+//         avatar: "Photo",
+//         gender: "Gender",
+//         username: "Username",
+//         password: "Password",
+//         grossSalary: "Gross Salary",
+//       };
+      
+//       const selectedDivision = divisions.find((d) => d.division_id == currentEmployee.division_id);
+//       if (selectedDivision && selectedDivision.division_name === "Livestock" && !currentEmployee.subDivision) {
+//         Swal.fire({ icon: "error", title: "Validation Error", text: "Sub Division is required when Division is Livestock.", target: employeeDialogRef.current });
+//         return;
+//       }
+      
+//       for (const field in requiredFields) {
+//         if (!currentEmployee[field]) {
+//           Swal.fire({ icon: "error", title: "Validation Error", text: `The field "${requiredFields[field]}" is required.`, target: employeeDialogRef.current });
+//           return;
+//         }
+//       }
+//     }
+    
+//     const formData = new FormData();
+//     const keyMap = {
+//       firstName: "first_name",
+//       middleName: "middle_name",
+//       lastName: "last_name",
+//       officeShift: "office_shift",
+//       join_date: "join_date",
+//       grossSalary: "gross_salary",
+//       headquarter_id: "headquarter_id",
+//       grossSalaryYearly: "gross_salary_yearly",
+//       ctcMonthly: "ctc_monthly",
+//       ctcYearly: "ctc_yearly",
+//       address: "address",
+//     };
+//     Object.keys(currentEmployee).forEach((key) => {
+//       if (key === "avatar" && currentEmployee.avatar instanceof File) {
+//         formData.append("file", currentEmployee.avatar);
+//       } else if (key !== "resumeUrl" && currentEmployee[key] !== null && currentEmployee[key] !== undefined && currentEmployee[key] !== "") {
+//         const backendKey = keyMap[key] || key;
+//         formData.append(backendKey, currentEmployee[key]);
+//       }
+//     });
+    
+//     setIsSaving(true);
+//     try {
+//       const action = isEditMode ? "updated" : "added";
+//       if (isEditMode) {
+//         formData.append("user_id", currentEmployee.id);
+//         await axiosInstance.put("api/edit_employee/", formData, { headers: { "Content-Type": "multipart/form-data" } });
+//       } else {
+//         await axiosInstance.post("api/add_employee/", formData, { headers: { "Content-Type": "multipart/form-data" } });
+//       }
+//       setOpenEmployeeForm(false);
+//       await fetchEmployees();
+//       Swal.fire({ icon: "success", title: "Success", text: `Employee ${action} successfully!`, timer: 3000, showConfirmButton: false });
+//     } catch (error) {
+//       console.error("Error saving employee:", error);
+//       const errorMessage = error.response?.data?.message || error.response?.data?.detail || "An unexpected error occurred.";
+//       Swal.fire({ icon: "error", title: "Operation failed", text: `${errorMessage}`, target: employeeDialogRef.current });
+//     } finally {
+//       setIsSaving(false);
+//     }
+//   };
+
+//   const handleDeleteEmployee = (employeeId) => {
+//     if (!employeeId) return;
+//     Swal.fire({
+//       title: "Are you sure?",
+//       text: "You won't be able to revert this!",
+//       icon: "warning",
+//       showCancelButton: true,
+//       confirmButtonColor: themePurple,
+//       cancelButtonColor: themeOrange,
+//       confirmButtonText: "Yes, delete it!",
+//     }).then((result) => {
+//       if (result.isConfirmed) {
+//         axiosInstance
+//           .delete("api/edit_employee/", { data: { user_id: employeeId } })
+//           .then(() => {
+//             fetchEmployees();
+//             Swal.fire({ icon: "success", title: "Deleted!", text: "The employee has been deleted.", timer: 3000, showConfirmButton: false });
+//           })
+//           .catch((error) => {
+//             const errorMessage = error.response?.data?.message || error.response?.data?.detail || "Failed to delete employee.";
+//             Swal.fire({ icon: "error", title: "Error", text: errorMessage, timer: 3000, showConfirmButton: false });
+//           });
+//       }
+//     });
+//   };
+
+//   const handleExportEmployees = () => {
+//     if (employees.length === 0) {
+//       Swal.fire({ icon: "info", title: "Info", text: "There is no employee data to export.", timer: 3000, showConfirmButton: false });
+//       return;
+//     }
+//     const worksheet = XLSX.utils.json_to_sheet(employees);
+//     const workbook = XLSX.utils.book_new();
+//     XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
+//     XLSX.writeFile(workbook, "EmployeesData.xlsx");
+//   };
+
+//   const sortedEmployees = useMemo(() => {
+//     if (!Array.isArray(employees)) return [];
+//     return [...employees].sort((a, b) => b.user_id - a.user_id);
+//   }, [employees]);
+
+//   const filteredEmployees = useMemo(
+//     () =>
+//       sortedEmployees.filter(
+//         (e) =>
+//           (e.employee_name && e.employee_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+//           (e.department_name && e.department_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+//           (e.designation_name && e.designation_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+//           (e.join_date && e.join_date.toLowerCase().includes(searchTerm.toLowerCase())) ||
+//           (e.manager && e.manager.toLowerCase().includes(searchTerm.toLowerCase()))
+//       ),
+//     [sortedEmployees, searchTerm]
+//   );
+
+//   const handlePaginationChange = (event, newPage) => setCurrentPage(newPage - 1);
+//   const handleRowsPerPageChange = (event) => { setRowsPerPage(parseInt(event.target.value, 10)); setCurrentPage(0); };
+//   const handleFileUpload = (e) => { const file = e.target.files[0]; if (file) setCurrentEmployee((prev) => ({ ...prev, avatar: file })); };
+
+//   const isSubDivisionDisabled = useMemo(() => {
+//     if (!currentEmployee.division_id) return true;
+//     const selectedDivision = divisions.find((d) => d.division_id == currentEmployee.division_id);
+//     return !selectedDivision || selectedDivision.division_name !== "Livestock";
+//   }, [currentEmployee.division_id, divisions]);
+
+//   const formatDate = (dateString) => {
+//     if (!dateString) return "";
+//     try {
+//       const date = new Date(dateString);
+//       return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
+//     } catch (error) {
+//       return dateString.split(" ")[0];
+//     }
+//   };
+
+//   return (
+//     <Box component={Paper} p={3}>
+//       <Typography variant="h4" sx={{ color: themePurple, fontWeight: "bold", mb: 5 }}>
+//         Employees List
+//       </Typography>
+//       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexDirection: isMobile ? "column" : "row", gap: 2, mb: 2 }}>
+//         <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+//           <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddEmployee} sx={purpleButtonSx}>Add Employee</Button>
+//           <Button variant="contained" startIcon={<DownloadIcon />} onClick={handleExportEmployees} sx={purpleButtonSx}>Export</Button>
+//           <Button variant="contained" startIcon={<ChangeManagerIcon />} onClick={() => setOpenChangeManagerForm(true)} sx={purpleButtonSx}>Change Manager</Button>
+//         </Box>
+//         <TextField size="small" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} sx={{ width: isMobile ? "100%" : "auto" }} InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>) }} />
+//       </Box>
+
+//       {/* Change Manager Dialog */}
+//       <Dialog open={openChangeManagerForm} onClose={() => setOpenChangeManagerForm(false)} maxWidth="sm" fullWidth ref={changeManagerDialogRef}>
+//         <DialogTitle sx={{ color: themePurple, fontWeight: "bold" }}>
+//           Change Manager
+//           <IconButton onClick={() => setOpenChangeManagerForm(false)} sx={{ position: "absolute", right: 8, top: 8, color: "grey.500" }}><CloseIcon /></IconButton>
+//         </DialogTitle>
+//         <DialogContent>
+//           <Grid container spacing={2} sx={{ mt: 1 }}>
+//             <Grid item xs={12}>
+//               <FormControl fullWidth>
+//                 <InputLabel>Select Employee</InputLabel>
+//                 <Select value={selectedEmployeeForManagerChange} onChange={(e) => setSelectedEmployeeForManagerChange(e.target.value)} label="Select Employee">
+//                   {allEmployeesForDropdown.map((emp) => (<MenuItem key={emp.value} value={emp.value}>{`${emp.label} (${emp.emp_id})`}</MenuItem>))}
+//                 </Select>
+//               </FormControl>
+//             </Grid>
+//             <Grid item xs={12}>
+//               <FormControl fullWidth>
+//                 <InputLabel>Select New Manager</InputLabel>
+//                 <Select value={newManager} onChange={(e) => setNewManager(e.target.value)} label="Select New Manager">
+//                   {allEmployeesForDropdown.map((emp) => (<MenuItem key={emp.value} value={emp.value}>{`${emp.label} (${emp.emp_id})`}</MenuItem>))}
+//                 </Select>
+//               </FormControl>
+//             </Grid>
+//           </Grid>
+//         </DialogContent>
+//         <DialogActions>
+//           <Button onClick={() => setOpenChangeManagerForm(false)} sx={cancelButtonSx}>Cancel</Button>
+//           <Button onClick={handleChangeManager} variant="contained" sx={purpleButtonSx}>Save</Button>
+//         </DialogActions>
+//       </Dialog>
+
+//       {/* Main Employee Form Dialog */}
+//       <Dialog open={openEmployeeForm} onClose={() => setOpenEmployeeForm(false)} maxWidth="md" fullWidth ref={employeeDialogRef}>
+//         <DialogTitle sx={{ color: "#8C257C ", fontWeight: "bold", fontSize: "2rem" }}>
+//           {isEditMode ? "Edit Employee" : "Add Employee"}
+//           <IconButton onClick={() => setOpenEmployeeForm(false)} sx={{ position: "absolute", right: 8, top: 8, color: "grey.500" }}><CloseIcon /></IconButton>
+//         </DialogTitle>
+//         <DialogContent>
+//           <Grid container spacing={2} sx={{ mt: 1 }}>
+//             {!isEditMode && (
+//               <Grid item xs={12}>
+//                 <Autocomplete
+//                   options={talentPool}
+//                   getOptionLabel={(option) => option.email || ""}
+//                   onChange={handleTalentSelect}
+//                   onInputChange={(event, newInputValue) => { if (!talentPool.find((p) => p.email === newInputValue)) setCurrentEmployee((prev) => ({ ...prev, email: newInputValue })); }}
+//                   renderInput={(params) => <TextField {...params} label="Search Email to Auto-fill" />}
+//                 />
+//               </Grid>
+//             )}
+
+//             {/* 1. Name */}
+//             <Grid item xs={12} sm={4}>
+//               <TextField fullWidth label="First Name" name="firstName" value={currentEmployee.firstName || ""} onChange={handleInputChange} onKeyPress={(e) => { if (!/^[A-Za-z]$/.test(e.key)) e.preventDefault(); }} InputProps={{ readOnly: isEditMode }} />
+//             </Grid>
+//             <Grid item xs={12} sm={4}>
+//               <TextField fullWidth label="Middle Name" name="middleName" value={currentEmployee.middleName || ""} onChange={handleInputChange} onKeyPress={(e) => { if (!/^[A-Za-z]$/.test(e.key)) e.preventDefault(); }} InputProps={{ readOnly: isEditMode }} />
+//             </Grid>
+//             <Grid item xs={12} sm={4}>
+//               <TextField fullWidth label="Last Name" name="lastName" value={currentEmployee.lastName || ""} onChange={handleInputChange} onKeyPress={(e) => { if (!/^[A-Za-z]$/.test(e.key)) e.preventDefault(); }} InputProps={{ readOnly: isEditMode }} />
+//             </Grid>
+
+//             {/* 2. Email */}
+//             <Grid item xs={12} sm={6}>
+//               <TextField fullWidth label="Email" name="email" value={currentEmployee.email || ""} onChange={handleInputChange} InputProps={{ readOnly: isEditMode || !!talentPool.find((p) => p.email === currentEmployee.email) }} />
+//             </Grid>
+
+//             {/* 3. Mobile Number */}
+//             <Grid item xs={12} sm={6}>
+//               <TextField fullWidth label="Mobile Number" name="phone" value={currentEmployee.phone || ""} onChange={(e) => { const value = e.target.value; if (/^\d{0,10}$/.test(value)) handleInputChange(e); }} inputProps={{ maxLength: 10, inputMode: "numeric", pattern: "[0-9]*" }} InputProps={{ readOnly: isEditMode }} />
+//             </Grid>
+
+//             {/* 4. Address */}
+//             <Grid item xs={12}>
+//                 <TextField fullWidth label="Address" name="address" value={currentEmployee.address || ""} onChange={handleInputChange} />
+//             </Grid>
+
+//             {/* 5. Country */}
+//             <Grid item xs={12} sm={6}>
+//               <Autocomplete options={countries} getOptionLabel={(option) => option.country_name || ""} value={countries.find((c) => c.country_id == currentEmployee.country_id) || null} onChange={(e, nv) => handleCountryChange(nv)} isOptionEqualToValue={(option, value) => option.country_id == value.country_id} renderInput={(params) => <TextField {...params} label="Country" />} />
+//             </Grid>
+
+//             {/* 6. State */}
+//             <Grid item xs={12} sm={6}>
+//               <Autocomplete options={states} getOptionLabel={(option) => option.state_name || ""} value={states.find((s) => s.state_id == currentEmployee.state_id) || null} onChange={(e, nv) => handleStateChange(nv)} isOptionEqualToValue={(option, value) => option.state_id == value.state_id} disabled={!currentEmployee.country_id} renderInput={(params) => <TextField {...params} label="State" />} />
+//             </Grid>
+
+//             {/* 7. User (role) */}
+//             <Grid item xs={12} sm={6}>
+//                <Autocomplete options={roles} getOptionLabel={(option) => option.role_name || ""} value={roles.find((r) => r.index == currentEmployee.role) || null} onChange={(e, nv) => setCurrentEmployee((prev) => ({ ...prev, role: nv ? nv.index : "" }))} isOptionEqualToValue={(option, value) => option.index == value.index} renderInput={(params) => <TextField {...params} label="User (Role)" />} />
+//             </Grid>
+
+//             {/* 8. Department */}
+//             <Grid item xs={12} sm={6}>
+//               <Autocomplete options={departments} getOptionLabel={(option) => option.dept_name || ""} value={departments.find((d) => d.dept_id == currentEmployee.department_id) || null} onChange={(e, nv) => handleDeptChange(nv)} isOptionEqualToValue={(option, value) => option.dept_id == value.dept_id} renderInput={(params) => <TextField {...params} label="Department" />} />
+//             </Grid>
+
+//             {/* 9. Division */}
+//             <Grid item xs={12} sm={6}>
+//               <Autocomplete options={divisions} getOptionLabel={(option) => option.division_name || ""} value={divisions.find((d) => d.division_id == currentEmployee.division_id) || null} onChange={(e, nv) => handleDivisionChange(nv)} isOptionEqualToValue={(option, value) => option.division_id == value.division_id} renderInput={(params) => <TextField {...params} label="Division" />} />
+//             </Grid>
+
+//             {/* 10. Sub-division */}
+//             <Grid item xs={12} sm={6}>
+//               <Autocomplete options={subDivisionOptions} getOptionLabel={(option) => option.label || ""} value={subDivisionOptions.find((sd) => sd.value === currentEmployee.subDivision) || null} onChange={(e, nv) => setCurrentEmployee((prev) => ({ ...prev, subDivision: nv ? nv.value : "" }))} isOptionEqualToValue={(option, value) => option.value === value.value} disabled={isSubDivisionDisabled} renderInput={(params) => <TextField {...params} label="Sub-division" />} />
+//             </Grid>
+
+//             {/* 11. Designation */}
+//             <Grid item xs={12} sm={6}>
+//               <Autocomplete options={designations} getOptionLabel={(option) => option.desig_name || ""} value={designations.find((d) => d.desig_id == currentEmployee.designation_id) || null} onChange={(e, nv) => setCurrentEmployee((prev) => ({ ...prev, designation_id: nv ? nv.desig_id : "" }))} isOptionEqualToValue={(option, value) => option.desig_id == value.desig_id} disabled={!currentEmployee.department_id} renderInput={(params) => <TextField {...params} label="Designation" />} />
+//             </Grid>
+
+//             {/* 12. Headquarter */}
+//             <Grid item xs={12} sm={6}>
+//               <Autocomplete options={headquarters} getOptionLabel={(option) => option.headquarter_name || ""} value={headquarters.find((h) => h.headquarter_id == currentEmployee.headquarter_id) || null} onChange={(e, nv) => setCurrentEmployee((prev) => ({ ...prev, headquarter_id: nv ? nv.headquarter_id : "" }))} isOptionEqualToValue={(option, value) => option.headquarter_id == value.headquarter_id} renderInput={(params) => <TextField {...params} label="Headquarter" />} />
+//             </Grid>
+
+//             {/* 13. Line Manager */}
+//             <Grid item xs={12} sm={12}>
+//               <Autocomplete 
+//                 options={allEmployeesForDropdown} 
+//                 getOptionLabel={(option) => (option.label ? `${option.label} (${option.emp_id})` : "")} 
+//                 value={allEmployeesForDropdown.find((e) => e.value == currentEmployee.manager_id) || null} 
+//                 onChange={(e, nv) => setCurrentEmployee((prev) => ({ ...prev, manager_id: nv ? nv.value : "" }))} 
+//                 isOptionEqualToValue={(option, value) => option.value == value.value} 
+//                 renderInput={(params) => <TextField {...params} label="Line Manager (Select designation of line manager with division subdivision-HQ)" />} 
+//               />
+//             </Grid>
+
+//             {/* 14. Holiday Hub (Updates Shifts on Selection) */}
+//             <Grid item xs={12} sm={6}>
+//               <Autocomplete 
+//                 options={employeeHubs} 
+//                 getOptionLabel={(option) => option.employee_hub_name || ""} 
+//                 value={employeeHubs.find((h) => h.employee_hub_id == currentEmployee.employee_hub_id) || null} 
+//                 onChange={async (e, nv) => {
+//                    const hubId = nv ? nv.employee_hub_id : "";
+//                    setCurrentEmployee((prev) => ({ ...prev, employee_hub_id: hubId, officeShift: "" })); // Reset shift on hub change
+//                    await fetchOfficeShifts(hubId);
+//                 }} 
+//                 isOptionEqualToValue={(option, value) => option.employee_hub_id == value.employee_hub_id} 
+//                 disabled={!currentEmployee.state_id} 
+//                 renderInput={(params) => <TextField {...params} label="Holiday Hub" />} 
+//               />
+//             </Grid>
+
+//             {/* 15. Shift & Scheduling (Dependent on Hub) */}
+//             <Grid item xs={12} sm={6}>
+//               <Autocomplete 
+//                 options={officeShifts} 
+//                 getOptionLabel={(option) => option.office_shift_name || ""} 
+//                 value={officeShifts.find((s) => s.office_shift_id == currentEmployee.officeShift) || null} 
+//                 onChange={(e, nv) => setCurrentEmployee((prev) => ({ ...prev, officeShift: nv ? nv.office_shift_id : "" }))} 
+//                 isOptionEqualToValue={(option, value) => option.office_shift_id == value.office_shift_id} 
+//                 disabled={!currentEmployee.employee_hub_id || officeShifts.length === 0} // Disabled if no hub or no shifts found
+//                 renderInput={(params) => <TextField {...params} label="Shift & Scheduling" />} 
+//               />
+//             </Grid>
+
+//             {isEditMode && (
+//               <Grid item xs={12} sm={6}>
+//                 <TextField fullWidth label="Employee ID" name="employee_id" value={currentEmployee.employee_id || ""} InputProps={{ readOnly: true }} />
+//               </Grid>
+//             )}
+
+//             <Grid item xs={12} sm={6}>
+//               <Autocomplete options={statusOptions} getOptionLabel={(option) => option.label} value={statusOptions.find((s) => s.value === currentEmployee.status) || null} onChange={(e, nv) => setCurrentEmployee((prev) => ({ ...prev, status: nv ? nv.value : 1 }))} isOptionEqualToValue={(option, value) => option.value === value.value} renderInput={(params) => <TextField {...params} label="Status" />} />
+//             </Grid>
+
+//             <Grid item xs={12} sm={6}>
+//               <Autocomplete options={probationOptions} getOptionLabel={(option) => option.label} value={probationOptions.find((p) => p.value === currentEmployee.is_probation) || null} onChange={(e, nv) => setCurrentEmployee((prev) => ({ ...prev, is_probation: nv ? nv.value : "n" }))} isOptionEqualToValue={(option, value) => option.value === value.value} renderInput={(params) => <TextField {...params} label="On Probation" />} />
+//             </Grid>
+
+//             <Grid item xs={12} sm={6}>
+//               <TextField fullWidth label="Join Date" name="join_date" type="date" value={currentEmployee.join_date || ""} onChange={handleInputChange} InputLabelProps={{ shrink: true }} />
+//             </Grid>
+
+//             <Grid item xs={12} sm={6}>
+//               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+//                 <Button variant="contained" component="label" disabled={isEditMode} sx={purpleButtonSx}>
+//                   Upload Photo
+//                   <input type="file" hidden accept="image/*" onChange={handleFileUpload} />
+//                 </Button>
+//                 {currentEmployee.avatar && <Avatar src={typeof currentEmployee.avatar === "string" ? currentEmployee.avatar : URL.createObjectURL(currentEmployee.avatar)} sx={{ width: 56, height: 56 }} />}
+//               </Box>
+//             </Grid>
+
+//             <Grid item xs={12}>
+//               {isFetchingDocs && <CircularProgress />}
+//               {employeeDocuments && !isFetchingDocs && (
+//                 <Box>
+//                   <Typography variant="subtitle1" gutterBottom>Fetched Documents</Typography>
+//                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+//                     {Object.entries(employeeDocuments).map(([name, url]) =>
+//                       url ? <Chip key={name} label={name.replace(/_/g, " ")} component="a" href={url} target="_blank" clickable icon={<LinkIcon />} variant="outlined" color="secondary" size="small" /> : null
+//                     )}
+//                   </Box>
+//                 </Box>
+//               )}
+//             </Grid>
+
+//             {!isEditMode && (
+//               <>
+//                 <Grid item xs={12} sm={6}>
+//                   <Autocomplete options={genderOptions} getOptionLabel={(option) => option.label} value={genderOptions.find((g) => g.value === currentEmployee.gender) || null} onChange={(e, nv) => setCurrentEmployee((prev) => ({ ...prev, gender: nv ? nv.value : "" }))} isOptionEqualToValue={(option, value) => option.value === value.value} renderInput={(params) => <TextField {...params} label="Gender" />} />
+//                 </Grid>
+//                 <Grid item xs={12} sm={6}>
+//                   <TextField fullWidth label="Username" name="username" value={currentEmployee.username || ""} onChange={handleInputChange} InputProps={{ readOnly: true }} />
+//                 </Grid>
+//                 <Grid item xs={12} sm={6}>
+//                   <TextField fullWidth label="Password" name="password" value={currentEmployee.password || ""} onChange={handleInputChange} type={showPassword ? "text" : "password"} InputProps={{ endAdornment: (<InputAdornment position="end"> <IconButton aria-label="toggle password visibility" onClick={() => setShowPassword((prev) => !prev)} onMouseDown={(e) => e.preventDefault()} edge="end"> {showPassword ? <VisibilityOff /> : <Visibility />} </IconButton> </InputAdornment>) }} />
+//                 </Grid>
+                
+//                 {/* Gross Salary Block */}
+//                 <Grid item xs={12} sm={6} md={3}>
+//                   <TextField fullWidth label="Gross Salary monthly" name="grossSalary" type="number" value={currentEmployee.grossSalary || ""} onChange={(e) => { const value = e.target.value; if (/^\d*\.?\d*$/.test(value)) handleInputChange(e); }} />
+//                 </Grid>
+//                 <Grid item xs={12} sm={6} md={3}>
+//                   <TextField fullWidth label="Gross Salary Yearly" name="grossSalaryYearly" type="number" value={currentEmployee.grossSalaryYearly || ""} InputProps={{ readOnly: true }} />
+//                 </Grid>
+//                 <Grid item xs={12} sm={6} md={3}>
+//                   <TextField fullWidth label="CTC Monthly" name="ctcMonthly" type="number" value={currentEmployee.ctcMonthly || ""} InputProps={{ readOnly: true }} />
+//                 </Grid>
+//                 <Grid item xs={12} sm={6} md={3}>
+//                   <TextField fullWidth label="CTC Yearly" name="ctcYearly" type="number" value={currentEmployee.ctcYearly || ""} InputProps={{ readOnly: true }} />
+//                 </Grid>
+//               </>
+//             )}
+//           </Grid>
+//         </DialogContent>
+//         <DialogActions>
+//           <Button onClick={() => setOpenEmployeeForm(false)} disabled={isSaving} sx={cancelButtonSx}>Cancel</Button>
+//           <Button onClick={handleSaveEmployee} variant="contained" disabled={isSaving} sx={purpleButtonSx}>{isSaving ? <CircularProgress size={24} color="inherit" /> : "Save"}</Button>
+//         </DialogActions>
+//       </Dialog>
+
+//       <TableContainer>
+//         <Table sx={{ minWidth: "100%", whiteSpace: "nowrap" }}>
+//           <TableHead>
+//             <TableRow sx={{ bgcolor: themePurple }}>
+//               <TableCell sx={{ fontWeight: "bold", color: "white" }}>SR. NO.</TableCell>
+//               <TableCell sx={{ fontWeight: "bold", color: "white" }}>EMPLOYEE</TableCell>
+//               <TableCell sx={{ color: "white" }}></TableCell>
+//               <TableCell sx={{ fontWeight: "bold", color: "white" }}>DEPARTMENT</TableCell>
+//               <TableCell sx={{ fontWeight: "bold", color: "white" }}>DESIGNATION</TableCell>
+//               <TableCell sx={{ fontWeight: "bold", color: "white" }}>JOIN DATE</TableCell>
+//               <TableCell sx={{ fontWeight: "bold", color: "white" }}>STATUS</TableCell>
+//               <TableCell sx={{ fontWeight: "bold", color: "white" }}>MANAGER</TableCell>
+//               <TableCell sx={{ fontWeight: "bold", textAlign: "center", color: "white" }}>ACTIONS</TableCell>
+//             </TableRow>
+//           </TableHead>
+//           <TableBody>
+//             {loading ? (
+//               Array.from(new Array(rowsPerPage)).map((_, index) => (
+//                 <TableRow key={index}><TableCell colSpan={9}><Skeleton animation="wave" /></TableCell></TableRow>
+//               ))
+//             ) : (
+//               (rowsPerPage > 0 ? filteredEmployees.slice(currentPage * rowsPerPage, currentPage * rowsPerPage + rowsPerPage) : filteredEmployees).map((employee, index) => (
+//                 <TableRow key={employee.user_id} sx={{ "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" } }} onMouseEnter={() => setHoveredRowId(employee.user_id)} onMouseLeave={() => setHoveredRowId(null)}>
+//                   <TableCell sx={{ fontSize: "0.95rem" }}>{currentPage * rowsPerPage + index + 1}</TableCell>
+//                   <TableCell sx={{ fontSize: "0.95rem" }}>{employee.employee_name}</TableCell>
+//                   <TableCell sx={{ padding: "0 8px", textAlign: "center" }}>{hoveredRowId === employee.user_id && (<IconButton onClick={() => handleArrowClick(employee.user_id)} size="small" sx={{ color: themeOrange }}><ArrowForwardIcon fontSize="small" /></IconButton>)}</TableCell>
+//                   <TableCell sx={{ fontSize: "0.95rem" }}>{employee.department_name || "N/A"}</TableCell>
+//                   <TableCell sx={{ fontSize: "0.95rem" }}>{employee.designation_name || "N/A"}</TableCell>
+//                   <TableCell sx={{ fontSize: "0.95rem" }}>{formatDate(employee.join_date)}</TableCell>
+//                   <TableCell sx={{ fontSize: "0.95rem" }}><Chip label={employee.status === 1 ? "Active" : "Inactive"} size="small" sx={{ bgcolor: employee.status === 1 ? "#4caf50" : themeOrange, color: "white", borderRadius: "16px", height: "24px" }} /></TableCell>
+//                   <TableCell sx={{ fontSize: "0.95rem" }}>{employee.manager}</TableCell>
+//                   <TableCell><Box display="flex" justifyContent="center" gap={0.5}><IconButton onClick={() => handleEditEmployee(employee)} sx={{ color: themePurple }}><EditIcon /></IconButton><IconButton onClick={() => handleDeleteEmployee(employee.user_id)} sx={{ color: themeOrange }}><DeleteIcon /></IconButton></Box></TableCell>
+//                 </TableRow>
+//               ))
+//             )}
+//           </TableBody>
+//         </Table>
+//       </TableContainer>
+
+//       <Box sx={{ p: 2, borderTop: "1px solid rgba(224, 224, 224, 1)" }}>
+//         {!loading && (
+//           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
+//             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+//               <FormControl variant="outlined" size="small">
+//                 <Select value={rowsPerPage} onChange={handleRowsPerPageChange} sx={{ backgroundColor: themePurple, color: "white", borderRadius: "4px", "&:hover": { backgroundColor: themePurpleHover }, "& .MuiOutlinedInput-notchedOutline": { border: "none" }, "& .MuiSvgIcon-root": { color: "white" } }}>
+//                   {[10, 25, 50, 100].map((value) => (<MenuItem key={value} value={value}>{value}</MenuItem>))}
+//                 </Select>
+//               </FormControl>
+//               <Typography variant="body2" color="text.secondary">{`1 to ${Math.min(rowsPerPage, filteredEmployees.length)} of ${filteredEmployees.length}`}</Typography>
+//             </Box>
+//             <Pagination count={Math.ceil(filteredEmployees.length / rowsPerPage)} page={currentPage + 1} onChange={handlePaginationChange} showFirstButton showLastButton sx={{ "& .MuiPaginationItem-root": { borderRadius: "4px" }, "& .MuiPaginationItem-page.Mui-selected": { backgroundColor: themePurple, color: "white" } }} />
+//           </Box>
+//         )}
+//       </Box>
+//     </Box>
+//   );
+// }
+
+
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import axios from "axios";
 import {
@@ -13862,6 +14907,7 @@ import {
   useMediaQuery,
   Skeleton,
   Pagination,
+  Divider,
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -13973,12 +15019,10 @@ export default function EmployeesView() {
 
   const [openEmployeeForm, setOpenEmployeeForm] = useState(false);
 
-  // Initial Data Fetch
   useEffect(() => {
     const requests = [
       axiosInstance.get("api/desig_dept_dropdown/"),
       axiosInstance.get("employee-dropdown/"),
-      // Removed generic office shift fetch here to support hub-dependent logic
       axiosInstance.get("api/countries/"),
       axiosInstance.get("api/employee_hub/"),
       axiosInstance.get("api/division/"),
@@ -14011,7 +15055,6 @@ export default function EmployeesView() {
         if (headquartersRes?.data) setHeadquarters(headquartersRes.data ?? []);
         if (talent?.data?.data) setTalentPool(talent.data.data ?? []);
 
-        // Salary Config Logic
         let configData = null;
         if (Array.isArray(salaryConf?.data)) {
           configData = salaryConf.data.reduce((acc, item) => {
@@ -14044,7 +15087,6 @@ export default function EmployeesView() {
     fetchEmployees();
   }, [fetchEmployees]);
 
-  // --- NEW FUNCTION: Fetch Office Shifts by Hub ---
   const fetchOfficeShifts = async (hubId) => {
     if (!hubId) {
       setOfficeShifts([]);
@@ -14054,7 +15096,7 @@ export default function EmployeesView() {
       const response = await axios.get(`https://tdtlworld.com/hrms-backend/api/office_shift_dropdown/${hubId}/`);
       const shifts = response.data.data || response.data.office_shift_data || [];
       setOfficeShifts(shifts);
-      return shifts; // Return for use in await calls
+      return shifts;
     } catch (error) {
       console.error("Error fetching office shifts:", error);
       setOfficeShifts([]);
@@ -14062,7 +15104,6 @@ export default function EmployeesView() {
     }
   };
 
-  // CTC Calculator Effect
   useEffect(() => {
     if (!salaryConfig || !currentEmployee.grossSalary) {
       setCurrentEmployee((prev) => ({ ...prev, grossSalaryYearly: "", ctcMonthly: "", ctcYearly: "" }));
@@ -14146,14 +15187,13 @@ export default function EmployeesView() {
     }));
   }, [currentEmployee.grossSalary, currentEmployee.join_date, salaryConfig]);
 
-  // Handlers
   const handleCountryChange = (selectedCountry) => {
     const countryId = selectedCountry ? selectedCountry.country_id : "";
     const countryName = selectedCountry ? selectedCountry.country_name : null;
     setCurrentEmployee((prev) => ({ ...prev, country_id: countryId, state_id: "", employee_hub_id: "", officeShift: "" }));
     setStates([]);
     setEmployeeHubs([]);
-    setOfficeShifts([]); // Clear shifts if country changes
+    setOfficeShifts([]); 
     if (countryName) {
       axiosInstance
         .get(`api/states/?country_name=${countryName}`)
@@ -14168,7 +15208,7 @@ export default function EmployeesView() {
     const stateId = selectedState ? selectedState.state_id : "";
     setCurrentEmployee((prev) => ({ ...prev, state_id: stateId, employee_hub_id: "", officeShift: "" }));
     setEmployeeHubs([]);
-    setOfficeShifts([]); // Clear shifts if state changes
+    setOfficeShifts([]); 
     if (stateId) {
       axiosInstance
         .get(`api/employee_hub_dropdown/${stateId}/`)
@@ -14268,7 +15308,7 @@ export default function EmployeesView() {
       setDesignations([]);
       setStates([]);
       setEmployeeHubs([]);
-      setOfficeShifts([]); // Reset shifts
+      setOfficeShifts([]); 
       setEmployeeDocuments(null);
       setIsEditMode(false);
       setShowPassword(false);
@@ -14282,7 +15322,7 @@ export default function EmployeesView() {
   const handleTalentSelect = async (event, selectedOption) => {
     setEmployeeDocuments(null);
     setCurrentEmployee((prev) => ({ ...prev, resumeUrl: "" }));
-    setOfficeShifts([]); // Reset shifts on new talent select
+    setOfficeShifts([]); 
 
     if (!selectedOption) {
       setCurrentEmployee((prev) => ({ ...prev, firstName: "", middleName: "", lastName: "", email: "", phone: "", gender: "", country_id: "", state_id: "", officeShift: "" }));
@@ -14304,7 +15344,7 @@ export default function EmployeesView() {
       country_id: selectedCountry ? selectedCountry.country_id : "",
       state_id: "",
       employee_hub_id: "",
-      officeShift: "", // Reset
+      officeShift: "", 
       resumeUrl: resumeLink,
     }));
     
@@ -14345,7 +15385,6 @@ export default function EmployeesView() {
       }
       const empData = response.data.data[0];
       
-      // Fetch dependencies
       const [desigRes, statesRes, hubsRes] = await Promise.all([
         axiosInstance.get(`api/desig_dept_dropdown/?dept_id=${empData.department_id}/`),
         empData.country_name ? axiosInstance.get(`api/states/?country_name=${empData.country_name}`) : Promise.resolve({ data: { data: [] } }),
@@ -14356,7 +15395,6 @@ export default function EmployeesView() {
       setStates(statesRes.data.data || []);
       setEmployeeHubs(hubsRes.data.data || []);
 
-      // Fetch Office Shifts specifically for this user's Hub
       let validOfficeShifts = [];
       if (empData.employee_hub_id) {
           validOfficeShifts = await fetchOfficeShifts(empData.employee_hub_id);
@@ -14578,7 +15616,6 @@ export default function EmployeesView() {
         <TextField size="small" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} sx={{ width: isMobile ? "100%" : "auto" }} InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>) }} />
       </Box>
 
-      {/* Change Manager Dialog */}
       <Dialog open={openChangeManagerForm} onClose={() => setOpenChangeManagerForm(false)} maxWidth="sm" fullWidth ref={changeManagerDialogRef}>
         <DialogTitle sx={{ color: themePurple, fontWeight: "bold" }}>
           Change Manager
@@ -14610,14 +15647,13 @@ export default function EmployeesView() {
         </DialogActions>
       </Dialog>
 
-      {/* Main Employee Form Dialog */}
       <Dialog open={openEmployeeForm} onClose={() => setOpenEmployeeForm(false)} maxWidth="md" fullWidth ref={employeeDialogRef}>
-        <DialogTitle sx={{ color: "#8C257C ", fontWeight: "bold", fontSize: "2rem" }}>
+        <DialogTitle sx={{ color: "#8C257C", fontWeight: "bold", fontSize: "1.5rem", borderBottom: "1px solid #e0e0e0", pb: 2 }}>
           {isEditMode ? "Edit Employee" : "Add Employee"}
           <IconButton onClick={() => setOpenEmployeeForm(false)} sx={{ position: "absolute", right: 8, top: 8, color: "grey.500" }}><CloseIcon /></IconButton>
         </DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
+        <DialogContent sx={{ mt: 2 }}>
+          <Grid container spacing={3}>
             {!isEditMode && (
               <Grid item xs={12}>
                 <Autocomplete
@@ -14630,7 +15666,11 @@ export default function EmployeesView() {
               </Grid>
             )}
 
-            {/* 1. Name */}
+            <Grid item xs={12}>
+              <Typography variant="h6" sx={{ color: themePurple, fontWeight: 'bold' }}>Personal Information</Typography>
+              <Divider sx={{ mb: 0 }} />
+            </Grid>
+
             <Grid item xs={12} sm={4}>
               <TextField fullWidth label="First Name" name="firstName" value={currentEmployee.firstName || ""} onChange={handleInputChange} onKeyPress={(e) => { if (!/^[A-Za-z]$/.test(e.key)) e.preventDefault(); }} InputProps={{ readOnly: isEditMode }} />
             </Grid>
@@ -14641,62 +15681,95 @@ export default function EmployeesView() {
               <TextField fullWidth label="Last Name" name="lastName" value={currentEmployee.lastName || ""} onChange={handleInputChange} onKeyPress={(e) => { if (!/^[A-Za-z]$/.test(e.key)) e.preventDefault(); }} InputProps={{ readOnly: isEditMode }} />
             </Grid>
 
-            {/* 2. Email */}
             <Grid item xs={12} sm={6}>
               <TextField fullWidth label="Email" name="email" value={currentEmployee.email || ""} onChange={handleInputChange} InputProps={{ readOnly: isEditMode || !!talentPool.find((p) => p.email === currentEmployee.email) }} />
             </Grid>
 
-            {/* 3. Mobile Number */}
             <Grid item xs={12} sm={6}>
               <TextField fullWidth label="Mobile Number" name="phone" value={currentEmployee.phone || ""} onChange={(e) => { const value = e.target.value; if (/^\d{0,10}$/.test(value)) handleInputChange(e); }} inputProps={{ maxLength: 10, inputMode: "numeric", pattern: "[0-9]*" }} InputProps={{ readOnly: isEditMode }} />
             </Grid>
 
-            {/* 4. Address */}
-            <Grid item xs={12}>
+            {!isEditMode && (
+                <Grid item xs={12} sm={6}>
+                  <Autocomplete options={genderOptions} getOptionLabel={(option) => option.label} value={genderOptions.find((g) => g.value === currentEmployee.gender) || null} onChange={(e, nv) => setCurrentEmployee((prev) => ({ ...prev, gender: nv ? nv.value : "" }))} isOptionEqualToValue={(option, value) => option.value === value.value} renderInput={(params) => <TextField {...params} label="Gender" />} />
+                </Grid>
+            )}
+
+            <Grid item xs={12} sm={!isEditMode ? 6 : 12}>
                 <TextField fullWidth label="Address" name="address" value={currentEmployee.address || ""} onChange={handleInputChange} />
             </Grid>
 
-            {/* 5. Country */}
+            <Grid item xs={12} sm={12}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Button variant="outlined" component="label" disabled={isEditMode} color="secondary">
+                  Upload Photo
+                  <input type="file" hidden accept="image/*" onChange={handleFileUpload} />
+                </Button>
+                {currentEmployee.avatar && <Avatar src={typeof currentEmployee.avatar === "string" ? currentEmployee.avatar : URL.createObjectURL(currentEmployee.avatar)} sx={{ width: 56, height: 56 }} />}
+              </Box>
+            </Grid>
+
+            <Grid item xs={12}>
+              {isFetchingDocs && <CircularProgress />}
+              {employeeDocuments && !isFetchingDocs && (
+                <Box sx={{ mt: 1 }}>
+                  <Typography variant="subtitle2" gutterBottom>Fetched Documents</Typography>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                    {Object.entries(employeeDocuments).map(([name, url]) =>
+                      url ? <Chip key={name} label={name.replace(/_/g, " ")} component="a" href={url} target="_blank" clickable icon={<LinkIcon />} variant="outlined" color="primary" size="small" /> : null
+                    )}
+                  </Box>
+                </Box>
+              )}
+            </Grid>
+
+            <Grid item xs={12}>
+              <Typography variant="h6" sx={{ color: themePurple, fontWeight: 'bold', mt: 0 }}>Location Details</Typography>
+              <Divider sx={{ mb: 0 }} />
+            </Grid>
+
             <Grid item xs={12} sm={6}>
               <Autocomplete options={countries} getOptionLabel={(option) => option.country_name || ""} value={countries.find((c) => c.country_id == currentEmployee.country_id) || null} onChange={(e, nv) => handleCountryChange(nv)} isOptionEqualToValue={(option, value) => option.country_id == value.country_id} renderInput={(params) => <TextField {...params} label="Country" />} />
             </Grid>
 
-            {/* 6. State */}
             <Grid item xs={12} sm={6}>
               <Autocomplete options={states} getOptionLabel={(option) => option.state_name || ""} value={states.find((s) => s.state_id == currentEmployee.state_id) || null} onChange={(e, nv) => handleStateChange(nv)} isOptionEqualToValue={(option, value) => option.state_id == value.state_id} disabled={!currentEmployee.country_id} renderInput={(params) => <TextField {...params} label="State" />} />
             </Grid>
 
-            {/* 7. User (role) */}
-            <Grid item xs={12} sm={6}>
-               <Autocomplete options={roles} getOptionLabel={(option) => option.role_name || ""} value={roles.find((r) => r.index == currentEmployee.role) || null} onChange={(e, nv) => setCurrentEmployee((prev) => ({ ...prev, role: nv ? nv.index : "" }))} isOptionEqualToValue={(option, value) => option.index == value.index} renderInput={(params) => <TextField {...params} label="User (Role)" />} />
+            <Grid item xs={12}>
+              <Typography variant="h6" sx={{ color: themePurple, fontWeight: 'bold', mt: 0 }}>Employment & Role</Typography>
+              <Divider sx={{ mb: 0 }} />
             </Grid>
 
-            {/* 8. Department */}
             <Grid item xs={12} sm={6}>
               <Autocomplete options={departments} getOptionLabel={(option) => option.dept_name || ""} value={departments.find((d) => d.dept_id == currentEmployee.department_id) || null} onChange={(e, nv) => handleDeptChange(nv)} isOptionEqualToValue={(option, value) => option.dept_id == value.dept_id} renderInput={(params) => <TextField {...params} label="Department" />} />
             </Grid>
 
-            {/* 9. Division */}
             <Grid item xs={12} sm={6}>
               <Autocomplete options={divisions} getOptionLabel={(option) => option.division_name || ""} value={divisions.find((d) => d.division_id == currentEmployee.division_id) || null} onChange={(e, nv) => handleDivisionChange(nv)} isOptionEqualToValue={(option, value) => option.division_id == value.division_id} renderInput={(params) => <TextField {...params} label="Division" />} />
             </Grid>
 
-            {/* 10. Sub-division */}
             <Grid item xs={12} sm={6}>
               <Autocomplete options={subDivisionOptions} getOptionLabel={(option) => option.label || ""} value={subDivisionOptions.find((sd) => sd.value === currentEmployee.subDivision) || null} onChange={(e, nv) => setCurrentEmployee((prev) => ({ ...prev, subDivision: nv ? nv.value : "" }))} isOptionEqualToValue={(option, value) => option.value === value.value} disabled={isSubDivisionDisabled} renderInput={(params) => <TextField {...params} label="Sub-division" />} />
             </Grid>
 
-            {/* 11. Designation */}
             <Grid item xs={12} sm={6}>
               <Autocomplete options={designations} getOptionLabel={(option) => option.desig_name || ""} value={designations.find((d) => d.desig_id == currentEmployee.designation_id) || null} onChange={(e, nv) => setCurrentEmployee((prev) => ({ ...prev, designation_id: nv ? nv.desig_id : "" }))} isOptionEqualToValue={(option, value) => option.desig_id == value.desig_id} disabled={!currentEmployee.department_id} renderInput={(params) => <TextField {...params} label="Designation" />} />
             </Grid>
 
-            {/* 12. Headquarter */}
+            <Grid item xs={12} sm={6}>
+               <Autocomplete options={roles} getOptionLabel={(option) => option.role_name || ""} value={roles.find((r) => r.index == currentEmployee.role) || null} onChange={(e, nv) => setCurrentEmployee((prev) => ({ ...prev, role: nv ? nv.index : "" }))} isOptionEqualToValue={(option, value) => option.index == value.index} renderInput={(params) => <TextField {...params} label="User (Role)" />} />
+            </Grid>
+
             <Grid item xs={12} sm={6}>
               <Autocomplete options={headquarters} getOptionLabel={(option) => option.headquarter_name || ""} value={headquarters.find((h) => h.headquarter_id == currentEmployee.headquarter_id) || null} onChange={(e, nv) => setCurrentEmployee((prev) => ({ ...prev, headquarter_id: nv ? nv.headquarter_id : "" }))} isOptionEqualToValue={(option, value) => option.headquarter_id == value.headquarter_id} renderInput={(params) => <TextField {...params} label="Headquarter" />} />
             </Grid>
 
-            {/* 13. Line Manager */}
+            <Grid item xs={12}>
+              <Typography variant="h6" sx={{ color: themePurple, fontWeight: 'bold', mt: 0 }}>Reporting & Schedule</Typography>
+              <Divider sx={{ mb: 0 }} />
+            </Grid>
+
             <Grid item xs={12} sm={12}>
               <Autocomplete 
                 options={allEmployeesForDropdown} 
@@ -14708,7 +15781,6 @@ export default function EmployeesView() {
               />
             </Grid>
 
-            {/* 14. Holiday Hub (Updates Shifts on Selection) */}
             <Grid item xs={12} sm={6}>
               <Autocomplete 
                 options={employeeHubs} 
@@ -14716,7 +15788,7 @@ export default function EmployeesView() {
                 value={employeeHubs.find((h) => h.employee_hub_id == currentEmployee.employee_hub_id) || null} 
                 onChange={async (e, nv) => {
                    const hubId = nv ? nv.employee_hub_id : "";
-                   setCurrentEmployee((prev) => ({ ...prev, employee_hub_id: hubId, officeShift: "" })); // Reset shift on hub change
+                   setCurrentEmployee((prev) => ({ ...prev, employee_hub_id: hubId, officeShift: "" })); 
                    await fetchOfficeShifts(hubId);
                 }} 
                 isOptionEqualToValue={(option, value) => option.employee_hub_id == value.employee_hub_id} 
@@ -14725,7 +15797,6 @@ export default function EmployeesView() {
               />
             </Grid>
 
-            {/* 15. Shift & Scheduling (Dependent on Hub) */}
             <Grid item xs={12} sm={6}>
               <Autocomplete 
                 options={officeShifts} 
@@ -14733,16 +15804,10 @@ export default function EmployeesView() {
                 value={officeShifts.find((s) => s.office_shift_id == currentEmployee.officeShift) || null} 
                 onChange={(e, nv) => setCurrentEmployee((prev) => ({ ...prev, officeShift: nv ? nv.office_shift_id : "" }))} 
                 isOptionEqualToValue={(option, value) => option.office_shift_id == value.office_shift_id} 
-                disabled={!currentEmployee.employee_hub_id || officeShifts.length === 0} // Disabled if no hub or no shifts found
+                disabled={!currentEmployee.employee_hub_id || officeShifts.length === 0} 
                 renderInput={(params) => <TextField {...params} label="Shift & Scheduling" />} 
               />
             </Grid>
-
-            {isEditMode && (
-              <Grid item xs={12} sm={6}>
-                <TextField fullWidth label="Employee ID" name="employee_id" value={currentEmployee.employee_id || ""} InputProps={{ readOnly: true }} />
-              </Grid>
-            )}
 
             <Grid item xs={12} sm={6}>
               <Autocomplete options={statusOptions} getOptionLabel={(option) => option.label} value={statusOptions.find((s) => s.value === currentEmployee.status) || null} onChange={(e, nv) => setCurrentEmployee((prev) => ({ ...prev, status: nv ? nv.value : 1 }))} isOptionEqualToValue={(option, value) => option.value === value.value} renderInput={(params) => <TextField {...params} label="Status" />} />
@@ -14756,35 +15821,19 @@ export default function EmployeesView() {
               <TextField fullWidth label="Join Date" name="join_date" type="date" value={currentEmployee.join_date || ""} onChange={handleInputChange} InputLabelProps={{ shrink: true }} />
             </Grid>
 
-            <Grid item xs={12} sm={6}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                <Button variant="contained" component="label" disabled={isEditMode} sx={purpleButtonSx}>
-                  Upload Photo
-                  <input type="file" hidden accept="image/*" onChange={handleFileUpload} />
-                </Button>
-                {currentEmployee.avatar && <Avatar src={typeof currentEmployee.avatar === "string" ? currentEmployee.avatar : URL.createObjectURL(currentEmployee.avatar)} sx={{ width: 56, height: 56 }} />}
-              </Box>
-            </Grid>
-
-            <Grid item xs={12}>
-              {isFetchingDocs && <CircularProgress />}
-              {employeeDocuments && !isFetchingDocs && (
-                <Box>
-                  <Typography variant="subtitle1" gutterBottom>Fetched Documents</Typography>
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                    {Object.entries(employeeDocuments).map(([name, url]) =>
-                      url ? <Chip key={name} label={name.replace(/_/g, " ")} component="a" href={url} target="_blank" clickable icon={<LinkIcon />} variant="outlined" color="secondary" size="small" /> : null
-                    )}
-                  </Box>
-                </Box>
-              )}
-            </Grid>
+            {isEditMode && (
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth label="Employee ID" name="employee_id" value={currentEmployee.employee_id || ""} InputProps={{ readOnly: true }} />
+              </Grid>
+            )}
 
             {!isEditMode && (
               <>
-                <Grid item xs={12} sm={6}>
-                  <Autocomplete options={genderOptions} getOptionLabel={(option) => option.label} value={genderOptions.find((g) => g.value === currentEmployee.gender) || null} onChange={(e, nv) => setCurrentEmployee((prev) => ({ ...prev, gender: nv ? nv.value : "" }))} isOptionEqualToValue={(option, value) => option.value === value.value} renderInput={(params) => <TextField {...params} label="Gender" />} />
+                <Grid item xs={12}>
+                    <Typography variant="h6" sx={{ color: themePurple, fontWeight: 'bold', mt: 0 }}>Account & Payroll</Typography>
+                    <Divider sx={{ mb: 0 }} />
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                   <TextField fullWidth label="Username" name="username" value={currentEmployee.username || ""} onChange={handleInputChange} InputProps={{ readOnly: true }} />
                 </Grid>
@@ -14792,7 +15841,6 @@ export default function EmployeesView() {
                   <TextField fullWidth label="Password" name="password" value={currentEmployee.password || ""} onChange={handleInputChange} type={showPassword ? "text" : "password"} InputProps={{ endAdornment: (<InputAdornment position="end"> <IconButton aria-label="toggle password visibility" onClick={() => setShowPassword((prev) => !prev)} onMouseDown={(e) => e.preventDefault()} edge="end"> {showPassword ? <VisibilityOff /> : <Visibility />} </IconButton> </InputAdornment>) }} />
                 </Grid>
                 
-                {/* Gross Salary Block */}
                 <Grid item xs={12} sm={6} md={3}>
                   <TextField fullWidth label="Gross Salary monthly" name="grossSalary" type="number" value={currentEmployee.grossSalary || ""} onChange={(e) => { const value = e.target.value; if (/^\d*\.?\d*$/.test(value)) handleInputChange(e); }} />
                 </Grid>
@@ -14809,7 +15857,7 @@ export default function EmployeesView() {
             )}
           </Grid>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setOpenEmployeeForm(false)} disabled={isSaving} sx={cancelButtonSx}>Cancel</Button>
           <Button onClick={handleSaveEmployee} variant="contained" disabled={isSaving} sx={purpleButtonSx}>{isSaving ? <CircularProgress size={24} color="inherit" /> : "Save"}</Button>
         </DialogActions>
