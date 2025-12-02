@@ -1902,6 +1902,8 @@ export default function EmployeesView() {
 
 
 
+
+
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: 2 }}>
         <Box sx={{ display: 'flex', gap: 1, flexDirection: isMobile ? 'column' : 'row', width: isMobile ? '100%' : 'auto' }}>
           <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddEmployee} sx={buttonSx}>Add Employee</Button>
