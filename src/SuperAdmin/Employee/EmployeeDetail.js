@@ -8823,7 +8823,7 @@ const EmployeeDetail = () => {
     <Box sx={{ flexGrow: 1, p: 3, background: '#f8f9fa', minHeight: '100vh' }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
         <Typography variant="h4" sx={{ fontWeight: "bold", color: PRIMARY_COLOR ,}}>
-          Employee Onboarding
+          Employee Details
         </Typography>
         <Button variant="contained" onClick={() => navigate(-1)} startIcon={<ArrowBackIcon />} sx={{ borderRadius: '20px', background: GRADIENT_BTN, boxShadow: '0 4px 10px rgba(140, 37, 124, 0.3)' }}>
           Back to List

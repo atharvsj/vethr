@@ -109,131 +109,219 @@
 //   );
 // };
 
+// // export default ProfilePicture;
+// import React, { useState, useContext, useEffect } from 'react';
+// import {
+//   Box,
+//   Typography,
+//   Button,
+//   InputLabel,
+// } from '@mui/material';
+// import ImageIcon from '@mui/icons-material/Image';
+// import axiosInstance from '../../utils/axiosInstance';
+// import { EmployeeContext } from '../../SuperAdmin/Employee/EmployeeContext';
+// import Swal from 'sweetalert2';
+// import withReactContent from 'sweetalert2-react-content';
+
+// const MySwal = withReactContent(Swal);
+
+// const ProfilePicture = () => {
+//   const [file, setFile] = useState(null);
+//   const [fileName, setFileName] = useState('');
+//   const { employeeId } = useContext(EmployeeContext);
+
+//   useEffect(() => {
+//     // This effect is fine for debugging, no changes needed here.
+//     console.log("employee id from context in profile photo :", employeeId);
+//   }, [employeeId]);
+
+//   const handleFileChange = (e) => {
+//     if (e.target.files.length > 0) {
+//       setFile(e.target.files[0]);
+//       setFileName(e.target.files[0].name);
+//     }
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+
+//     if (!file || !employeeId) {
+//       return MySwal.fire({
+//         icon: 'warning',
+//         title: 'Missing Information',
+//         text: 'Please select a file to upload.',
+//       });
+//     }
+
+//     const formData = new FormData();
+//     formData.append('user_id', employeeId);
+//     formData.append('file', file);
+
+//     // 1. Show a loading alert immediately
+//     MySwal.fire({
+//       title: 'Uploading...',
+//       text: 'Please wait while your picture is being updated.',
+//       allowOutsideClick: false,
+//       didOpen: () => {
+//         MySwal.showLoading();
+//       },
+//     });
+
+//     try {
+//       await axiosInstance.post('/api/update_profile_photo/', formData, {
+//         headers: {
+//           'Content-Type': 'multipart/form-data',
+//         },
+//       });
+
+//       // 2. On success, the loading alert is replaced with the success message
+//       await MySwal.fire({
+//         icon: 'success',
+//         title: 'Success!',
+//         text: 'Your profile picture has been updated.',
+//       });
+
+//       // Reset file input after successful upload
+//       setFile(null);
+//       setFileName('');
+//     } catch (error) {
+//       console.error('Error uploading file:', error);
+//       const errorMessage = error.response?.data?.message || 'The upload failed. Please try again.';
+      
+//       // 3. On error, the loading alert is replaced with the error message
+//       return MySwal.fire({
+//         icon: 'error',
+//         title: 'Upload Failed',
+//         text: errorMessage,
+//       });
+//     }
+//   };
+
+//   return (
+//     <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 600, p: 3 }}>
+//       <Box display="flex" alignItems="center" gap={1} mb={2}>
+//         <ImageIcon color="primary" />
+//         <Typography variant="h6">Profile Picture</Typography>
+//       </Box>
+
+//       <InputLabel required sx={{ mb: 1 }}>
+//         Profile Picture
+//       </InputLabel>
+
+//       <Button
+//         variant="outlined"
+//         component="label"
+//         fullWidth
+//         sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
+//       >
+//         {fileName || 'Choose file...'}
+//         <input
+//           type="file"
+//           accept="image/png, image/jpeg, image/jpg, image/gif"
+//           hidden
+//           onChange={handleFileChange}
+//         />
+//       </Button>
+
+//       <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
+//         Allowed file types: png, jpg, jpeg, gif.
+//       </Typography>
+
+//       <Box sx={{ mt: 3 }}>
+//         <Button type="submit" variant="contained" color="primary">
+//           Update Picture
+//         </Button>
+//       </Box>
+//     </Box>
+//   );
+// };
+
 // export default ProfilePicture;
-import React, { useState, useContext, useEffect } from 'react';
-import {
-  Box,
-  Typography,
-  Button,
-  InputLabel,
-} from '@mui/material';
+
+
+
+import React, { useState, useContext } from 'react';
+import { Box, Typography, Button, InputLabel, FormHelperText } from '@mui/material';
 import ImageIcon from '@mui/icons-material/Image';
 import axiosInstance from '../../utils/axiosInstance';
-import { EmployeeContext } from '../../SuperAdmin/Employee/EmployeeContext';
+import { EmployeeContext } from './EmployeeContext';
 import Swal from 'sweetalert2';
-import withReactContent from 'sweetalert2-react-content';
 
-const MySwal = withReactContent(Swal);
+const PRIMARY_COLOR = "#8C257C";
 
-const ProfilePicture = () => {
+const ProfilePicture = ({ onNext, onBack }) => {
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState('');
+  const [error, setError] = useState(false);
   const { employeeId } = useContext(EmployeeContext);
-
-  useEffect(() => {
-    // This effect is fine for debugging, no changes needed here.
-    console.log("employee id from context in profile photo :", employeeId);
-  }, [employeeId]);
 
   const handleFileChange = (e) => {
     if (e.target.files.length > 0) {
       setFile(e.target.files[0]);
       setFileName(e.target.files[0].name);
+      setError(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!file || !employeeId) {
-      return MySwal.fire({
-        icon: 'warning',
-        title: 'Missing Information',
-        text: 'Please select a file to upload.',
-      });
+    if (!file) { 
+        setError(true);
+        Swal.fire({
+            icon: 'error',
+            title: 'No File Selected',
+            text: 'Please upload a profile picture to continue.',
+            confirmButtonColor: PRIMARY_COLOR
+        });
+        return; 
     }
 
     const formData = new FormData();
     formData.append('user_id', employeeId);
     formData.append('file', file);
 
-    // 1. Show a loading alert immediately
-    MySwal.fire({
-      title: 'Uploading...',
-      text: 'Please wait while your picture is being updated.',
-      allowOutsideClick: false,
-      didOpen: () => {
-        MySwal.showLoading();
-      },
-    });
-
     try {
-      await axiosInstance.post('/api/update_profile_photo/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      // 2. On success, the loading alert is replaced with the success message
-      await MySwal.fire({
-        icon: 'success',
-        title: 'Success!',
-        text: 'Your profile picture has been updated.',
-      });
-
-      // Reset file input after successful upload
+      Swal.showLoading();
+      await axiosInstance.post('/api/update_profile_photo/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      Swal.close();
       setFile(null);
-      setFileName('');
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      const errorMessage = error.response?.data?.message || 'The upload failed. Please try again.';
-      
-      // 3. On error, the loading alert is replaced with the error message
-      return MySwal.fire({
-        icon: 'error',
-        title: 'Upload Failed',
-        text: errorMessage,
-      });
-    }
+      if (onNext) onNext();
+    } catch (error) { Swal.fire('Upload Failed', 'Error uploading file.', 'error'); }
   };
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 600, p: 3 }}>
       <Box display="flex" alignItems="center" gap={1} mb={2}>
-        <ImageIcon color="primary" />
-        <Typography variant="h6">Profile Picture</Typography>
+        <ImageIcon sx={{ color: PRIMARY_COLOR }} />
+        <Typography variant="h6" color={PRIMARY_COLOR} fontWeight="bold">Profile Picture</Typography>
       </Box>
 
-      <InputLabel required sx={{ mb: 1 }}>
-        Profile Picture
-      </InputLabel>
-
-      <Button
-        variant="outlined"
-        component="label"
-        fullWidth
-        sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
+      <InputLabel sx={{ mb: 1, color: error ? 'error.main' : 'text.primary' }}>Select Profile Picture *</InputLabel>
+      <Button 
+        variant="outlined" 
+        component="label" 
+        fullWidth 
+        sx={{ 
+            justifyContent: 'flex-start', 
+            textTransform: 'none', 
+            borderColor: error ? 'error.main' : PRIMARY_COLOR, 
+            color: error ? 'error.main' : PRIMARY_COLOR,
+            '&:hover': { borderColor: error ? 'error.main' : PRIMARY_COLOR }
+        }}
       >
         {fileName || 'Choose file...'}
-        <input
-          type="file"
-          accept="image/png, image/jpeg, image/jpg, image/gif"
-          hidden
-          onChange={handleFileChange}
-        />
+        <input type="file" accept="image/*" hidden onChange={handleFileChange} />
       </Button>
+      {error && <FormHelperText error>Profile picture is required.</FormHelperText>}
 
-      <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
-        Allowed file types: png, jpg, jpeg, gif.
-      </Typography>
-
-      <Box sx={{ mt: 3 }}>
-        <Button type="submit" variant="contained" color="primary">
-          Update Picture
+      <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
+        <Button onClick={onBack} variant="outlined" sx={{ borderRadius: '8px', borderColor: '#ccc', color: '#555', '&:hover': { borderColor: '#8C257C', color: '#8C257C' } }}>Back</Button>
+        <Button type="submit" variant="contained" sx={{ background: `linear-gradient(135deg, ${PRIMARY_COLOR} 0%, #6d1d60 100%)`, color: 'white', borderRadius: '8px' }}>
+          Upload & Next
         </Button>
       </Box>
     </Box>
   );
 };
 
-export default ProfilePicture;
+export default ProfilePicture;  

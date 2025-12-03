@@ -4663,6 +4663,8 @@ export default function Sidebar({ open, toggleDrawer, drawerWidth }) {
   const employeeRoutes = useMemo(() => [
     "/hrms/admindashboard/employeesMain",
     "/hrms/admindashboard/employees",
+
+    
     "/hrms/admindashboard/shifts",
     "/hrms/admindashboard/employeeexits"
   ], []);

@@ -4821,6 +4821,7 @@ import RevenueExpenseManagement from "./HrPortal/RevenueExpenseManagement";
 import AdminEmployeesViewHr from "./HrPortal/Employee/AdminEmployeesViewHr";
 import EmployeeExitHr from "./HrPortal/Employee/EmployeeExitHr";
 import EmployeeDetailHr from "./HrPortal/Employee/EmployeeDetailHr";
+import { EmployeeIdProvider as EmployeeIdProviderHr } from './HrPortal/Employee/EmployeeContext';
 
 import EmployeeExitMain from "./HrPortal/EmployeeExitMain";
 import ExitDashboardHr from "./HrPortal/ExitDashboardHr";
@@ -5901,13 +5902,19 @@ function App() {
               children: [
                 { path: "home", element: <HomeViewHr /> },
                 {
-                  path: "add_employees", // Employees view inside the dashboard
+                  path: "employees", // Employees view inside the dashboard
                   element: <AdminEmployeesViewHr />,
                 },
-                {
-                  path: "employeedetailHr/:id", // Employees view inside the dashboard
-                  element: <EmployeeIdProvider> <EmployeeDetailHr /></EmployeeIdProvider>,
-                },
+                // {
+                //     path: "/hrms/dashboardhr/employeedetail/:id",// Employees view inside the dashboard
+                //   element: <EmployeeIdProvider> <EmployeeDetailHr /></EmployeeIdProvider>,
+                // },
+
+             
+  {
+              path: "employeedetail/:id", // Change this path
+              element: <EmployeeIdProvider><EmployeeDetailHr /></EmployeeIdProvider>,
+            },
                 { path: "EmployeeExitHr", element: <EmployeeExitHr /> },
 
 
