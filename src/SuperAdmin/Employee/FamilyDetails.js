@@ -1173,6 +1173,8 @@ export default function FamilyDetails() {
           Family Details
         </Typography>
 
+
+
         {/* Search + RowsPerPage */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
