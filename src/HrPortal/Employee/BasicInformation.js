@@ -548,18 +548,637 @@
 
 
 
+
+// import React, { useState, useContext, useEffect } from 'react';
+// import { EmployeeContext } from './EmployeeContext';
+// import axiosInstance from "../../utils/axiosInstance";
+// import {
+//   Box, Grid, TextField, Typography, MenuItem, Button, FormControl,
+//   InputLabel, Select, CircularProgress, Checkbox, FormControlLabel
+// } from '@mui/material';
+// import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+// import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+// import dayjs from 'dayjs';
+// import Swal from 'sweetalert2';
+
+// const PRIMARY_COLOR = "#8C257C";
+
+// const BasicInformation = ({ onNext, onBack }) => {
+//   const { employeeId } = useContext(EmployeeContext);
+//   const [loading, setLoading] = useState(true);
+  
+//   const [countriesList, setCountriesList] = useState([]);
+//   const [employeeHubs, setEmployeeHubs] = useState([]);
+//   const [permStatesList, setPermStatesList] = useState([]);
+//   const [corrStatesList, setCorrStatesList] = useState([]);
+//   const [isSameAddress, setIsSameAddress] = useState(false);
+  
+//   const [errors, setErrors] = useState({});
+
+//   const [formData, setFormData] = useState({
+//     first_name: '', middle_name: '', last_name: '',
+//     date_of_birth: null, age: '', gender: '', marital_status: '',
+//     blood_group: '', contact_number: '', employee_id: '',
+//     address_1: '', country_id: '', state_id: '', city: '', zip_code: '',
+//     corr_address_1: '', corr_country_id: '', corr_state_id: '', corr_city: '', corr_zip_code: '',
+//   });
+
+//   const genderStringToValue = (str) => {
+//     if (!str) return '';
+//     const s = str.toLowerCase();
+//     return s === 'male' ? 1 : s === 'female' ? 2 : 3;
+//   };
+//   const genderValueToString = (v) => (v === 1 ? 'male' : v === 2 ? 'female' : 'other');
+
+//   useEffect(() => {
+//     const fetchDropdowns = async () => {
+//       try {
+//         const [countryRes, hubRes] = await Promise.all([
+//           axiosInstance.get('/api/countries/'),
+//           axiosInstance.get('/api/employee_hub/')
+//         ]);
+//         if (countryRes.data.status === 'success') setCountriesList(countryRes.data.data || []);
+//         if (hubRes.data.status === 'success') setEmployeeHubs(hubRes.data.data || []);
+//       } catch (error) { console.error(error); }
+//     };
+//     fetchDropdowns();
+//   }, []);
+
+//   useEffect(() => {
+//     if (!employeeId) return;
+//     setLoading(true);
+//     axiosInstance.post('/api/emp_basic_info/', { user_id: employeeId })
+//       .then((res) => {
+//         const data = res.data?.data?.[0];
+//         if (data) {
+//           setFormData(prev => ({
+//             ...prev,
+//             first_name: data.first_name || '',
+//             middle_name: data.middle_name || '',
+//             last_name: data.last_name || '',
+//             date_of_birth: data.date_of_birth ? dayjs(data.date_of_birth) : null,
+//             age: data.age || '',
+//             gender: genderStringToValue(data.gender),
+//             marital_status: data.marital_status?.toLowerCase() === 'married' ? 1 : 0,
+//             blood_group: data.blood_group || '',
+//             contact_number: data.contact_number || '',
+//             employee_id: data.employee_id || '',
+//             address_1: data.address_1 || '',
+//             country_id: Number(data.country_id || ''),
+//             state_id: Number(data.state_id || ''),
+//             city: data.city || '',
+//             zip_code: data.zipcode || '',
+//             corr_address_1: data.address_2 || '',
+//             corr_country_id: Number(data.correspondence_country || ''),
+//             corr_state_id: Number(data.correspondence_state || ''),
+//             corr_city: data.correspondence_city || '',
+//             corr_zip_code: data.correspondence_pincode || '',
+//           }));
+//         }
+//       })
+//       .finally(() => setLoading(false));
+//   }, [employeeId]);
+
+//   useEffect(() => {
+//     if (formData.country_id && countriesList.length) {
+//       const c = countriesList.find(x => x.country_id === formData.country_id);
+//       if (c) axiosInstance.get(`/api/states/?country_name=${c.country_name}`).then(r => setPermStatesList(r.data.data));
+//     }
+//   }, [formData.country_id, countriesList]);
+
+//   useEffect(() => {
+//     if (formData.corr_country_id && countriesList.length) {
+//       const c = countriesList.find(x => x.country_id === formData.corr_country_id);
+//       if (c) axiosInstance.get(`/api/states/?country_name=${c.country_name}`).then(r => setCorrStatesList(r.data.data));
+//     }
+//   }, [formData.corr_country_id, countriesList]);
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData(prev => ({ ...prev, [name]: value }));
+//     if(errors[name]) setErrors(prev => ({...prev, [name]: false}));
+//   };
+
+//   const handleDateChange = (val) => {
+//     setFormData(prev => ({ ...prev, date_of_birth: val }));
+//     if(errors.date_of_birth) setErrors(prev => ({...prev, date_of_birth: false}));
+//     if (val) {
+//       const age = dayjs().diff(val, 'year');
+//       setFormData(prev => ({ ...prev, age: age >= 0 ? age : '' }));
+//     }
+//   };
+
+//   const validate = () => {
+//     const newErrors = {};
+//     let isValid = true;
+//     const fieldsToCheck = [
+//         'first_name', 'last_name', 'gender', 'marital_status', 
+//         'contact_number', 'blood_group', 'address_1', 'country_id', 
+//         'state_id', 'city', 'zip_code'
+//     ];
+
+//     fieldsToCheck.forEach(field => {
+//         if (formData[field] === '' || formData[field] === null || formData[field] === undefined) {
+//             newErrors[field] = true;
+//             isValid = false;
+//         }
+//     });
+
+//     if (!formData.date_of_birth) { newErrors.date_of_birth = true; isValid = false; }
+
+//     if (!isSameAddress) {
+//         const corrFields = ['corr_address_1', 'corr_country_id', 'corr_state_id', 'corr_city', 'corr_zip_code'];
+//         corrFields.forEach(field => {
+//             if (formData[field] === '' || formData[field] === null || formData[field] === undefined) {
+//                 newErrors[field] = true;
+//                 isValid = false;
+//             }
+//         });
+//     }
+
+//     setErrors(newErrors);
+
+//     if (!isValid) {
+//         Swal.fire({
+//             icon: 'error',
+//             title: 'Incomplete Details',
+//             text: 'Please fill all the required fields before continuing.',
+//             confirmButtonColor: PRIMARY_COLOR
+//         });
+//         setTimeout(() => {
+//             const el = document.querySelector('.Mui-error');
+//             if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+//         }, 100);
+//     }
+//     return isValid;
+//   };
+
+//   const handleSubmit = async () => {
+//     if (!validate()) return;
+
+//     const payload = {
+//       user_id: employeeId,
+//       ...formData,
+//       date_of_birth: formData.date_of_birth ? formData.date_of_birth.format('YYYY-MM-DD') : null,
+//       gender: genderValueToString(formData.gender),
+//       marital_status: formData.marital_status === 1 ? 'married' : 'single',
+//       address_2: isSameAddress ? formData.address_1 : formData.corr_address_1,
+//       correspondence_city: isSameAddress ? formData.city : formData.corr_city,
+//       correspondence_pincode: isSameAddress ? formData.zip_code : formData.corr_zip_code,
+//       correspondence_state: isSameAddress ? formData.state_id : formData.corr_state_id,
+//       correspondence_country: isSameAddress ? formData.country_id : formData.corr_country_id,
+//       zipcode: formData.zip_code
+//     };
+
+//     try {
+//       Swal.showLoading();
+//       await axiosInstance.patch('/api/emp_basic_info/', payload);
+//       Swal.close();
+//       if (onNext) onNext();
+//     } catch (error) {
+//       Swal.fire('Error', 'Failed to update profile.', 'error');
+//     }
+//   };
+
+//   if (loading) return <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>;
+
+//   return (
+//     <Box sx={{ p: 2 }}>
+//       <Typography variant="h6" gutterBottom color={PRIMARY_COLOR} fontWeight="bold">Basic Information</Typography>
+      
+//       <Grid container spacing={2} sx={{ mb: 3 }}>
+//           <Grid item xs={12} sm={4}><TextField fullWidth label="First Name" name="first_name" value={formData.first_name} onChange={handleChange} error={!!errors.first_name} /></Grid>
+//           <Grid item xs={12} sm={4}><TextField fullWidth label="Middle Name" name="middle_name" value={formData.middle_name} onChange={handleChange} /></Grid>
+//           <Grid item xs={12} sm={4}><TextField fullWidth label="Last Name" name="last_name" value={formData.last_name} onChange={handleChange} error={!!errors.last_name} /></Grid>
+          
+//           <Grid item xs={12} sm={4}>
+//             <LocalizationProvider dateAdapter={AdapterDayjs}>
+//                 <DatePicker 
+//                     label="Date of Birth" 
+//                     value={formData.date_of_birth} 
+//                     onChange={handleDateChange} 
+//                     slotProps={{ textField: { fullWidth: true, error: !!errors.date_of_birth } }}
+//                 />
+//             </LocalizationProvider>
+//           </Grid>
+//           <Grid item xs={12} sm={2}><TextField fullWidth label="Age" name="age" value={formData.age} onChange={handleChange} /></Grid>
+          
+//           <Grid item xs={12} sm={3}>
+//             <FormControl fullWidth error={!!errors.gender}>
+//                 <InputLabel>Gender</InputLabel>
+//                 <Select name="gender" value={formData.gender} onChange={handleChange} label="Gender">
+//                     <MenuItem value={1}>Male</MenuItem><MenuItem value={2}>Female</MenuItem><MenuItem value={3}>Other</MenuItem>
+//                 </Select>
+//             </FormControl>
+//           </Grid>
+//           <Grid item xs={12} sm={3}>
+//             <FormControl fullWidth error={!!errors.marital_status}>
+//                 <InputLabel>Marital Status</InputLabel>
+//                 <Select name="marital_status" value={formData.marital_status} onChange={handleChange} label="Marital Status">
+//                     <MenuItem value={0}>Single</MenuItem><MenuItem value={1}>Married</MenuItem>
+//                 </Select>
+//             </FormControl>
+//           </Grid>
+          
+//           <Grid item xs={12} sm={6}><TextField fullWidth label="Contact" name="contact_number" value={formData.contact_number} onChange={handleChange} error={!!errors.contact_number} /></Grid>
+//           <Grid item xs={12} sm={6}>
+//             <FormControl fullWidth error={!!errors.blood_group}>
+//                 <InputLabel>Blood Group</InputLabel>
+//                 <Select name="blood_group" value={formData.blood_group} onChange={handleChange} label="Blood Group">
+//                     {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(b => <MenuItem key={b} value={b}>{b}</MenuItem>)}
+//                 </Select>
+//             </FormControl>
+//           </Grid>
+//       </Grid>
+
+//       <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Permanent Address</Typography>
+//       <Grid container spacing={2}>
+//         <Grid item xs={12}><TextField fullWidth label="Address Line 1" name="address_1" value={formData.address_1} onChange={handleChange} error={!!errors.address_1} /></Grid>
+//         <Grid item xs={6} md={3}>
+//             <TextField select fullWidth label="Country" name="country_id" value={formData.country_id} onChange={handleChange} error={!!errors.country_id}>
+//                 {countriesList.map(c => <MenuItem key={c.country_id} value={c.country_id}>{c.country_name}</MenuItem>)}
+//             </TextField>
+//         </Grid>
+//         <Grid item xs={6} md={3}>
+//             <TextField select fullWidth label="State" name="state_id" value={formData.state_id} onChange={handleChange} error={!!errors.state_id}>
+//                 {permStatesList.map(s => <MenuItem key={s.state_id} value={s.state_id}>{s.state_name}</MenuItem>)}
+//             </TextField>
+//         </Grid>
+//         <Grid item xs={6} md={3}><TextField fullWidth label="City" name="city" value={formData.city} onChange={handleChange} error={!!errors.city} /></Grid>
+//         <Grid item xs={6} md={3}><TextField fullWidth label="Zip Code" name="zip_code" value={formData.zip_code} onChange={handleChange} error={!!errors.zip_code} /></Grid>
+//       </Grid>
+      
+//       <Box mt={2} mb={2}>
+//          <FormControlLabel control={<Checkbox checked={isSameAddress} onChange={(e) => {
+//              setIsSameAddress(e.target.checked);
+//              if (e.target.checked) {
+//                  setErrors(prev => ({
+//                      ...prev, 
+//                      corr_address_1: false, corr_country_id: false, corr_state_id: false, corr_city: false, corr_zip_code: false 
+//                  }));
+//              }
+//          }} />} label="Correspondence same as Permanent" />
+//       </Box>
+      
+//       {!isSameAddress && (
+//         <>
+//             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Correspondence Address</Typography>
+//             <Grid container spacing={2}>
+//                  <Grid item xs={12}><TextField fullWidth label="Address Line 1" name="corr_address_1" value={formData.corr_address_1} onChange={handleChange} error={!!errors.corr_address_1} /></Grid>
+//                  <Grid item xs={6} md={3}>
+//                     <TextField select fullWidth label="Country" name="corr_country_id" value={formData.corr_country_id} onChange={handleChange} error={!!errors.corr_country_id}>
+//                         {countriesList.map(c => <MenuItem key={c.country_id} value={c.country_id}>{c.country_name}</MenuItem>)}
+//                     </TextField>
+//                  </Grid>
+//                  <Grid item xs={6} md={3}>
+//                     <TextField select fullWidth label="State" name="corr_state_id" value={formData.corr_state_id} onChange={handleChange} error={!!errors.corr_state_id}>
+//                         {corrStatesList.map(s => <MenuItem key={s.state_id} value={s.state_id}>{s.state_name}</MenuItem>)}
+//                     </TextField>
+//                  </Grid>
+//                  <Grid item xs={6} md={3}><TextField fullWidth label="City" name="corr_city" value={formData.corr_city} onChange={handleChange} error={!!errors.corr_city} /></Grid>
+//                  <Grid item xs={6} md={3}><TextField fullWidth label="Zip Code" name="corr_zip_code" value={formData.corr_zip_code} onChange={handleChange} error={!!errors.corr_zip_code} /></Grid>
+//             </Grid>
+//         </>
+//       )}
+
+//       <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
+//         <Button onClick={onBack} variant="outlined" sx={{ borderRadius: '8px', borderColor: '#ccc', color: '#555', '&:hover': { borderColor: '#8C257C', color: '#8C257C' } }}>Back</Button>
+//         <Button variant="contained" onClick={handleSubmit} sx={{ background: `linear-gradient(135deg, ${PRIMARY_COLOR} 0%, #6d1d60 100%)`, color: 'white', borderRadius: '8px' }}>Save & Next</Button>
+//       </Box>
+//     </Box>
+//   );
+// };
+
+// export default BasicInformation;
+
+
+
+// import React, { useState, useContext, useEffect } from 'react';
+// import { EmployeeContext } from './EmployeeContext';
+// import axiosInstance from "../../utils/axiosInstance";
+// import {
+//   Box, Grid, TextField, Typography, MenuItem, Button, FormControl,
+//   InputLabel, Select, CircularProgress, Checkbox, FormControlLabel
+// } from '@mui/material';
+// import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+// import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+// import dayjs from 'dayjs';
+// import Swal from 'sweetalert2';
+
+// const PRIMARY_COLOR = "#8C257C";
+
+// const BasicInformation = ({ onNext, onBack }) => {
+//   const { employeeId } = useContext(EmployeeContext);
+//   const [loading, setLoading] = useState(true);
+  
+//   const [countriesList, setCountriesList] = useState([]);
+//   const [employeeHubs, setEmployeeHubs] = useState([]);
+//   const [permStatesList, setPermStatesList] = useState([]);
+//   const [corrStatesList, setCorrStatesList] = useState([]);
+//   const [isSameAddress, setIsSameAddress] = useState(false);
+  
+//   const [errors, setErrors] = useState({});
+
+//   const [formData, setFormData] = useState({
+//     first_name: '', middle_name: '', last_name: '',
+//     date_of_birth: null, age: '', gender: '', marital_status: '',
+//     blood_group: '', contact_number: '', employee_id: '',
+//     address_1: '', country_id: '', state_id: '', city: '', zip_code: '',
+//     corr_address_1: '', corr_country_id: '', corr_state_id: '', corr_city: '', corr_zip_code: '',
+//   });
+
+//   const genderStringToValue = (str) => {
+//     if (!str) return '';
+//     const s = str.toLowerCase();
+//     return s === 'male' ? 1 : s === 'female' ? 2 : 3;
+//   };
+//   const genderValueToString = (v) => (v === 1 ? 'male' : v === 2 ? 'female' : 'other');
+
+//   // Unified Effect to fetch Dropdowns AND Employee Data
+//   useEffect(() => {
+//     const fetchData = async () => {
+//         setLoading(true);
+//         try {
+//             // 1. Fetch Dropdowns first
+//             const [countryRes, hubRes] = await Promise.all([
+//                 axiosInstance.get('/api/countries/'),
+//                 axiosInstance.get('/api/employee_hub/')
+//             ]);
+            
+//             if (countryRes.data.status === 'success') setCountriesList(countryRes.data.data || []);
+//             if (hubRes.data.status === 'success') setEmployeeHubs(hubRes.data.data || []);
+
+//             // 2. Fetch Employee Data if ID exists
+//             if (employeeId) {
+//                 const res = await axiosInstance.post('/api/emp_basic_info/', { user_id: employeeId });
+//                 const data = res.data?.data?.[0];
+//                 if (data) {
+//                     setFormData(prev => ({
+//                         ...prev,
+//                         first_name: data.first_name || '',
+//                         middle_name: data.middle_name || '',
+//                         last_name: data.last_name || '',
+//                         date_of_birth: data.date_of_birth ? dayjs(data.date_of_birth) : null,
+//                         age: data.age || '',
+//                         gender: genderStringToValue(data.gender),
+//                         marital_status: data.marital_status?.toLowerCase() === 'married' ? 1 : 0,
+//                         blood_group: data.blood_group || '',
+//                         contact_number: data.contact_number || '',
+//                         employee_id: data.employee_id || '',
+//                         address_1: data.address_1 || '',
+//                         country_id: Number(data.country_id || ''),
+//                         state_id: Number(data.state_id || ''),
+//                         city: data.city || '',
+//                         zip_code: data.zipcode || '',
+//                         corr_address_1: data.address_2 || '',
+//                         corr_country_id: Number(data.correspondence_country || ''),
+//                         corr_state_id: Number(data.correspondence_state || ''),
+//                         corr_city: data.correspondence_city || '',
+//                         corr_zip_code: data.correspondence_pincode || '',
+//                     }));
+//                 }
+//             }
+//         } catch (error) {
+//             console.error("Error loading data:", error);
+//         } finally {
+//             // 3. Ensure loading stops regardless of whether employeeId existed or API failed
+//             setLoading(false);
+//         }
+//     };
+
+//     fetchData();
+//   }, [employeeId]);
+
+//   // Handle State fetching based on selected Country
+//   useEffect(() => {
+//     if (formData.country_id && countriesList.length) {
+//       const c = countriesList.find(x => x.country_id === formData.country_id);
+//       if (c) axiosInstance.get(`/api/states/?country_name=${c.country_name}`).then(r => setPermStatesList(r.data.data));
+//     }
+//   }, [formData.country_id, countriesList]);
+
+//   useEffect(() => {
+//     if (formData.corr_country_id && countriesList.length) {
+//       const c = countriesList.find(x => x.country_id === formData.corr_country_id);
+//       if (c) axiosInstance.get(`/api/states/?country_name=${c.country_name}`).then(r => setCorrStatesList(r.data.data));
+//     }
+//   }, [formData.corr_country_id, countriesList]);
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData(prev => ({ ...prev, [name]: value }));
+//     if(errors[name]) setErrors(prev => ({...prev, [name]: false}));
+//   };
+
+//   const handleDateChange = (val) => {
+//     setFormData(prev => ({ ...prev, date_of_birth: val }));
+//     if(errors.date_of_birth) setErrors(prev => ({...prev, date_of_birth: false}));
+//     if (val) {
+//       const age = dayjs().diff(val, 'year');
+//       setFormData(prev => ({ ...prev, age: age >= 0 ? age : '' }));
+//     }
+//   };
+
+//   const validate = () => {
+//     const newErrors = {};
+//     let isValid = true;
+//     const fieldsToCheck = [
+//         'first_name', 'last_name', 'gender', 'marital_status', 
+//         'contact_number', 'blood_group', 'address_1', 'country_id', 
+//         'state_id', 'city', 'zip_code'
+//     ];
+
+//     fieldsToCheck.forEach(field => {
+//         if (formData[field] === '' || formData[field] === null || formData[field] === undefined) {
+//             newErrors[field] = true;
+//             isValid = false;
+//         }
+//     });
+
+//     if (!formData.date_of_birth) { newErrors.date_of_birth = true; isValid = false; }
+
+//     if (!isSameAddress) {
+//         const corrFields = ['corr_address_1', 'corr_country_id', 'corr_state_id', 'corr_city', 'corr_zip_code'];
+//         corrFields.forEach(field => {
+//             if (formData[field] === '' || formData[field] === null || formData[field] === undefined) {
+//                 newErrors[field] = true;
+//                 isValid = false;
+//             }
+//         });
+//     }
+
+//     setErrors(newErrors);
+
+//     if (!isValid) {
+//         Swal.fire({
+//             icon: 'error',
+//             title: 'Incomplete Details',
+//             text: 'Please fill all the required fields before continuing.',
+//             confirmButtonColor: PRIMARY_COLOR
+//         });
+//         setTimeout(() => {
+//             const el = document.querySelector('.Mui-error');
+//             if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+//         }, 100);
+//     }
+//     return isValid;
+//   };
+
+//   const handleSubmit = async () => {
+//     if (!validate()) return;
+
+//     const payload = {
+//       user_id: employeeId,
+//       ...formData,
+//       date_of_birth: formData.date_of_birth ? formData.date_of_birth.format('YYYY-MM-DD') : null,
+//       gender: genderValueToString(formData.gender),
+//       marital_status: formData.marital_status === 1 ? 'married' : 'single',
+//       address_2: isSameAddress ? formData.address_1 : formData.corr_address_1,
+//       correspondence_city: isSameAddress ? formData.city : formData.corr_city,
+//       correspondence_pincode: isSameAddress ? formData.zip_code : formData.corr_zip_code,
+//       correspondence_state: isSameAddress ? formData.state_id : formData.corr_state_id,
+//       correspondence_country: isSameAddress ? formData.country_id : formData.corr_country_id,
+//       zipcode: formData.zip_code
+//     };
+
+//     try {
+//       Swal.showLoading();
+//       await axiosInstance.patch('/api/emp_basic_info/', payload);
+//       Swal.close();
+//       if (onNext) onNext();
+//     } catch (error) {
+//       Swal.fire('Error', 'Failed to update profile.', 'error');
+//     }
+//   };
+
+//   if (loading) return <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>;
+
+//   return (
+//     <Box sx={{ p: 2 }}>
+//       <Typography variant="h6" gutterBottom color={PRIMARY_COLOR} fontWeight="bold">Basic Information</Typography>
+      
+//       <Grid container spacing={2} sx={{ mb: 3 }}>
+//           <Grid item xs={12} sm={4}><TextField fullWidth label="First Name" name="first_name" value={formData.first_name} onChange={handleChange} error={!!errors.first_name} /></Grid>
+//           <Grid item xs={12} sm={4}><TextField fullWidth label="Middle Name" name="middle_name" value={formData.middle_name} onChange={handleChange} /></Grid>
+//           <Grid item xs={12} sm={4}><TextField fullWidth label="Last Name" name="last_name" value={formData.last_name} onChange={handleChange} error={!!errors.last_name} /></Grid>
+          
+//           <Grid item xs={12} sm={4}>
+//             <LocalizationProvider dateAdapter={AdapterDayjs}>
+//                 <DatePicker 
+//                     label="Date of Birth" 
+//                     value={formData.date_of_birth} 
+//                     onChange={handleDateChange} 
+//                     slotProps={{ textField: { fullWidth: true, error: !!errors.date_of_birth } }}
+//                 />
+//             </LocalizationProvider>
+//           </Grid>
+//           <Grid item xs={12} sm={2}><TextField fullWidth label="Age" name="age" value={formData.age} onChange={handleChange} /></Grid>
+          
+//           <Grid item xs={12} sm={3}>
+//             <FormControl fullWidth error={!!errors.gender}>
+//                 <InputLabel>Gender</InputLabel>
+//                 <Select name="gender" value={formData.gender} onChange={handleChange} label="Gender">
+//                     <MenuItem value={1}>Male</MenuItem><MenuItem value={2}>Female</MenuItem><MenuItem value={3}>Other</MenuItem>
+//                 </Select>
+//             </FormControl>
+//           </Grid>
+//           <Grid item xs={12} sm={3}>
+//             <FormControl fullWidth error={!!errors.marital_status}>
+//                 <InputLabel>Marital Status</InputLabel>
+//                 <Select name="marital_status" value={formData.marital_status} onChange={handleChange} label="Marital Status">
+//                     <MenuItem value={0}>Single</MenuItem><MenuItem value={1}>Married</MenuItem>
+//                 </Select>
+//             </FormControl>
+//           </Grid>
+          
+//           <Grid item xs={12} sm={6}><TextField fullWidth label="Contact" name="contact_number" value={formData.contact_number} onChange={handleChange} error={!!errors.contact_number} /></Grid>
+//           <Grid item xs={12} sm={6}>
+//             <FormControl fullWidth error={!!errors.blood_group}>
+//                 <InputLabel>Blood Group</InputLabel>
+//                 <Select name="blood_group" value={formData.blood_group} onChange={handleChange} label="Blood Group">
+//                     {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(b => <MenuItem key={b} value={b}>{b}</MenuItem>)}
+//                 </Select>
+//             </FormControl>
+//           </Grid>
+//       </Grid>
+
+//       <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Permanent Address</Typography>
+//       <Grid container spacing={2}>
+//         <Grid item xs={12}><TextField fullWidth label="Address Line 1" name="address_1" value={formData.address_1} onChange={handleChange} error={!!errors.address_1} /></Grid>
+//         <Grid item xs={6} md={3}>
+//             <TextField select fullWidth label="Country" name="country_id" value={formData.country_id} onChange={handleChange} error={!!errors.country_id}>
+//                 {countriesList.map(c => <MenuItem key={c.country_id} value={c.country_id}>{c.country_name}</MenuItem>)}
+//             </TextField>
+//         </Grid>
+//         <Grid item xs={6} md={3}>
+//             <TextField select fullWidth label="State" name="state_id" value={formData.state_id} onChange={handleChange} error={!!errors.state_id}>
+//                 {permStatesList.map(s => <MenuItem key={s.state_id} value={s.state_id}>{s.state_name}</MenuItem>)}
+//             </TextField>
+//         </Grid>
+//         <Grid item xs={6} md={3}><TextField fullWidth label="City" name="city" value={formData.city} onChange={handleChange} error={!!errors.city} /></Grid>
+//         <Grid item xs={6} md={3}><TextField fullWidth label="Zip Code" name="zip_code" value={formData.zip_code} onChange={handleChange} error={!!errors.zip_code} /></Grid>
+//       </Grid>
+      
+//       <Box mt={2} mb={2}>
+//          <FormControlLabel control={<Checkbox checked={isSameAddress} onChange={(e) => {
+//              setIsSameAddress(e.target.checked);
+//              if (e.target.checked) {
+//                  setErrors(prev => ({
+//                      ...prev, 
+//                      corr_address_1: false, corr_country_id: false, corr_state_id: false, corr_city: false, corr_zip_code: false 
+//                  }));
+//              }
+//          }} />} label="Correspondence same as Permanent" />
+//       </Box>
+      
+//       {!isSameAddress && (
+//         <>
+//             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Correspondence Address</Typography>
+//             <Grid container spacing={2}>
+//                  <Grid item xs={12}><TextField fullWidth label="Address Line 1" name="corr_address_1" value={formData.corr_address_1} onChange={handleChange} error={!!errors.corr_address_1} /></Grid>
+//                  <Grid item xs={6} md={3}>
+//                     <TextField select fullWidth label="Country" name="corr_country_id" value={formData.corr_country_id} onChange={handleChange} error={!!errors.corr_country_id}>
+//                         {countriesList.map(c => <MenuItem key={c.country_id} value={c.country_id}>{c.country_name}</MenuItem>)}
+//                     </TextField>
+//                  </Grid>
+//                  <Grid item xs={6} md={3}>
+//                     <TextField select fullWidth label="State" name="corr_state_id" value={formData.corr_state_id} onChange={handleChange} error={!!errors.corr_state_id}>
+//                         {corrStatesList.map(s => <MenuItem key={s.state_id} value={s.state_id}>{s.state_name}</MenuItem>)}
+//                     </TextField>
+//                  </Grid>
+//                  <Grid item xs={6} md={3}><TextField fullWidth label="City" name="corr_city" value={formData.corr_city} onChange={handleChange} error={!!errors.corr_city} /></Grid>
+//                  <Grid item xs={6} md={3}><TextField fullWidth label="Zip Code" name="corr_zip_code" value={formData.corr_zip_code} onChange={handleChange} error={!!errors.corr_zip_code} /></Grid>
+//             </Grid>
+//         </>
+//       )}
+
+//       <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
+//         <Button onClick={onBack} variant="outlined" sx={{ borderRadius: '8px', borderColor: '#ccc', color: '#555', '&:hover': { borderColor: '#8C257C', color: '#8C257C' } }}>Back</Button>
+//         <Button variant="contained" onClick={handleSubmit} sx={{ background: `linear-gradient(135deg, ${PRIMARY_COLOR} 0%, #6d1d60 100%)`, color: 'white', borderRadius: '8px' }}>Save & Next</Button>
+//       </Box>
+//     </Box>
+//   );
+// };
+
+// export default BasicInformation;
+
+
 import React, { useState, useContext, useEffect } from 'react';
-import { EmployeeContext } from './EmployeeContext';
-import axiosInstance from "../../utils/axiosInstance";
-import {
-  Box, Grid, TextField, Typography, MenuItem, Button, FormControl,
-  InputLabel, Select, CircularProgress, Checkbox, FormControlLabel
+import { 
+  Box, Grid, TextField, Typography, MenuItem, Button, 
+  CircularProgress, Checkbox, FormControlLabel, InputLabel 
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import Swal from 'sweetalert2';
+import { useLocation, useParams } from 'react-router-dom';
+
+import { EmployeeContext } from './EmployeeContext';
+import axiosInstance from "../../utils/axiosInstance";
 
 const PRIMARY_COLOR = "#8C257C";
 
@@ -567,12 +1186,13 @@ const BasicInformation = ({ onNext, onBack }) => {
   const { employeeId } = useContext(EmployeeContext);
   const [loading, setLoading] = useState(true);
   
+  const params = useParams();
+  const location = useLocation();
+
   const [countriesList, setCountriesList] = useState([]);
-  const [employeeHubs, setEmployeeHubs] = useState([]);
   const [permStatesList, setPermStatesList] = useState([]);
   const [corrStatesList, setCorrStatesList] = useState([]);
   const [isSameAddress, setIsSameAddress] = useState(false);
-  
   const [errors, setErrors] = useState({});
 
   const [formData, setFormData] = useState({
@@ -583,6 +1203,17 @@ const BasicInformation = ({ onNext, onBack }) => {
     corr_address_1: '', corr_country_id: '', corr_state_id: '', corr_city: '', corr_zip_code: '',
   });
 
+  // 1. Get Effective ID
+  const getEffectiveId = () => {
+    try {
+      const q = new URLSearchParams(location.search);
+      const qId = q.get('id');
+      if (qId) return qId;
+    } catch (e) { /* ignore */ }
+    if (params?.id) return params.id;
+    return employeeId;
+  };
+
   const genderStringToValue = (str) => {
     if (!str) return '';
     const s = str.toLowerCase();
@@ -590,55 +1221,60 @@ const BasicInformation = ({ onNext, onBack }) => {
   };
   const genderValueToString = (v) => (v === 1 ? 'male' : v === 2 ? 'female' : 'other');
 
+  // 2. Fetch Data
   useEffect(() => {
-    const fetchDropdowns = async () => {
-      try {
-        const [countryRes, hubRes] = await Promise.all([
-          axiosInstance.get('/api/countries/'),
-          axiosInstance.get('/api/employee_hub/')
-        ]);
-        if (countryRes.data.status === 'success') setCountriesList(countryRes.data.data || []);
-        if (hubRes.data.status === 'success') setEmployeeHubs(hubRes.data.data || []);
-      } catch (error) { console.error(error); }
-    };
-    fetchDropdowns();
-  }, []);
+    const fetchData = async () => {
+        setLoading(true);
+        const effectiveId = getEffectiveId();
 
-  useEffect(() => {
-    if (!employeeId) return;
-    setLoading(true);
-    axiosInstance.post('/api/emp_basic_info/', { user_id: employeeId })
-      .then((res) => {
-        const data = res.data?.data?.[0];
-        if (data) {
-          setFormData(prev => ({
-            ...prev,
-            first_name: data.first_name || '',
-            middle_name: data.middle_name || '',
-            last_name: data.last_name || '',
-            date_of_birth: data.date_of_birth ? dayjs(data.date_of_birth) : null,
-            age: data.age || '',
-            gender: genderStringToValue(data.gender),
-            marital_status: data.marital_status?.toLowerCase() === 'married' ? 1 : 0,
-            blood_group: data.blood_group || '',
-            contact_number: data.contact_number || '',
-            employee_id: data.employee_id || '',
-            address_1: data.address_1 || '',
-            country_id: Number(data.country_id || ''),
-            state_id: Number(data.state_id || ''),
-            city: data.city || '',
-            zip_code: data.zipcode || '',
-            corr_address_1: data.address_2 || '',
-            corr_country_id: Number(data.correspondence_country || ''),
-            corr_state_id: Number(data.correspondence_state || ''),
-            corr_city: data.correspondence_city || '',
-            corr_zip_code: data.correspondence_pincode || '',
-          }));
+        try {
+            const [countryRes] = await Promise.all([
+                axiosInstance.get('/api/countries/')
+            ]);
+            
+            if (countryRes.data.status === 'success') setCountriesList(countryRes.data.data || []);
+
+            if (effectiveId) {
+                const res = await axiosInstance.post('/api/emp_basic_info/', { user_id: effectiveId });
+                const data = res.data?.data?.[0];
+                if (data) {
+                    setFormData(prev => ({
+                        ...prev,
+                        first_name: data.first_name || '',
+                        middle_name: data.middle_name || '',
+                        last_name: data.last_name || '',
+                        date_of_birth: data.date_of_birth ? dayjs(data.date_of_birth) : null,
+                        age: data.age || '',
+                        gender: genderStringToValue(data.gender),
+                        marital_status: data.marital_status?.toLowerCase() === 'married' ? 1 : 0,
+                        blood_group: data.blood_group || '',
+                        contact_number: data.contact_number || '',
+                        employee_id: data.employee_id || '',
+                        address_1: data.address_1 || '',
+                        country_id: Number(data.country_id || ''),
+                        state_id: Number(data.state_id || ''),
+                        city: data.city || '',
+                        zip_code: data.zipcode || '',
+                        corr_address_1: data.address_2 || '',
+                        corr_country_id: Number(data.correspondence_country || ''),
+                        corr_state_id: Number(data.correspondence_state || ''),
+                        corr_city: data.correspondence_city || '',
+                        corr_zip_code: data.correspondence_pincode || '',
+                    }));
+                }
+            }
+        } catch (error) {
+            console.error("Error loading data:", error);
+            Swal.fire({ icon: 'error', title: 'Fetch Error', text: 'Failed to load data.', confirmButtonColor: PRIMARY_COLOR });
+        } finally {
+            setLoading(false);
         }
-      })
-      .finally(() => setLoading(false));
-  }, [employeeId]);
+    };
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [employeeId, location.search, params.id]);
 
+  // 3. Dependent Dropdowns
   useEffect(() => {
     if (formData.country_id && countriesList.length) {
       const c = countriesList.find(x => x.country_id === formData.country_id);
@@ -668,31 +1304,26 @@ const BasicInformation = ({ onNext, onBack }) => {
     }
   };
 
+  // 4. Validation
   const validate = () => {
     const newErrors = {};
     let isValid = true;
-    const fieldsToCheck = [
+    const required = [
         'first_name', 'last_name', 'gender', 'marital_status', 
         'contact_number', 'blood_group', 'address_1', 'country_id', 
         'state_id', 'city', 'zip_code'
     ];
 
-    fieldsToCheck.forEach(field => {
-        if (formData[field] === '' || formData[field] === null || formData[field] === undefined) {
-            newErrors[field] = true;
-            isValid = false;
-        }
+    required.forEach(f => {
+        if (!formData[f] && formData[f] !== 0) { newErrors[f] = true; isValid = false; }
     });
 
     if (!formData.date_of_birth) { newErrors.date_of_birth = true; isValid = false; }
 
     if (!isSameAddress) {
-        const corrFields = ['corr_address_1', 'corr_country_id', 'corr_state_id', 'corr_city', 'corr_zip_code'];
-        corrFields.forEach(field => {
-            if (formData[field] === '' || formData[field] === null || formData[field] === undefined) {
-                newErrors[field] = true;
-                isValid = false;
-            }
+        const corrRequired = ['corr_address_1', 'corr_country_id', 'corr_state_id', 'corr_city', 'corr_zip_code'];
+        corrRequired.forEach(f => {
+            if (!formData[f] && formData[f] !== 0) { newErrors[f] = true; isValid = false; }
         });
     }
 
@@ -702,7 +1333,7 @@ const BasicInformation = ({ onNext, onBack }) => {
         Swal.fire({
             icon: 'error',
             title: 'Incomplete Details',
-            text: 'Please fill all the required fields before continuing.',
+            text: 'Please fill all required fields.',
             confirmButtonColor: PRIMARY_COLOR
         });
         setTimeout(() => {
@@ -713,11 +1344,19 @@ const BasicInformation = ({ onNext, onBack }) => {
     return isValid;
   };
 
-  const handleSubmit = async () => {
+  // 5. Submit
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const effectiveId = getEffectiveId();
+    if (!effectiveId) {
+        Swal.fire({ icon: 'error', title: 'Missing ID', confirmButtonColor: PRIMARY_COLOR });
+        return;
+    }
+
     if (!validate()) return;
 
     const payload = {
-      user_id: employeeId,
+      user_id: effectiveId,
       ...formData,
       date_of_birth: formData.date_of_birth ? formData.date_of_birth.format('YYYY-MM-DD') : null,
       gender: genderValueToString(formData.gender),
@@ -730,124 +1369,185 @@ const BasicInformation = ({ onNext, onBack }) => {
       zipcode: formData.zip_code
     };
 
+    Swal.fire({ title: 'Saving...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
     try {
-      Swal.showLoading();
       await axiosInstance.patch('/api/emp_basic_info/', payload);
       Swal.close();
       if (onNext) onNext();
     } catch (error) {
-      Swal.fire('Error', 'Failed to update profile.', 'error');
+      console.error(error);
+      Swal.fire({ icon: 'error', title: 'Update Failed', text: error.response?.data?.message || 'Failed to save.', confirmButtonColor: PRIMARY_COLOR });
     }
   };
 
   if (loading) return <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>;
 
+  // --- Styles & Reusables ---
+  const Label = ({ children, required }) => (
+    <InputLabel sx={{ mb: 1, fontWeight: 600, fontSize: '0.9rem', color: '#333' }}>
+        {children} {required && '*'}
+    </InputLabel>
+  );
+
   return (
-    <Box sx={{ p: 2 }}>
-      <Typography variant="h6" gutterBottom color={PRIMARY_COLOR} fontWeight="bold">Basic Information</Typography>
+    <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 1000, p: 3 }}>
       
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={4}><TextField fullWidth label="First Name" name="first_name" value={formData.first_name} onChange={handleChange} error={!!errors.first_name} /></Grid>
-          <Grid item xs={12} sm={4}><TextField fullWidth label="Middle Name" name="middle_name" value={formData.middle_name} onChange={handleChange} /></Grid>
-          <Grid item xs={12} sm={4}><TextField fullWidth label="Last Name" name="last_name" value={formData.last_name} onChange={handleChange} error={!!errors.last_name} /></Grid>
-          
+      {/* HEADER */}
+      <Box mb={3}>
+        <Typography variant="h6" color={PRIMARY_COLOR} fontWeight="bold">Basic Information</Typography>
+      </Box>
+
+      {/* ROW 1: Names */}
+      <Grid container spacing={3} sx={{ mb: 2 }}>
           <Grid item xs={12} sm={4}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker 
-                    label="Date of Birth" 
-                    value={formData.date_of_birth} 
-                    onChange={handleDateChange} 
-                    slotProps={{ textField: { fullWidth: true, error: !!errors.date_of_birth } }}
-                />
-            </LocalizationProvider>
+            <Label required>First Name</Label>
+            <TextField fullWidth size="small" name="first_name" value={formData.first_name} onChange={handleChange} error={!!errors.first_name} />
           </Grid>
-          <Grid item xs={12} sm={2}><TextField fullWidth label="Age" name="age" value={formData.age} onChange={handleChange} /></Grid>
-          
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth error={!!errors.gender}>
-                <InputLabel>Gender</InputLabel>
-                <Select name="gender" value={formData.gender} onChange={handleChange} label="Gender">
-                    <MenuItem value={1}>Male</MenuItem><MenuItem value={2}>Female</MenuItem><MenuItem value={3}>Other</MenuItem>
-                </Select>
-            </FormControl>
+          <Grid item xs={12} sm={4}>
+            <Label>Middle Name</Label>
+            <TextField fullWidth size="small" name="middle_name" value={formData.middle_name} onChange={handleChange} />
           </Grid>
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth error={!!errors.marital_status}>
-                <InputLabel>Marital Status</InputLabel>
-                <Select name="marital_status" value={formData.marital_status} onChange={handleChange} label="Marital Status">
-                    <MenuItem value={0}>Single</MenuItem><MenuItem value={1}>Married</MenuItem>
-                </Select>
-            </FormControl>
-          </Grid>
-          
-          <Grid item xs={12} sm={6}><TextField fullWidth label="Contact" name="contact_number" value={formData.contact_number} onChange={handleChange} error={!!errors.contact_number} /></Grid>
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth error={!!errors.blood_group}>
-                <InputLabel>Blood Group</InputLabel>
-                <Select name="blood_group" value={formData.blood_group} onChange={handleChange} label="Blood Group">
-                    {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(b => <MenuItem key={b} value={b}>{b}</MenuItem>)}
-                </Select>
-            </FormControl>
+          <Grid item xs={12} sm={4}>
+            <Label required>Last Name</Label>
+            <TextField fullWidth size="small" name="last_name" value={formData.last_name} onChange={handleChange} error={!!errors.last_name} />
           </Grid>
       </Grid>
 
-      <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Permanent Address</Typography>
-      <Grid container spacing={2}>
-        <Grid item xs={12}><TextField fullWidth label="Address Line 1" name="address_1" value={formData.address_1} onChange={handleChange} error={!!errors.address_1} /></Grid>
-        <Grid item xs={6} md={3}>
-            <TextField select fullWidth label="Country" name="country_id" value={formData.country_id} onChange={handleChange} error={!!errors.country_id}>
+      {/* ROW 2: Personal Stats */}
+      <Grid container spacing={3} sx={{ mb: 2 }}>
+          <Grid item xs={12} sm={4}>
+            <Label required>Date of Birth</Label>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker 
+                    value={formData.date_of_birth} 
+                    onChange={handleDateChange} 
+                    slotProps={{ textField: { size: "small", fullWidth: true, error: !!errors.date_of_birth } }}
+                />
+            </LocalizationProvider>
+          </Grid>
+          <Grid item xs={12} sm={2}>
+            <Label>Age</Label>
+            <TextField fullWidth size="small" name="age" value={formData.age} InputProps={{ readOnly: true }} />
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <Label required>Gender</Label>
+            <TextField select fullWidth size="small" name="gender" value={formData.gender} onChange={handleChange} error={!!errors.gender}>
+                <MenuItem value={1}>Male</MenuItem><MenuItem value={2}>Female</MenuItem><MenuItem value={3}>Other</MenuItem>
+            </TextField>
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <Label required>Marital Status</Label>
+            <TextField select fullWidth size="small" name="marital_status" value={formData.marital_status} onChange={handleChange} error={!!errors.marital_status}>
+                <MenuItem value={0}>Single</MenuItem><MenuItem value={1}>Married</MenuItem>
+            </TextField>
+          </Grid>
+      </Grid>
+
+      {/* ROW 3: Contact */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} sm={6}>
+            <Label required>Contact Number</Label>
+            <TextField fullWidth size="small" name="contact_number" value={formData.contact_number} onChange={handleChange} error={!!errors.contact_number} />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Label required>Blood Group</Label>
+            <TextField select fullWidth size="small" name="blood_group" value={formData.blood_group} onChange={handleChange} error={!!errors.blood_group}>
+                {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(b => <MenuItem key={b} value={b}>{b}</MenuItem>)}
+            </TextField>
+          </Grid>
+      </Grid>
+
+      {/* PERMANENT ADDRESS */}
+      <Box mb={2}>
+        <Typography variant="h6" color={PRIMARY_COLOR} fontWeight="bold">Permanent Address</Typography>
+      </Box>
+      <Grid container spacing={3} sx={{ mb: 2 }}>
+        <Grid item xs={12}>
+            <Label required>Address Line 1</Label>
+            <TextField fullWidth size="small" name="address_1" value={formData.address_1} onChange={handleChange} error={!!errors.address_1} />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+            <Label required>Country</Label>
+            <TextField select fullWidth size="small" name="country_id" value={formData.country_id} onChange={handleChange} error={!!errors.country_id}>
                 {countriesList.map(c => <MenuItem key={c.country_id} value={c.country_id}>{c.country_name}</MenuItem>)}
             </TextField>
         </Grid>
-        <Grid item xs={6} md={3}>
-            <TextField select fullWidth label="State" name="state_id" value={formData.state_id} onChange={handleChange} error={!!errors.state_id}>
+        <Grid item xs={12} sm={6} md={3}>
+            <Label required>State</Label>
+            <TextField select fullWidth size="small" name="state_id" value={formData.state_id} onChange={handleChange} error={!!errors.state_id}>
                 {permStatesList.map(s => <MenuItem key={s.state_id} value={s.state_id}>{s.state_name}</MenuItem>)}
             </TextField>
         </Grid>
-        <Grid item xs={6} md={3}><TextField fullWidth label="City" name="city" value={formData.city} onChange={handleChange} error={!!errors.city} /></Grid>
-        <Grid item xs={6} md={3}><TextField fullWidth label="Zip Code" name="zip_code" value={formData.zip_code} onChange={handleChange} error={!!errors.zip_code} /></Grid>
+        <Grid item xs={12} sm={6} md={3}>
+            <Label required>City</Label>
+            <TextField fullWidth size="small" name="city" value={formData.city} onChange={handleChange} error={!!errors.city} />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+            <Label required>Zip Code</Label>
+            <TextField fullWidth size="small" name="zip_code" value={formData.zip_code} onChange={handleChange} error={!!errors.zip_code} />
+        </Grid>
       </Grid>
       
-      <Box mt={2} mb={2}>
+      {/* CHECKBOX */}
+      <Box mb={3} ml={1}>
          <FormControlLabel control={<Checkbox checked={isSameAddress} onChange={(e) => {
              setIsSameAddress(e.target.checked);
              if (e.target.checked) {
-                 setErrors(prev => ({
-                     ...prev, 
-                     corr_address_1: false, corr_country_id: false, corr_state_id: false, corr_city: false, corr_zip_code: false 
-                 }));
+                 setErrors(p => ({ ...p, corr_address_1: false, corr_country_id: false, corr_state_id: false, corr_city: false, corr_zip_code: false }));
              }
-         }} />} label="Correspondence same as Permanent" />
+         }} sx={{ color: PRIMARY_COLOR, '&.Mui-checked': { color: PRIMARY_COLOR } }} />} 
+         label={<Typography fontWeight="500" color="#333">Correspondence address same as Permanent</Typography>} />
       </Box>
       
+      {/* CORRESPONDENCE ADDRESS */}
       {!isSameAddress && (
         <>
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Correspondence Address</Typography>
-            <Grid container spacing={2}>
-                 <Grid item xs={12}><TextField fullWidth label="Address Line 1" name="corr_address_1" value={formData.corr_address_1} onChange={handleChange} error={!!errors.corr_address_1} /></Grid>
-                 <Grid item xs={6} md={3}>
-                    <TextField select fullWidth label="Country" name="corr_country_id" value={formData.corr_country_id} onChange={handleChange} error={!!errors.corr_country_id}>
+            <Box mb={2}>
+                <Typography variant="h6" color={PRIMARY_COLOR} fontWeight="bold">Correspondence Address</Typography>
+            </Box>
+            <Grid container spacing={3}>
+                 <Grid item xs={12}>
+                    <Label required>Address Line 1</Label>
+                    <TextField fullWidth size="small" name="corr_address_1" value={formData.corr_address_1} onChange={handleChange} error={!!errors.corr_address_1} />
+                 </Grid>
+                 <Grid item xs={12} sm={6} md={3}>
+                    <Label required>Country</Label>
+                    <TextField select fullWidth size="small" name="corr_country_id" value={formData.corr_country_id} onChange={handleChange} error={!!errors.corr_country_id}>
                         {countriesList.map(c => <MenuItem key={c.country_id} value={c.country_id}>{c.country_name}</MenuItem>)}
                     </TextField>
                  </Grid>
-                 <Grid item xs={6} md={3}>
-                    <TextField select fullWidth label="State" name="corr_state_id" value={formData.corr_state_id} onChange={handleChange} error={!!errors.corr_state_id}>
+                 <Grid item xs={12} sm={6} md={3}>
+                    <Label required>State</Label>
+                    <TextField select fullWidth size="small" name="corr_state_id" value={formData.corr_state_id} onChange={handleChange} error={!!errors.corr_state_id}>
                         {corrStatesList.map(s => <MenuItem key={s.state_id} value={s.state_id}>{s.state_name}</MenuItem>)}
                     </TextField>
                  </Grid>
-                 <Grid item xs={6} md={3}><TextField fullWidth label="City" name="corr_city" value={formData.corr_city} onChange={handleChange} error={!!errors.corr_city} /></Grid>
-                 <Grid item xs={6} md={3}><TextField fullWidth label="Zip Code" name="corr_zip_code" value={formData.corr_zip_code} onChange={handleChange} error={!!errors.corr_zip_code} /></Grid>
+                 <Grid item xs={12} sm={6} md={3}>
+                    <Label required>City</Label>
+                    <TextField fullWidth size="small" name="corr_city" value={formData.corr_city} onChange={handleChange} error={!!errors.corr_city} />
+                 </Grid>
+                 <Grid item xs={12} sm={6} md={3}>
+                    <Label required>Zip Code</Label>
+                    <TextField fullWidth size="small" name="corr_zip_code" value={formData.corr_zip_code} onChange={handleChange} error={!!errors.corr_zip_code} />
+                 </Grid>
             </Grid>
         </>
       )}
 
-      <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
-        <Button onClick={onBack} variant="outlined" sx={{ borderRadius: '8px', borderColor: '#ccc', color: '#555', '&:hover': { borderColor: '#8C257C', color: '#8C257C' } }}>Back</Button>
-        <Button variant="contained" onClick={handleSubmit} sx={{ background: `linear-gradient(135deg, ${PRIMARY_COLOR} 0%, #6d1d60 100%)`, color: 'white', borderRadius: '8px' }}>Save & Next</Button>
+      {/* FOOTER BUTTONS */}
+      <Box sx={{ mt: 5, display: 'flex', justifyContent: 'space-between' }}>
+        <Button onClick={onBack} variant="outlined" 
+          sx={{ borderRadius: '8px', borderColor: '#ccc', color: '#555', textTransform: 'none', px: 4, '&:hover': { borderColor: PRIMARY_COLOR, color: PRIMARY_COLOR } }}>
+          Back
+        </Button>
+        <Button type="submit" variant="contained" 
+          sx={{ background: `linear-gradient(135deg, ${PRIMARY_COLOR} 0%, #6d1d60 100%)`, color: 'white', borderRadius: '8px', textTransform: 'none', px: 4 }}>
+          Save & Next
+        </Button>
       </Box>
     </Box>
   );
 };
-
 
 export default BasicInformation;
