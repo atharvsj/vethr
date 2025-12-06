@@ -1959,7 +1959,7 @@ const PersonalInformation = ({ onNext, onBack }) => {
                 '& .MuiStepIcon-root.Mui-active': { color: PRIMARY_COLOR },
                 '& .MuiStepIcon-root.Mui-completed': { color: PRIMARY_COLOR },
                 '& .MuiStepLabel-label': { fontWeight: 500 },
-                '& .MuiStepLabel-label.Mui-active': { color: PRIMARY_COLOR, fontWeight: 700 }
+                '& .MuiStepLabel-label.Mui-active': { color: PRIMARY_COLOR, fontWei0ght: 700 }
             }}>
                 {steps.map((label, index) => (
                     <Step key={label}>
