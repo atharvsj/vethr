@@ -1010,171 +1010,304 @@
 
 
  
+// import React, { useState } from "react";
+// import {
+//   Box,
+//   Card,
+//   CardActionArea,
+//   CardContent,
+//   Typography,
+//   Grid,
+//   Fade,
+//   useTheme,
+//   alpha,
+// } from "@mui/material";
+ 
+// // Import Child Components
+// import Assets from "./Assets";
+// import Category from "./Category";
+// import Brands from "./Brands";
+// import NewPurchaseAssets from "./NewPurchaseAssets";
+// import AssestsInventory from "./AssestsInventory";
+// import AssetsProductAdmin from "./AssetsProductAdmin";
+ 
+// // Import Icons for a more professional look
+// import BusinessCenterOutlinedIcon from '@mui/icons-material/BusinessCenterOutlined';
+// import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
+// import StarsOutlinedIcon from '@mui/icons-material/StarsOutlined';
+// import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+// import AddShoppingCartOutlinedIcon from '@mui/icons-material/AddShoppingCartOutlined';
+// import WidgetsOutlinedIcon from '@mui/icons-material/WidgetsOutlined';
+ 
+// // Define options outside the component to prevent re-creation on every render
+// const options = [
+//   {
+//     label: "Assets",
+//     sublabel: "Manage fixed assets",
+//     icon: <BusinessCenterOutlinedIcon fontSize="large" />,
+//   },
+//   {
+//     label: "Category",
+//     sublabel: "View current assets",
+//     icon: <CategoryOutlinedIcon fontSize="large" />,
+//   },
+//   {
+//     label: "Brands",
+//     sublabel: "Track asset brands",
+//     icon: <StarsOutlinedIcon fontSize="large" />,
+//   },
+//   {
+//     label: "Assets Products",
+//     sublabel: "Manage asset products",
+//     icon: <WidgetsOutlinedIcon fontSize="large" />,
+//   },
+//   {
+//     label: "New  Asset Purchase",
+//     sublabel: "Add new purchases",
+//     icon: <AddShoppingCartOutlinedIcon fontSize="large" />,
+//   },
+ 
+//   {
+//     label: "Assets Inventory",
+//     sublabel: "Check inventory details",
+//     icon: <Inventory2OutlinedIcon fontSize="large" />,
+//   },
+// ];
+ 
+// const AssetsAdmin = () => {
+//   const [selectedOption, setSelectedOption] = useState("Assets");
+//   const theme = useTheme(); // Access the MUI theme for consistent colors
+ 
+//   // Define your custom primary color here
+//   const customPrimaryColor = "#F58E35";
+ 
+//   const renderComponent = () => {
+//     switch (selectedOption) {
+//       case "Assets":
+//         return <Assets />;
+//       case "Category":
+//         return <Category />;
+//       case "Brands":
+//         return <Brands />;
+//       case "Assets Inventory":
+//         return <AssestsInventory />;
+//       case "New  Asset Purchase":
+//         return <NewPurchaseAssets />;
+//       case "Assets Products":
+//         return <AssetsProductAdmin />;
+//       default:
+//         return <Typography>Please select an option.</Typography>;
+//     }
+//   };
+ 
+//   return (
+//     <Box p={{ xs: 2, sm: 3 }}>
+//       {/* Top Section: Responsive Card Options using Grid */}
+//       <Grid
+//         container
+//         spacing={2}
+//         sx={{
+//           mb: 4,
+//           // --- CHANGE #1 START ---
+//           // On mobile screens (xs breakpoint), prevent wrapping and enable horizontal scrolling.
+//           // On larger screens (sm and up), revert to the default wrapping behavior.
+//           flexWrap: { xs: "nowrap", sm: "wrap" },
+//           overflowX: { xs: "auto", sm: "hidden" },
+//           // Add some padding at the bottom on mobile to make space for the scrollbar
+//           pb: { xs: 2, sm: 0 },
+//           // For a cleaner look, you can uncomment the lines below to hide the scrollbar
+//           // while keeping the scroll functionality.
+//           // '&::-webkit-scrollbar': {
+//           //   display: 'none',
+//           // },
+//           // msOverflowStyle: 'none',  /* IE and Edge */
+//           // scrollbarWidth: 'none',  /* Firefox */
+//           // --- CHANGE #1 END ---
+//         }}
+//       >
+//         {options.map((option) => {
+//           const isSelected = selectedOption === option.label;
+//           return (
+//             // --- CHANGE #2 START ---
+//             // Adjusted the `xs` prop.
+//             // Instead of `xs={12}` (full width), we use `xs={8}`. This makes each card
+//             // take up 8/12 (~66%) of the screen width on mobile, which forces the
+//             // container to overflow and activates the horizontal scrollbar.
+//             <Grid item xs={8} sm={6} md={4} lg={2} key={option.label}>
+//             {/* --- CHANGE #2 END --- */}
+//               <Card
+//                 variant="outlined"
+//                 sx={{
+//                   height: '100%',
+//                   textAlign: "center",
+//                   transition: "all 0.3s ease-in-out",
+//                   backgroundColor: isSelected ? alpha(customPrimaryColor, 0.08) : 'background.paper',
+//                   borderColor: isSelected ? customPrimaryColor : theme.palette.divider,
+//                   boxShadow: isSelected
+//                     ? `0 4px 12px ${alpha(customPrimaryColor, 0.2)}`
+//                     : "0 1px 3px rgba(0,0,0,0.05)",
+//                   "&:hover": {
+//                     transform: "translateY(-4px)",
+//                     boxShadow: `0 6px 16px ${alpha(customPrimaryColor, 0.25)}`,
+//                     borderColor: customPrimaryColor,
+//                   },
+//                 }}
+//               >
+//                 <CardActionArea
+//                   onClick={() => setSelectedOption(option.label)}
+//                   sx={{
+//                     height: "100%",
+//                     p: 2,
+//                     display: 'flex',
+//                     flexDirection: 'column',
+//                     justifyContent: 'center',
+//                   }}
+//                 >
+//                   <Box color={isSelected ? customPrimaryColor : 'text.secondary'} mb={1.5}>
+//                     {option.icon}
+//                   </Box>
+//                   <Typography
+//                     variant="subtitle1"
+//                     fontWeight="600"
+//                     color={isSelected ? customPrimaryColor : 'text.primary'}
+//                   >
+//                     {option.label}
+//                   </Typography>
+//                   <Typography variant="caption" color="text.secondary">
+//                     {option.sublabel}
+//                   </Typography>
+//                 </CardActionArea>
+//               </Card>
+//             </Grid>
+//           );
+//         })}
+//       </Grid>
+ 
+//       {/* Bottom Section: Render Selected Component with Fade Transition */}
+//       <Box
+//         sx={{
+//           p: { xs: 2, sm: 3 },
+//           backgroundColor: "background.paper",
+//           borderRadius: 3,
+//           boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+//         }}
+//       >
+//         <Fade in timeout={400} key={selectedOption}>
+//           <div>{renderComponent()}</div>
+//         </Fade>
+//       </Box>
+//     </Box>
+//   );
+// };
+ 
+// export default AssetsAdmin;
+ 
+
+
 import React, { useState } from "react";
 import {
   Box,
   Card,
   CardActionArea,
-  CardContent,
   Typography,
   Grid,
   Fade,
   useTheme,
   alpha,
 } from "@mui/material";
- 
-// Import Child Components
-import Assets from "./Assets";
-import Category from "./Category";
-import Brands from "./Brands";
-import NewPurchaseAssets from "./NewPurchaseAssets";
-import AssestsInventory from "./AssestsInventory";
-import AssetsProductAdmin from "./AssetsProductAdmin";
- 
-// Import Icons for a more professional look
+
+// Import existing components
+import Assets from "./Assets"; // We will reuse this for Tab 1 & 2
+import NewPurchaseAssets from "./NewPurchaseAssets"; // Tab 3
+import AssestsInventory from "./AssestsInventory"; // Tab 4
+
+// Icons
 import BusinessCenterOutlinedIcon from '@mui/icons-material/BusinessCenterOutlined';
-import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
-import StarsOutlinedIcon from '@mui/icons-material/StarsOutlined';
-import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import AssignmentIndOutlinedIcon from '@mui/icons-material/AssignmentIndOutlined';
 import AddShoppingCartOutlinedIcon from '@mui/icons-material/AddShoppingCartOutlined';
-import WidgetsOutlinedIcon from '@mui/icons-material/WidgetsOutlined';
- 
-// Define options outside the component to prevent re-creation on every render
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+
 const options = [
   {
-    label: "Assets",
-    sublabel: "Manage fixed assets",
+    label: "Asset",
+    sublabel: "View all assets master list",
     icon: <BusinessCenterOutlinedIcon fontSize="large" />,
   },
   {
-    label: "Category",
-    sublabel: "View current assets",
-    icon: <CategoryOutlinedIcon fontSize="large" />,
+    label: "Asset allocation",
+    sublabel: "Allocate assets to employees",
+    icon: <AssignmentIndOutlinedIcon fontSize="large" />,
   },
   {
-    label: "Brands",
-    sublabel: "Track asset brands",
-    icon: <StarsOutlinedIcon fontSize="large" />,
-  },
-  {
-    label: "Assets Products",
-    sublabel: "Manage asset products",
-    icon: <WidgetsOutlinedIcon fontSize="large" />,
-  },
-  {
-    label: "New  Asset Purchase",
-    sublabel: "Add new purchases",
+    label: "New Asset",
+    sublabel: "Add new purchase / stock",
     icon: <AddShoppingCartOutlinedIcon fontSize="large" />,
   },
- 
   {
-    label: "Assets Inventory",
-    sublabel: "Check inventory details",
+    label: "Asset Inventory",
+    sublabel: "View category wise stock",
     icon: <Inventory2OutlinedIcon fontSize="large" />,
   },
 ];
- 
+
 const AssetsAdmin = () => {
-  const [selectedOption, setSelectedOption] = useState("Assets");
-  const theme = useTheme(); // Access the MUI theme for consistent colors
- 
-  // Define your custom primary color here
-  const customPrimaryColor = "#F58E35";
- 
+  const [selectedOption, setSelectedOption] = useState("Asset");
+  const theme = useTheme();
+  const customPrimaryColor = "#8C257C";
+
   const renderComponent = () => {
     switch (selectedOption) {
-      case "Assets":
-        return <Assets />;
-      case "Category":
-        return <Category />;
-      case "Brands":
-        return <Brands />;
-      case "Assets Inventory":
-        return <AssestsInventory />;
-      case "New  Asset Purchase":
+      case "Asset":
+        // Reuse Assets component in 'master' mode
+        return <Assets mode="master" />;
+      case "Asset allocation":
+        // Reuse Assets component in 'allocation' mode
+        return <Assets mode="allocation" />;
+      case "New Asset":
         return <NewPurchaseAssets />;
-      case "Assets Products":
-        return <AssetsProductAdmin />;
+      case "Asset Inventory":
+        return <AssestsInventory />;
       default:
-        return <Typography>Please select an option.</Typography>;
+        return <Assets mode="master" />;
     }
   };
- 
+
   return (
     <Box p={{ xs: 2, sm: 3 }}>
-      {/* Top Section: Responsive Card Options using Grid */}
       <Grid
         container
         spacing={2}
         sx={{
           mb: 4,
-          // --- CHANGE #1 START ---
-          // On mobile screens (xs breakpoint), prevent wrapping and enable horizontal scrolling.
-          // On larger screens (sm and up), revert to the default wrapping behavior.
           flexWrap: { xs: "nowrap", sm: "wrap" },
           overflowX: { xs: "auto", sm: "hidden" },
-          // Add some padding at the bottom on mobile to make space for the scrollbar
           pb: { xs: 2, sm: 0 },
-          // For a cleaner look, you can uncomment the lines below to hide the scrollbar
-          // while keeping the scroll functionality.
-          // '&::-webkit-scrollbar': {
-          //   display: 'none',
-          // },
-          // msOverflowStyle: 'none',  /* IE and Edge */
-          // scrollbarWidth: 'none',  /* Firefox */
-          // --- CHANGE #1 END ---
         }}
       >
         {options.map((option) => {
           const isSelected = selectedOption === option.label;
           return (
-            // --- CHANGE #2 START ---
-            // Adjusted the `xs` prop.
-            // Instead of `xs={12}` (full width), we use `xs={8}`. This makes each card
-            // take up 8/12 (~66%) of the screen width on mobile, which forces the
-            // container to overflow and activates the horizontal scrollbar.
-            <Grid item xs={8} sm={6} md={4} lg={2} key={option.label}>
-            {/* --- CHANGE #2 END --- */}
+            <Grid item xs={10} sm={6} md={3} key={option.label}>
               <Card
                 variant="outlined"
                 sx={{
                   height: '100%',
                   textAlign: "center",
-                  transition: "all 0.3s ease-in-out",
+                  transition: "all 0.3s",
                   backgroundColor: isSelected ? alpha(customPrimaryColor, 0.08) : 'background.paper',
                   borderColor: isSelected ? customPrimaryColor : theme.palette.divider,
-                  boxShadow: isSelected
-                    ? `0 4px 12px ${alpha(customPrimaryColor, 0.2)}`
-                    : "0 1px 3px rgba(0,0,0,0.05)",
-                  "&:hover": {
-                    transform: "translateY(-4px)",
-                    boxShadow: `0 6px 16px ${alpha(customPrimaryColor, 0.25)}`,
-                    borderColor: customPrimaryColor,
-                  },
+                  boxShadow: isSelected ? `0 4px 12px ${alpha(customPrimaryColor, 0.2)}` : "none",
                 }}
               >
                 <CardActionArea
                   onClick={() => setSelectedOption(option.label)}
-                  sx={{
-                    height: "100%",
-                    p: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                  }}
+                  sx={{ p: 2, height: "100%", display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
                 >
-                  <Box color={isSelected ? customPrimaryColor : 'text.secondary'} mb={1.5}>
+                  <Box color={isSelected ? customPrimaryColor : 'text.secondary'} mb={1}>
                     {option.icon}
                   </Box>
-                  <Typography
-                    variant="subtitle1"
-                    fontWeight="600"
-                    color={isSelected ? customPrimaryColor : 'text.primary'}
-                  >
+                  <Typography variant="subtitle1" fontWeight="bold" color={isSelected ? customPrimaryColor : 'text.primary'}>
                     {option.label}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {option.sublabel}
                   </Typography>
                 </CardActionArea>
               </Card>
@@ -1182,16 +1315,8 @@ const AssetsAdmin = () => {
           );
         })}
       </Grid>
- 
-      {/* Bottom Section: Render Selected Component with Fade Transition */}
-      <Box
-        sx={{
-          p: { xs: 2, sm: 3 },
-          backgroundColor: "background.paper",
-          borderRadius: 3,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-        }}
-      >
+
+      <Box>
         <Fade in timeout={400} key={selectedOption}>
           <div>{renderComponent()}</div>
         </Fade>
@@ -1199,6 +1324,5 @@ const AssetsAdmin = () => {
     </Box>
   );
 };
- 
+
 export default AssetsAdmin;
- 
