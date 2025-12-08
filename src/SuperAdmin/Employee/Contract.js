@@ -5425,9 +5425,129 @@
 // export default Detail;
 
 
+// import React, { useState, useEffect, useContext } from 'react';
+// import { EmployeeContext } from './EmployeeContext';
+// import { Box, TextField, MenuItem, Grid, Typography, Button, InputAdornment, TextareaAutosize, CircularProgress } from '@mui/material';
+// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+// import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+// import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+// import dayjs from 'dayjs';
+// import Swal from 'sweetalert2';
+// import axiosInstance from '../../utils/axiosInstance';
+
+// const PRIMARY_COLOR = "#8C257C";
+// const probationOptions = [{ value: 'Y', label: 'Yes' }, { value: 'N', label: 'No' }];
+
+// const Detail = ({ onNext, onBack }) => {
+//   const { employeeId } = useContext(EmployeeContext);
+//   const [loading, setLoading] = useState(true);
+  
+//   const [joiningDate, setJoiningDate] = useState(null);
+//   const [departmentId, setDepartmentId] = useState('');
+//   const [designationId, setDesignationId] = useState('');
+//   const [grossSalary, setGrossSalary] = useState('0.00');
+//   const [probation, setProbation] = useState('');
+//   const [officeShiftId, setOfficeShiftId] = useState('');
+//   const [roleDescription, setRoleDescription] = useState('');
+  
+//   const [departmentsList, setDepartmentsList] = useState([]);
+//   const [designationsList, setDesignationsList] = useState([]);
+//   const [officeShiftsList, setOfficeShiftsList] = useState([]);
+
+//   useEffect(() => {
+//     const init = async () => {
+//        try {
+//          const [d, des, s] = await Promise.all([
+//              axiosInstance.get('api/departments/dropdown/'),
+//              axiosInstance.get('api/designations/dropdown/'),
+//              axiosInstance.get('api/office_shift_dropdown/')
+//          ]);
+//          setDepartmentsList(d.data.data || []);
+//          setDesignationsList(des.data.data || []);
+//          setOfficeShiftsList(s.data.office_shift_data || []);
+         
+//          if(employeeId) {
+//              const res = await axiosInstance.post('api/contract_details/', { user_id: employeeId, type: 1 });
+//              if(res.data.contract_details?.[0]) {
+//                  const det = res.data.contract_details[0];
+//                  setJoiningDate(det.contract_date ? dayjs(det.contract_date) : null);
+//                  setDepartmentId(det.department_id || '');
+//                  setDesignationId(det.designation_id || '');
+//                  setGrossSalary(det.gross_salary || '0.00');
+//                  setProbation(det.probation === 'Y' || det.probation === 'y' ? 'Y' : 'N');
+//                  setOfficeShiftId(det.office_shift_id || '');
+//                  setRoleDescription(det.role_description || '');
+//              }
+//          }
+//        } catch(e) { console.error(e); }
+//        finally { setLoading(false); }
+//     };
+//     init();
+//   }, [employeeId]);
+
+//   const handleSaveAndNext = async () => {
+//     if (!joiningDate || !departmentId || !designationId) {
+//         Swal.fire('Warning', 'Please fill required fields.', 'warning');
+//         return;
+//     }
+//     const payload = {
+//         user_id: employeeId, company_id: 2, type: 1,
+//         department_id: departmentId, designation_id: designationId,
+//         gross_salary: parseFloat(grossSalary), office_shift_id: officeShiftId,
+//         probation: probation, role_description: roleDescription,
+//         contract_date: joiningDate ? joiningDate.format('YYYY-MM-DD') : null,
+//     };
+//     try {
+//         Swal.showLoading();
+//         await axiosInstance.patch(`api/contract_details/`, payload);
+//         Swal.close();
+//         if(onNext) onNext();
+//     } catch(e) { Swal.fire('Error', 'Failed to save', 'error'); }
+//   };
+
+//   if (loading) return <CircularProgress />;
+
+//   return (
+//     <LocalizationProvider dateAdapter={AdapterDayjs}>
+//       <Box sx={{ p: 2 }}>
+//         <Typography variant="h6" color={PRIMARY_COLOR} gutterBottom fontWeight="bold">Details</Typography>
+//         <Grid container spacing={3}>
+//             <Grid item xs={12} sm={6}><DatePicker label="Joining Date" value={joiningDate} onChange={setJoiningDate} slotProps={{ textField: { fullWidth: true, size: 'small' } }} /></Grid>
+//             <Grid item xs={12} sm={6}><TextField select label="Department" value={departmentId} onChange={(e)=>setDepartmentId(e.target.value)} fullWidth size="small">{departmentsList.map(o=><MenuItem key={o.department_id} value={o.department_id}>{o.department_name}</MenuItem>)}</TextField></Grid>
+//             <Grid item xs={12} sm={6}><TextField select label="Designation" value={designationId} onChange={(e)=>setDesignationId(e.target.value)} fullWidth size="small">{designationsList.map(o=><MenuItem key={o.designation_id} value={o.designation_id}>{o.designation_name}</MenuItem>)}</TextField></Grid>
+//             <Grid item xs={12} sm={6}><TextField label="Gross Salary" type="number" value={grossSalary} onChange={(e)=>setGrossSalary(e.target.value)} fullWidth size="small" InputProps={{startAdornment:<InputAdornment position="start">INR</InputAdornment>}} /></Grid>
+//             <Grid item xs={12} sm={6}><TextField select label="Probation" value={probation} onChange={(e)=>setProbation(e.target.value)} fullWidth size="small">{probationOptions.map(o=><MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}</TextField></Grid>
+//             <Grid item xs={12} sm={6}><TextField select label="Office Shift" value={officeShiftId} onChange={(e)=>setOfficeShiftId(e.target.value)} fullWidth size="small">{officeShiftsList.map(o=><MenuItem key={o.office_shift_id} value={o.office_shift_id}>{o.office_shift_name}</MenuItem>)}</TextField></Grid>
+//             <Grid item xs={12}><Typography variant="subtitle2">Role Description</Typography><TextareaAutosize minRows={3} value={roleDescription} onChange={(e)=>setRoleDescription(e.target.value)} style={{width:'100%', padding:'8px'}} /></Grid>
+//         </Grid>
+
+//         {/* Buttons */}
+//         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+//              <Button onClick={onBack} variant="outlined" 
+//              sx={{ 
+//   borderRadius: '8px', 
+//   borderColor: '#ccc', 
+//   color: '#555',
+//   '&:hover': { borderColor: '#8C257C', color: '#8C257C' } 
+// }}>Back</Button>
+//              <Button onClick={handleSaveAndNext} variant="contained" sx={{ 
+//   background: 'linear-gradient(135deg, #8C257C 0%, #6d1d60 100%)', 
+//   color: 'white',
+//   boxShadow: '0 4px 12px rgba(140, 37, 124, 0.3)',
+//   borderRadius: '8px' 
+// }}>Save & Next</Button>
+//         </Box>
+//       </Box>
+//     </LocalizationProvider>
+//   );
+// };
+// export default Detail;
+
+
+
 import React, { useState, useEffect, useContext } from 'react';
 import { EmployeeContext } from './EmployeeContext';
-import { Box, TextField, MenuItem, Grid, Typography, Button, InputAdornment, TextareaAutosize, CircularProgress } from '@mui/material';
+import { Box, TextField, MenuItem, Grid, Typography, Button, InputAdornment, CircularProgress } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -5442,14 +5562,19 @@ const Detail = ({ onNext, onBack }) => {
   const { employeeId } = useContext(EmployeeContext);
   const [loading, setLoading] = useState(true);
   
+  // Form State
   const [joiningDate, setJoiningDate] = useState(null);
   const [departmentId, setDepartmentId] = useState('');
   const [designationId, setDesignationId] = useState('');
-  const [grossSalary, setGrossSalary] = useState('0.00');
+  const [grossSalary, setGrossSalary] = useState('');
   const [probation, setProbation] = useState('');
   const [officeShiftId, setOfficeShiftId] = useState('');
   const [roleDescription, setRoleDescription] = useState('');
   
+  // Validation State
+  const [errors, setErrors] = useState({});
+
+  // Dropdown Data
   const [departmentsList, setDepartmentsList] = useState([]);
   const [designationsList, setDesignationsList] = useState([]);
   const [officeShiftsList, setOfficeShiftsList] = useState([]);
@@ -5473,7 +5598,7 @@ const Detail = ({ onNext, onBack }) => {
                  setJoiningDate(det.contract_date ? dayjs(det.contract_date) : null);
                  setDepartmentId(det.department_id || '');
                  setDesignationId(det.designation_id || '');
-                 setGrossSalary(det.gross_salary || '0.00');
+                 setGrossSalary(det.gross_salary || '');
                  setProbation(det.probation === 'Y' || det.probation === 'y' ? 'Y' : 'N');
                  setOfficeShiftId(det.office_shift_id || '');
                  setRoleDescription(det.role_description || '');
@@ -5485,11 +5610,38 @@ const Detail = ({ onNext, onBack }) => {
     init();
   }, [employeeId]);
 
+  const validate = () => {
+      const newErrors = {};
+      let isValid = true;
+
+      if (!joiningDate) { newErrors.joiningDate = true; isValid = false; }
+      if (!departmentId) { newErrors.departmentId = true; isValid = false; }
+      if (!designationId) { newErrors.designationId = true; isValid = false; }
+      if (!grossSalary || grossSalary <= 0) { newErrors.grossSalary = true; isValid = false; }
+      if (!probation) { newErrors.probation = true; isValid = false; }
+      if (!officeShiftId) { newErrors.officeShiftId = true; isValid = false; }
+      if (!roleDescription.trim()) { newErrors.roleDescription = true; isValid = false; }
+
+      setErrors(newErrors);
+
+      if (!isValid) {
+          Swal.fire({
+              icon: 'error',
+              title: 'Incomplete Details',
+              text: 'Please fill all the required fields before continuing.',
+              confirmButtonColor: PRIMARY_COLOR
+          });
+          setTimeout(() => {
+            const el = document.querySelector('.Mui-error');
+            if(el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100);
+      }
+      return isValid;
+  };
+
   const handleSaveAndNext = async () => {
-    if (!joiningDate || !departmentId || !designationId) {
-        Swal.fire('Warning', 'Please fill required fields.', 'warning');
-        return;
-    }
+    if (!validate()) return;
+
     const payload = {
         user_id: employeeId, company_id: 2, type: 1,
         department_id: departmentId, designation_id: designationId,
@@ -5505,37 +5657,97 @@ const Detail = ({ onNext, onBack }) => {
     } catch(e) { Swal.fire('Error', 'Failed to save', 'error'); }
   };
 
-  if (loading) return <CircularProgress />;
+  const handleFieldChange = (setter, field, value) => {
+      setter(value);
+      if(errors[field]) setErrors(prev => ({...prev, [field]: false}));
+  };
+
+  if (loading) return <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>;
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box sx={{ p: 2 }}>
         <Typography variant="h6" color={PRIMARY_COLOR} gutterBottom fontWeight="bold">Details</Typography>
         <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}><DatePicker label="Joining Date" value={joiningDate} onChange={setJoiningDate} slotProps={{ textField: { fullWidth: true, size: 'small' } }} /></Grid>
-            <Grid item xs={12} sm={6}><TextField select label="Department" value={departmentId} onChange={(e)=>setDepartmentId(e.target.value)} fullWidth size="small">{departmentsList.map(o=><MenuItem key={o.department_id} value={o.department_id}>{o.department_name}</MenuItem>)}</TextField></Grid>
-            <Grid item xs={12} sm={6}><TextField select label="Designation" value={designationId} onChange={(e)=>setDesignationId(e.target.value)} fullWidth size="small">{designationsList.map(o=><MenuItem key={o.designation_id} value={o.designation_id}>{o.designation_name}</MenuItem>)}</TextField></Grid>
-            <Grid item xs={12} sm={6}><TextField label="Gross Salary" type="number" value={grossSalary} onChange={(e)=>setGrossSalary(e.target.value)} fullWidth size="small" InputProps={{startAdornment:<InputAdornment position="start">INR</InputAdornment>}} /></Grid>
-            <Grid item xs={12} sm={6}><TextField select label="Probation" value={probation} onChange={(e)=>setProbation(e.target.value)} fullWidth size="small">{probationOptions.map(o=><MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}</TextField></Grid>
-            <Grid item xs={12} sm={6}><TextField select label="Office Shift" value={officeShiftId} onChange={(e)=>setOfficeShiftId(e.target.value)} fullWidth size="small">{officeShiftsList.map(o=><MenuItem key={o.office_shift_id} value={o.office_shift_id}>{o.office_shift_name}</MenuItem>)}</TextField></Grid>
-            <Grid item xs={12}><Typography variant="subtitle2">Role Description</Typography><TextareaAutosize minRows={3} value={roleDescription} onChange={(e)=>setRoleDescription(e.target.value)} style={{width:'100%', padding:'8px'}} /></Grid>
+            <Grid item xs={12} sm={6}>
+                <DatePicker 
+                    label="Joining Date" 
+                    value={joiningDate} 
+                    onChange={(val) => handleFieldChange(setJoiningDate, 'joiningDate', val)} 
+                    slotProps={{ 
+                        textField: { 
+                            fullWidth: true, 
+                            size: 'small', 
+                            error: !!errors.joiningDate 
+                        } 
+                    }} 
+                />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+                <TextField 
+                    select label="Department" fullWidth size="small" 
+                    value={departmentId} 
+                    onChange={(e)=> handleFieldChange(setDepartmentId, 'departmentId', e.target.value)}
+                    error={!!errors.departmentId}
+                >
+                    {departmentsList.map(o=><MenuItem key={o.department_id} value={o.department_id}>{o.department_name}</MenuItem>)}
+                </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+                <TextField 
+                    select label="Designation" fullWidth size="small" 
+                    value={designationId} 
+                    onChange={(e)=> handleFieldChange(setDesignationId, 'designationId', e.target.value)}
+                    error={!!errors.designationId}
+                >
+                    {designationsList.map(o=><MenuItem key={o.designation_id} value={o.designation_id}>{o.designation_name}</MenuItem>)}
+                </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+                <TextField 
+                    label="Gross Salary" type="number" fullWidth size="small" 
+                    value={grossSalary} 
+                    onChange={(e)=> handleFieldChange(setGrossSalary, 'grossSalary', e.target.value)}
+                    error={!!errors.grossSalary}
+                    InputProps={{startAdornment:<InputAdornment position="start">INR</InputAdornment>}} 
+                />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+                <TextField 
+                    select label="Probation" fullWidth size="small" 
+                    value={probation} 
+                    onChange={(e)=> handleFieldChange(setProbation, 'probation', e.target.value)}
+                    error={!!errors.probation}
+                >
+                    {probationOptions.map(o=><MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
+                </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+                <TextField 
+                    select label="Office Shift" fullWidth size="small" 
+                    value={officeShiftId} 
+                    onChange={(e)=> handleFieldChange(setOfficeShiftId, 'officeShiftId', e.target.value)}
+                    error={!!errors.officeShiftId}
+                >
+                    {officeShiftsList.map(o=><MenuItem key={o.office_shift_id} value={o.office_shift_id}>{o.office_shift_name}</MenuItem>)}
+                </TextField>
+            </Grid>
+            <Grid item xs={12}>
+                <TextField
+                    label="Role Description"
+                    multiline
+                    rows={3}
+                    fullWidth
+                    value={roleDescription}
+                    onChange={(e)=> handleFieldChange(setRoleDescription, 'roleDescription', e.target.value)}
+                    error={!!errors.roleDescription}
+                />
+            </Grid>
         </Grid>
 
-        {/* Buttons */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-             <Button onClick={onBack} variant="outlined" 
-             sx={{ 
-  borderRadius: '8px', 
-  borderColor: '#ccc', 
-  color: '#555',
-  '&:hover': { borderColor: '#8C257C', color: '#8C257C' } 
-}}>Back</Button>
-             <Button onClick={handleSaveAndNext} variant="contained" sx={{ 
-  background: 'linear-gradient(135deg, #8C257C 0%, #6d1d60 100%)', 
-  color: 'white',
-  boxShadow: '0 4px 12px rgba(140, 37, 124, 0.3)',
-  borderRadius: '8px' 
-}}>Save & Next</Button>
+             <Button onClick={onBack} variant="outlined" sx={{ borderRadius: '8px', borderColor: '#ccc', color: '#555', '&:hover': { borderColor: '#8C257C', color: '#8C257C' } }}>Back</Button>
+             <Button onClick={handleSaveAndNext} variant="contained" sx={{ background: `linear-gradient(135deg, ${PRIMARY_COLOR} 0%, #6d1d60 100%)`, color: 'white', borderRadius: '8px' }}>Save & Next</Button>
         </Box>
       </Box>
     </LocalizationProvider>

@@ -241,8 +241,82 @@
 
 
 
+// import React, { useState, useContext } from 'react';
+// import { Box, Typography, Button, InputLabel } from '@mui/material';
+// import ImageIcon from '@mui/icons-material/Image';
+// import axiosInstance from '../../utils/axiosInstance';
+// import { EmployeeContext } from './EmployeeContext';
+// import Swal from 'sweetalert2';
+
+// const PRIMARY_COLOR = "#8C257C";
+
+// const ProfilePicture = ({ onNext, onBack }) => {
+//   const [file, setFile] = useState(null);
+//   const [fileName, setFileName] = useState('');
+//   const { employeeId } = useContext(EmployeeContext);
+
+//   const handleFileChange = (e) => {
+//     if (e.target.files.length > 0) {
+//       setFile(e.target.files[0]);
+//       setFileName(e.target.files[0].name);
+//     }
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     if (!file) { if(onNext) onNext(); return; }
+
+//     const formData = new FormData();
+//     formData.append('user_id', employeeId);
+//     formData.append('file', file);
+
+//     try {
+//       Swal.showLoading();
+//       await axiosInstance.post('/api/update_profile_photo/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+//       Swal.close();
+//       setFile(null);
+//       if (onNext) onNext();
+//     } catch (error) { Swal.fire('Upload Failed', 'Error uploading file.', 'error'); }
+//   };
+
+//   return (
+//     <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 600, p: 3 }}>
+//       <Box display="flex" alignItems="center" gap={1} mb={2}>
+//         <ImageIcon sx={{ color: PRIMARY_COLOR }} />
+//         <Typography variant="h6" color={PRIMARY_COLOR} fontWeight="bold">Profile Picture</Typography>
+//       </Box>
+
+//       <InputLabel sx={{ mb: 1 }}>Select Profile Picture</InputLabel>
+//       <Button variant="outlined" component="label" fullWidth sx={{ justifyContent: 'flex-start', textTransform: 'none', borderColor: PRIMARY_COLOR, color: PRIMARY_COLOR }}>
+//         {fileName || 'Choose file...'}
+//         <input type="file" accept="image/*" hidden onChange={handleFileChange} />
+//       </Button>
+
+//       <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
+//         <Button onClick={onBack} variant="outlined" sx={{ 
+//   borderRadius: '8px', 
+//   borderColor: '#ccc', 
+//   color: '#555',
+//   '&:hover': { borderColor: '#8C257C', color: '#8C257C' } 
+// }}>Back</Button>
+//         <Button type="submit" variant="contained" sx={{ 
+//   background: 'linear-gradient(135deg, #8C257C 0%, #6d1d60 100%)', 
+//   color: 'white',
+//   boxShadow: '0 4px 12px rgba(140, 37, 124, 0.3)',
+//   borderRadius: '8px' 
+// }}>
+//           {file ? "Upload & Next" : "Skip & Next"}
+//         </Button>
+//       </Box>
+//     </Box>
+//   );
+// };
+
+// export default ProfilePicture;
+
+
 import React, { useState, useContext } from 'react';
-import { Box, Typography, Button, InputLabel } from '@mui/material';
+import { Box, Typography, Button, InputLabel, FormHelperText } from '@mui/material';
 import ImageIcon from '@mui/icons-material/Image';
 import axiosInstance from '../../utils/axiosInstance';
 import { EmployeeContext } from './EmployeeContext';
@@ -253,18 +327,29 @@ const PRIMARY_COLOR = "#8C257C";
 const ProfilePicture = ({ onNext, onBack }) => {
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState('');
+  const [error, setError] = useState(false);
   const { employeeId } = useContext(EmployeeContext);
 
   const handleFileChange = (e) => {
     if (e.target.files.length > 0) {
       setFile(e.target.files[0]);
       setFileName(e.target.files[0].name);
+      setError(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file) { if(onNext) onNext(); return; }
+    if (!file) { 
+        setError(true);
+        Swal.fire({
+            icon: 'error',
+            title: 'No File Selected',
+            text: 'Please upload a profile picture to continue.',
+            confirmButtonColor: PRIMARY_COLOR
+        });
+        return; 
+    }
 
     const formData = new FormData();
     formData.append('user_id', employeeId);
@@ -286,30 +371,32 @@ const ProfilePicture = ({ onNext, onBack }) => {
         <Typography variant="h6" color={PRIMARY_COLOR} fontWeight="bold">Profile Picture</Typography>
       </Box>
 
-      <InputLabel sx={{ mb: 1 }}>Select Profile Picture</InputLabel>
-      <Button variant="outlined" component="label" fullWidth sx={{ justifyContent: 'flex-start', textTransform: 'none', borderColor: PRIMARY_COLOR, color: PRIMARY_COLOR }}>
+      <InputLabel sx={{ mb: 1, color: error ? 'error.main' : 'text.primary' }}>Select Profile Picture *</InputLabel>
+      <Button 
+        variant="outlined" 
+        component="label" 
+        fullWidth 
+        sx={{ 
+            justifyContent: 'flex-start', 
+            textTransform: 'none', 
+            borderColor: error ? 'error.main' : PRIMARY_COLOR, 
+            color: error ? 'error.main' : PRIMARY_COLOR,
+            '&:hover': { borderColor: error ? 'error.main' : PRIMARY_COLOR }
+        }}
+      >
         {fileName || 'Choose file...'}
         <input type="file" accept="image/*" hidden onChange={handleFileChange} />
       </Button>
+      {error && <FormHelperText error>Profile picture is required.</FormHelperText>}
 
       <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
-        <Button onClick={onBack} variant="outlined" sx={{ 
-  borderRadius: '8px', 
-  borderColor: '#ccc', 
-  color: '#555',
-  '&:hover': { borderColor: '#8C257C', color: '#8C257C' } 
-}}>Back</Button>
-        <Button type="submit" variant="contained" sx={{ 
-  background: 'linear-gradient(135deg, #8C257C 0%, #6d1d60 100%)', 
-  color: 'white',
-  boxShadow: '0 4px 12px rgba(140, 37, 124, 0.3)',
-  borderRadius: '8px' 
-}}>
-          {file ? "Upload & Next" : "Skip & Next"}
+        <Button onClick={onBack} variant="outlined" sx={{ borderRadius: '8px', borderColor: '#ccc', color: '#555', '&:hover': { borderColor: '#8C257C', color: '#8C257C' } }}>Back</Button>
+        <Button type="submit" variant="contained" sx={{ background: `linear-gradient(135deg, ${PRIMARY_COLOR} 0%, #6d1d60 100%)`, color: 'white', borderRadius: '8px' }}>
+          Upload & Next
         </Button>
       </Box>
     </Box>
   );
 };
 
-export default ProfilePicture;
+export default ProfilePicture;  
