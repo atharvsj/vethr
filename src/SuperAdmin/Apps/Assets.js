@@ -3210,7 +3210,7 @@ const Assets = ({ mode = 'master' }) => {
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <CardContent sx={{ p: { xs: 1.5, sm: 3 } }}>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <Typography variant="h5" fontWeight="bold" sx={{ color: THEME_PURPLE }}>
+          <Typography variant="h4" fontWeight="bold" sx={{ color: THEME_PURPLE }}>
             {mode === 'master' ? 'Asset Management' : 'Asset Allocation'}
           </Typography>
           <TextField 

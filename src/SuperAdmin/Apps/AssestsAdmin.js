@@ -1216,56 +1216,56 @@ import {
   alpha,
 } from "@mui/material";
 
-// Import existing components
-import Assets from "./Assets"; // We will reuse this for Tab 1 & 2
-import NewPurchaseAssets from "./NewPurchaseAssets"; // Tab 3
-import AssestsInventory from "./AssestsInventory"; // Tab 4
+// Import Components
+import Assets from "./Assets"; 
+import NewPurchaseAssets from "./NewPurchaseAssets"; 
+import AssestsInventory from "./AssestsInventory"; 
 
-// Icons
-import BusinessCenterOutlinedIcon from '@mui/icons-material/BusinessCenterOutlined';
-import AssignmentIndOutlinedIcon from '@mui/icons-material/AssignmentIndOutlined';
-import AddShoppingCartOutlinedIcon from '@mui/icons-material/AddShoppingCartOutlined';
-import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+// Icons matching your screenshot
+import BusinessCenterOutlinedIcon from '@mui/icons-material/BusinessCenterOutlined'; // Asset
+import AssignmentIndOutlinedIcon from '@mui/icons-material/AssignmentIndOutlined'; // Allocation
+import AddShoppingCartOutlinedIcon from '@mui/icons-material/AddShoppingCartOutlined'; // New Asset
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'; // Inventory
 
+const THEME_PURPLE = "#8C257C";
+
+// EXACTLY 4 OPTIONS AS PER SCREENSHOT
 const options = [
   {
     label: "Asset",
-    sublabel: "View all assets master list",
-    icon: <BusinessCenterOutlinedIcon fontSize="large" />,
+    icon: <BusinessCenterOutlinedIcon sx={{ fontSize: 30 }} />,
   },
   {
     label: "Asset allocation",
-    sublabel: "Allocate assets to employees",
-    icon: <AssignmentIndOutlinedIcon fontSize="large" />,
+    icon: <AssignmentIndOutlinedIcon sx={{ fontSize: 30 }} />,
   },
   {
     label: "New Asset",
-    sublabel: "Add new purchase / stock",
-    icon: <AddShoppingCartOutlinedIcon fontSize="large" />,
+    icon: <AddShoppingCartOutlinedIcon sx={{ fontSize: 30 }} />,
   },
   {
     label: "Asset Inventory",
-    sublabel: "View category wise stock",
-    icon: <Inventory2OutlinedIcon fontSize="large" />,
+    icon: <Inventory2OutlinedIcon sx={{ fontSize: 30 }} />,
   },
 ];
 
 const AssetsAdmin = () => {
   const [selectedOption, setSelectedOption] = useState("Asset");
   const theme = useTheme();
-  const customPrimaryColor = "#8C257C";
 
   const renderComponent = () => {
     switch (selectedOption) {
       case "Asset":
-        // Reuse Assets component in 'master' mode
+        // View 1: Master List
         return <Assets mode="master" />;
       case "Asset allocation":
-        // Reuse Assets component in 'allocation' mode
+        // View 2: Allocation Form & List
         return <Assets mode="allocation" />;
       case "New Asset":
+        // View 3: Add Asset / Requisition
         return <NewPurchaseAssets />;
       case "Asset Inventory":
+        // View 4: Inventory Table
         return <AssestsInventory />;
       default:
         return <Assets mode="master" />;
@@ -1274,39 +1274,61 @@ const AssetsAdmin = () => {
 
   return (
     <Box p={{ xs: 2, sm: 3 }}>
-      <Grid
-        container
-        spacing={2}
-        sx={{
-          mb: 4,
-          flexWrap: { xs: "nowrap", sm: "wrap" },
-          overflowX: { xs: "auto", sm: "hidden" },
-          pb: { xs: 2, sm: 0 },
-        }}
-      >
+      {/* 
+        Grid Container: 
+        Matches the screenshot layout.
+        On Desktop (md): 4 cards in one row (3 columns each = 12).
+        On Mobile (xs): 2 cards per row (6 columns each).
+      */}
+      <Grid container spacing={2} sx={{ mb: 3 }}>
         {options.map((option) => {
           const isSelected = selectedOption === option.label;
           return (
-            <Grid item xs={10} sm={6} md={3} key={option.label}>
+            <Grid item xs={6} sm={6} md={3} key={option.label}>
               <Card
                 variant="outlined"
                 sx={{
-                  height: '100%',
-                  textAlign: "center",
-                  transition: "all 0.3s",
-                  backgroundColor: isSelected ? alpha(customPrimaryColor, 0.08) : 'background.paper',
-                  borderColor: isSelected ? customPrimaryColor : theme.palette.divider,
-                  boxShadow: isSelected ? `0 4px 12px ${alpha(customPrimaryColor, 0.2)}` : "none",
+                  height: "100%", // Uniform height
+                  transition: "all 0.2s ease-in-out",
+                  backgroundColor: isSelected ? alpha(THEME_PURPLE, 0.04) : "#fff",
+                  borderColor: isSelected ? THEME_PURPLE : theme.palette.divider,
+                  borderWidth: "1px",
+                  "&:hover": {
+                    borderColor: THEME_PURPLE,
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+                  },
                 }}
               >
                 <CardActionArea
                   onClick={() => setSelectedOption(option.label)}
-                  sx={{ p: 2, height: "100%", display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+                  sx={{
+                    p: 3,
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
                 >
-                  <Box color={isSelected ? customPrimaryColor : 'text.secondary'} mb={1}>
+                  <Box
+                    sx={{
+                      color: isSelected ? THEME_PURPLE : theme.palette.text.secondary,
+                      mb: 1.5,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
                     {option.icon}
                   </Box>
-                  <Typography variant="subtitle1" fontWeight="bold" color={isSelected ? customPrimaryColor : 'text.primary'}>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight={isSelected ? "bold" : "500"}
+                    color={isSelected ? THEME_PURPLE : "text.primary"}
+                    align="center"
+                    sx={{ lineHeight: 1.2 }}
+                  >
                     {option.label}
                   </Typography>
                 </CardActionArea>
@@ -1316,8 +1338,16 @@ const AssetsAdmin = () => {
         })}
       </Grid>
 
-      <Box>
-        <Fade in timeout={400} key={selectedOption}>
+      {/* Render the selected component below the cards */}
+      <Box 
+        sx={{
+          backgroundColor: "#fff",
+          borderRadius: 2,
+          // Optional: Add a subtle shadow to the content area
+          // boxShadow: "0 2px 10px rgba(0,0,0,0.03)" 
+        }}
+      >
+        <Fade in timeout={300} key={selectedOption}>
           <div>{renderComponent()}</div>
         </Fade>
       </Box>
