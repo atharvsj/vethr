@@ -4511,4 +4511,6 @@ const NewPurchaseAssets = () => {
   );
 };
 
+
+
 export default NewPurchaseAssets;

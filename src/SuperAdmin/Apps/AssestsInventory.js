@@ -1507,6 +1507,8 @@ const AssestsInventory = () => {
          
       </Dialog>
 
+      
+
     </Container>
   );
 };

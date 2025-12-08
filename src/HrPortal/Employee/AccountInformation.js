@@ -287,75 +287,261 @@
 
 
 
+// import React, { useEffect, useState, useContext } from 'react';
+// import { Box, Typography, Button, Grid, TextField, InputAdornment, InputLabel } from '@mui/material';
+// import PersonIcon from '@mui/icons-material/Person';
+// import EmailIcon from '@mui/icons-material/Email';
+// import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
+// import { EmployeeContext } from './EmployeeContext';
+// import axiosInstance from '../../utils/axiosInstance';
+// import Swal from 'sweetalert2';
+
+// const PRIMARY_COLOR = "#8C257C";
+
+// const AccountInformation = ({ onNext, onBack }) => {
+//   const [username, setUsername] = useState('');
+//   const [email, setEmail] = useState('');
+//   const [errors, setErrors] = useState({});
+//   const { employeeId } = useContext(EmployeeContext);
+//   const userId = employeeId;
+
+//   useEffect(() => {
+//     const fetchAccountInfo = async () => {
+//       if (!userId) return;
+//       try {
+//         const response = await axiosInstance.post('/api/account_info/', { user_id: userId });
+//         if (response.data.status === 'success') {
+//           const { username, email } = response.data.data;
+//           setUsername(username || '');
+//           setEmail(email || '');
+//         }
+//       } catch (error) { console.error(error); }
+//     };
+//     fetchAccountInfo();
+//   }, [userId]);
+
+//   const validate = () => {
+//     const newErrors = {};
+//     let isValid = true;
+//     if(!username.trim()) { newErrors.username = true; isValid = false; }
+//     if(!email.trim()) { newErrors.email = true; isValid = false; }
+
+//     setErrors(newErrors);
+
+//     if (!isValid) {
+//         Swal.fire({
+//             icon: 'error',
+//             title: 'Incomplete Details',
+//             text: 'Please fill all the required fields before continuing.',
+//             confirmButtonColor: PRIMARY_COLOR
+//         });
+//         setTimeout(() => {
+//             const el = document.querySelector('.Mui-error');
+//             if(el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+//         }, 100);
+//     }
+//     return isValid;
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     if(!validate()) return;
+
+//     Swal.fire({ title: 'Saving...', didOpen: () => Swal.showLoading() });
+//     try {
+//       await axiosInstance.patch('/api/account_info/', { user_id: userId, username, email });
+//       Swal.close();
+//       if (onNext) onNext();
+//     } catch (error) {
+//       Swal.fire('Error', 'Failed to save account information.', 'error');
+//     }
+//   };
+
+//   return (
+//     <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 700, p: 3 }}>
+//       <Box display="flex" alignItems="center" gap={1} mb={2}>
+//         <PhoneIphoneIcon sx={{ color: PRIMARY_COLOR }} />
+//         <Typography variant="h6" color={PRIMARY_COLOR} fontWeight="bold">Account Information</Typography>
+//       </Box>
+
+//       <Grid container spacing={3}>
+//         <Grid item xs={12} sm={6}>
+//           <InputLabel required sx={{ mb: 1 }}>Username</InputLabel>
+//           <TextField 
+//             fullWidth size="small" 
+//             value={username} 
+//             onChange={(e) => { setUsername(e.target.value); setErrors(p => ({...p, username: false})); }} 
+//             error={!!errors.username}
+//             required 
+//             InputProps={{ startAdornment: (<InputAdornment position="start"><PersonIcon /></InputAdornment>) }} 
+//           />
+//         </Grid>
+//         <Grid item xs={12} sm={6}>
+//           <InputLabel required sx={{ mb: 1 }}>Account Email</InputLabel>
+//           <TextField 
+//             fullWidth size="small" type="email"
+//             value={email} 
+//             onChange={(e) => { setEmail(e.target.value); setErrors(p => ({...p, email: false})); }} 
+//             error={!!errors.email}
+//             required 
+//             InputProps={{ startAdornment: (<InputAdornment position="start"><EmailIcon /></InputAdornment>) }} 
+//           />
+//         </Grid>
+//       </Grid>
+
+//       <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
+//         <Button onClick={onBack} variant="outlined" sx={{ borderRadius: '8px', borderColor: '#ccc', color: '#555', '&:hover': { borderColor: '#8C257C', color: '#8C257C' } }}>Back</Button>
+//         <Button type="submit" variant="contained" sx={{ background: `linear-gradient(135deg, ${PRIMARY_COLOR} 0%, #6d1d60 100%)`, color: 'white', borderRadius: '8px' }}>Save & Next</Button>
+//       </Box>
+//     </Box>
+//   );
+// };
+
+// export default AccountInformation;
+
+
 import React, { useEffect, useState, useContext } from 'react';
-import { Box, Typography, Button, Grid, TextField, InputAdornment, InputLabel } from '@mui/material';
+import { Box, Typography, Button, Grid, TextField, InputAdornment, InputLabel, CircularProgress } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
 import { EmployeeContext } from './EmployeeContext';
 import axiosInstance from '../../utils/axiosInstance';
 import Swal from 'sweetalert2';
+import { useLocation, useParams } from 'react-router-dom';
 
 const PRIMARY_COLOR = "#8C257C";
+const API_ENDPOINT = 'https://tdtlworld.com/hrms-backend/api/account_info/';
 
 const AccountInformation = ({ onNext, onBack }) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(true);
+  
   const { employeeId } = useContext(EmployeeContext);
-  const userId = employeeId;
+  const params = useParams();
+  const location = useLocation();
+
+  // Determine effective user id (priority: query ?id=, route param, EmployeeContext)
+  const getEffectiveId = () => {
+    try {
+      const q = new URLSearchParams(location.search);
+      const qId = q.get('id');
+      if (qId) return qId;
+    } catch (e) { /* ignore */ }
+
+    if (params?.id) return params.id;
+    return employeeId;
+  };
 
   useEffect(() => {
     const fetchAccountInfo = async () => {
-      if (!userId) return;
+      setLoading(true);
+      const effectiveId = getEffectiveId();
+      
+      if (!effectiveId) {
+        console.warn('No employee id found in query, route or context.');
+        setLoading(false);
+        return;
+      }
+
       try {
-        const response = await axiosInstance.post('/api/account_info/', { user_id: userId });
+        const response = await axiosInstance.post(API_ENDPOINT, { 
+          user_id: effectiveId 
+        });
+        
         if (response.data.status === 'success') {
           const { username, email } = response.data.data;
           setUsername(username || '');
           setEmail(email || '');
         }
-      } catch (error) { console.error(error); }
+      } catch (error) { 
+        console.error('Error fetching account info:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Fetch Error',
+          text: 'Failed to fetch account information.',
+          confirmButtonColor: PRIMARY_COLOR
+        });
+      } finally {
+        setLoading(false);
+      }
     };
+
     fetchAccountInfo();
-  }, [userId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [employeeId, location.search, params.id]);
 
   const validate = () => {
     const newErrors = {};
     let isValid = true;
-    if(!username.trim()) { newErrors.username = true; isValid = false; }
-    if(!email.trim()) { newErrors.email = true; isValid = false; }
+    
+    if (!username.trim()) { newErrors.username = true; isValid = false; }
+    if (!email.trim()) { newErrors.email = true; isValid = false; }
 
     setErrors(newErrors);
 
     if (!isValid) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Incomplete Details',
-            text: 'Please fill all the required fields before continuing.',
-            confirmButtonColor: PRIMARY_COLOR
-        });
-        setTimeout(() => {
-            const el = document.querySelector('.Mui-error');
-            if(el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 100);
+      Swal.fire({
+        icon: 'error',
+        title: 'Incomplete Details',
+        text: 'Please fill all the required fields before continuing.',
+        confirmButtonColor: PRIMARY_COLOR
+      });
+      setTimeout(() => {
+        const el = document.querySelector('.Mui-error');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
     }
     return isValid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if(!validate()) return;
+    
+    const effectiveId = getEffectiveId();
+    if (!effectiveId) {
+      Swal.fire({ 
+        icon: 'error', 
+        title: 'Missing ID', 
+        text: 'No employee id found in URL or context.',
+        confirmButtonColor: PRIMARY_COLOR 
+      });
+      return;
+    }
 
-    Swal.fire({ title: 'Saving...', didOpen: () => Swal.showLoading() });
+    if (!validate()) return;
+
+    Swal.fire({ 
+      title: 'Saving...', 
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading() 
+    });
+
     try {
-      await axiosInstance.patch('/api/account_info/', { user_id: userId, username, email });
+      await axiosInstance.patch(API_ENDPOINT, { 
+        user_id: effectiveId, 
+        username, 
+        email 
+      });
       Swal.close();
       if (onNext) onNext();
     } catch (error) {
-      Swal.fire('Error', 'Failed to save account information.', 'error');
+      console.error('Error updating account info:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to save account information.';
+      Swal.fire({
+        icon: 'error',
+        title: 'Update Failed',
+        text: errorMessage,
+        confirmButtonColor: PRIMARY_COLOR
+      });
     }
   };
+
+  if (loading) {
+    return <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>;
+  }
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 700, p: 3 }}>
@@ -366,32 +552,58 @@ const AccountInformation = ({ onNext, onBack }) => {
 
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6}>
-          <InputLabel required sx={{ mb: 1 }}>Username</InputLabel>
+          <InputLabel required sx={{ mb: 1, fontWeight: 600 }}>Username</InputLabel>
           <TextField 
-            fullWidth size="small" 
+            fullWidth 
+            size="small" 
             value={username} 
             onChange={(e) => { setUsername(e.target.value); setErrors(p => ({...p, username: false})); }} 
             error={!!errors.username}
+            helperText={errors.username ? 'Username is required' : ''}
             required 
-            InputProps={{ startAdornment: (<InputAdornment position="start"><PersonIcon /></InputAdornment>) }} 
+            InputProps={{ startAdornment: (<InputAdornment position="start"><PersonIcon sx={{ color: PRIMARY_COLOR }} /></InputAdornment>) }} 
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <InputLabel required sx={{ mb: 1 }}>Account Email</InputLabel>
+          <InputLabel required sx={{ mb: 1, fontWeight: 600 }}>Account Email</InputLabel>
           <TextField 
-            fullWidth size="small" type="email"
+            fullWidth 
+            size="small" 
+            type="email"
             value={email} 
             onChange={(e) => { setEmail(e.target.value); setErrors(p => ({...p, email: false})); }} 
             error={!!errors.email}
+            helperText={errors.email ? 'Email is required' : ''}
             required 
-            InputProps={{ startAdornment: (<InputAdornment position="start"><EmailIcon /></InputAdornment>) }} 
+            InputProps={{ startAdornment: (<InputAdornment position="start"><EmailIcon sx={{ color: PRIMARY_COLOR }} /></InputAdornment>) }} 
           />
         </Grid>
       </Grid>
 
       <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
-        <Button onClick={onBack} variant="outlined" sx={{ borderRadius: '8px', borderColor: '#ccc', color: '#555', '&:hover': { borderColor: '#8C257C', color: '#8C257C' } }}>Back</Button>
-        <Button type="submit" variant="contained" sx={{ background: `linear-gradient(135deg, ${PRIMARY_COLOR} 0%, #6d1d60 100%)`, color: 'white', borderRadius: '8px' }}>Save & Next</Button>
+        <Button 
+          onClick={onBack} 
+          variant="outlined" 
+          sx={{ 
+            borderRadius: '8px', 
+            borderColor: '#ccc', 
+            color: '#555', 
+            '&:hover': { borderColor: PRIMARY_COLOR, color: PRIMARY_COLOR } 
+          }}
+        >
+          Back
+        </Button>
+        <Button 
+          type="submit" 
+          variant="contained" 
+          sx={{ 
+            background: `linear-gradient(135deg, ${PRIMARY_COLOR} 0%, #6d1d60 100%)`, 
+            color: 'white', 
+            borderRadius: '8px' 
+          }}
+        >
+          Save & Next
+        </Button>
       </Box>
     </Box>
   );
