@@ -1204,132 +1204,327 @@
  
 
 
+// import React, { useState } from "react";
+// import {
+//   Box,
+//   Card,
+//   CardActionArea,
+//   Typography,
+//   Grid,
+//   Fade,
+//   useTheme,
+//   alpha,
+// } from "@mui/material";
+
+// // Import Components
+// import Assets from "./Assets"; 
+// import NewPurchaseAssets from "./NewPurchaseAssets"; 
+// import AssestsInventory from "./AssestsInventory"; 
+
+// // Icons matching your screenshot
+// import BusinessCenterOutlinedIcon from '@mui/icons-material/BusinessCenterOutlined'; // Asset
+// import AssignmentIndOutlinedIcon from '@mui/icons-material/AssignmentIndOutlined'; // Allocation
+// import AddShoppingCartOutlinedIcon from '@mui/icons-material/AddShoppingCartOutlined'; // New Asset
+// import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'; // Inventory
+
+// const THEME_PURPLE = "#8C257C";
+
+// // EXACTLY 4 OPTIONS AS PER SCREENSHOT
+// const options = [
+//   {
+//     label: "Asset",
+//     icon: <BusinessCenterOutlinedIcon sx={{ fontSize: 30 }} />,
+//   },
+//   {
+//     label: "Asset allocation",
+//     icon: <AssignmentIndOutlinedIcon sx={{ fontSize: 30 }} />,
+//   },
+//   {
+//     label: "New Asset",
+//     icon: <AddShoppingCartOutlinedIcon sx={{ fontSize: 30 }} />,
+//   },
+//   {
+//     label: "Asset Inventory",
+//     icon: <Inventory2OutlinedIcon sx={{ fontSize: 30 }} />,
+//   },
+// ];
+
+// const AssetsAdmin = () => {
+//   const [selectedOption, setSelectedOption] = useState("Asset");
+//   const theme = useTheme();
+
+//   const renderComponent = () => {
+//     switch (selectedOption) {
+//       case "Asset":
+//         // View 1: Master List
+//         return <Assets mode="master" />;
+//       case "Asset allocation":
+//         // View 2: Allocation Form & List
+//         return <Assets mode="allocation" />;
+//       case "New Asset":
+//         // View 3: Add Asset / Requisition
+//         return <NewPurchaseAssets />;
+//       case "Asset Inventory":
+//         // View 4: Inventory Table
+//         return <AssestsInventory />;
+//       default:
+//         return <Assets mode="master" />;
+//     }
+//   };
+
+//   return (
+//     <Box p={{ xs: 2, sm: 3 }}>
+//       {/* 
+//         Grid Container: 
+//         Matches the screenshot layout.
+//         On Desktop (md): 4 cards in one row (3 columns each = 12).
+//         On Mobile (xs): 2 cards per row (6 columns each).
+//       */}
+//       <Grid container spacing={2} sx={{ mb: 3 }}>
+//         {options.map((option) => {
+//           const isSelected = selectedOption === option.label;
+//           return (
+//             <Grid item xs={6} sm={6} md={3} key={option.label}>
+//               <Card
+//                 variant="outlined"
+//                 sx={{
+//                   height: "100%", // Uniform height
+//                   transition: "all 0.2s ease-in-out",
+//                   backgroundColor: isSelected ? alpha(THEME_PURPLE, 0.04) : "#fff",
+//                   borderColor: isSelected ? THEME_PURPLE : theme.palette.divider,
+//                   borderWidth: "1px",
+//                   "&:hover": {
+//                     borderColor: THEME_PURPLE,
+//                     transform: "translateY(-2px)",
+//                     boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+//                   },
+//                 }}
+//               >
+//                 <CardActionArea
+//                   onClick={() => setSelectedOption(option.label)}
+//                   sx={{
+//                     p: 3,
+//                     height: "100%",
+//                     display: "flex",
+//                     flexDirection: "column",
+//                     alignItems: "center",
+//                     justifyContent: "center",
+//                   }}
+//                 >
+//                   <Box
+//                     sx={{
+//                       color: isSelected ? THEME_PURPLE : theme.palette.text.secondary,
+//                       mb: 1.5,
+//                       display: "flex",
+//                       alignItems: "center",
+//                       justifyContent: "center",
+//                     }}
+//                   >
+//                     {option.icon}
+//                   </Box>
+//                   <Typography
+//                     variant="subtitle1"
+//                     fontWeight={isSelected ? "bold" : "500"}
+//                     color={isSelected ? THEME_PURPLE : "text.primary"}
+//                     align="center"
+//                     sx={{ lineHeight: 1.2 }}
+//                   >
+//                     {option.label}
+//                   </Typography>
+//                 </CardActionArea>
+//               </Card>
+//             </Grid>
+//           );
+//         })}
+//       </Grid>
+
+//       {/* Render the selected component below the cards */}
+//       <Box 
+//         sx={{
+//           backgroundColor: "#fff",
+//           borderRadius: 2,
+//           // Optional: Add a subtle shadow to the content area
+//           // boxShadow: "0 2px 10px rgba(0,0,0,0.03)" 
+//         }}
+//       >
+//         <Fade in timeout={300} key={selectedOption}>
+//           <div>{renderComponent()}</div>
+//         </Fade>
+//       </Box>
+//     </Box>
+//   );
+// };
+
+// export default AssetsAdmin;
+
+
+
+ 
 import React, { useState } from "react";
 import {
   Box,
   Card,
   CardActionArea,
+  CardContent,
   Typography,
   Grid,
   Fade,
   useTheme,
   alpha,
 } from "@mui/material";
-
-// Import Components
-import Assets from "./Assets"; 
-import NewPurchaseAssets from "./NewPurchaseAssets"; 
-import AssestsInventory from "./AssestsInventory"; 
-
-// Icons matching your screenshot
-import BusinessCenterOutlinedIcon from '@mui/icons-material/BusinessCenterOutlined'; // Asset
-import AssignmentIndOutlinedIcon from '@mui/icons-material/AssignmentIndOutlined'; // Allocation
-import AddShoppingCartOutlinedIcon from '@mui/icons-material/AddShoppingCartOutlined'; // New Asset
-import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'; // Inventory
-
-const THEME_PURPLE = "#8C257C";
-
-// EXACTLY 4 OPTIONS AS PER SCREENSHOT
+ 
+// Import Child Components
+import Assets from "./Assets";
+import Category from "./Category";
+import Brands from "./Brands";
+import NewPurchaseAssets from "./NewPurchaseAssets";
+import AssestsInventory from "./AssestsInventory";
+import AssetsProductAdmin from "./AssetsProductAdmin";
+ 
+// Import Icons for a more professional look
+import BusinessCenterOutlinedIcon from '@mui/icons-material/BusinessCenterOutlined';
+import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
+import StarsOutlinedIcon from '@mui/icons-material/StarsOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import AddShoppingCartOutlinedIcon from '@mui/icons-material/AddShoppingCartOutlined';
+import WidgetsOutlinedIcon from '@mui/icons-material/WidgetsOutlined';
+ 
+// Define options outside the component to prevent re-creation on every render
 const options = [
   {
-    label: "Asset",
-    icon: <BusinessCenterOutlinedIcon sx={{ fontSize: 30 }} />,
+    label: "Assets",
+    sublabel: "Manage fixed assets",
+    icon: <BusinessCenterOutlinedIcon fontSize="large" />,
   },
   {
-    label: "Asset allocation",
-    icon: <AssignmentIndOutlinedIcon sx={{ fontSize: 30 }} />,
+    label: "Category",
+    sublabel: "View current assets",
+    icon: <CategoryOutlinedIcon fontSize="large" />,
   },
   {
-    label: "New Asset",
-    icon: <AddShoppingCartOutlinedIcon sx={{ fontSize: 30 }} />,
+    label: "Brands",
+    sublabel: "Track asset brands",
+    icon: <StarsOutlinedIcon fontSize="large" />,
   },
   {
-    label: "Asset Inventory",
-    icon: <Inventory2OutlinedIcon sx={{ fontSize: 30 }} />,
+    label: "Assets Products",
+    sublabel: "Manage asset products",
+    icon: <WidgetsOutlinedIcon fontSize="large" />,
+  },
+  {
+    label: "New  Asset Purchase",
+    sublabel: "Add new purchases",
+    icon: <AddShoppingCartOutlinedIcon fontSize="large" />,
+  },
+ 
+  {
+    label: "Assets Inventory",
+    sublabel: "Check inventory details",
+    icon: <Inventory2OutlinedIcon fontSize="large" />,
   },
 ];
-
+ 
 const AssetsAdmin = () => {
-  const [selectedOption, setSelectedOption] = useState("Asset");
-  const theme = useTheme();
-
+  const [selectedOption, setSelectedOption] = useState("Assets");
+  const theme = useTheme(); // Access the MUI theme for consistent colors
+ 
+  // Define your custom primary color here
+  const customPrimaryColor = "#F58E35";
+ 
   const renderComponent = () => {
     switch (selectedOption) {
-      case "Asset":
-        // View 1: Master List
-        return <Assets mode="master" />;
-      case "Asset allocation":
-        // View 2: Allocation Form & List
-        return <Assets mode="allocation" />;
-      case "New Asset":
-        // View 3: Add Asset / Requisition
-        return <NewPurchaseAssets />;
-      case "Asset Inventory":
-        // View 4: Inventory Table
+      case "Assets":
+        return <Assets />;
+      case "Category":
+        return <Category />;
+      case "Brands":
+        return <Brands />;
+      case "Assets Inventory":
         return <AssestsInventory />;
+      case "New  Asset Purchase":
+        return <NewPurchaseAssets />;
+      case "Assets Products":
+        return <AssetsProductAdmin />;
       default:
-        return <Assets mode="master" />;
+        return <Typography>Please select an option.</Typography>;
     }
   };
-
+ 
   return (
     <Box p={{ xs: 2, sm: 3 }}>
-      {/* 
-        Grid Container: 
-        Matches the screenshot layout.
-        On Desktop (md): 4 cards in one row (3 columns each = 12).
-        On Mobile (xs): 2 cards per row (6 columns each).
-      */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
+      {/* Top Section: Responsive Card Options using Grid */}
+      <Grid
+        container
+        spacing={2}
+        sx={{
+          mb: 4,
+          // --- CHANGE #1 START ---
+          // On mobile screens (xs breakpoint), prevent wrapping and enable horizontal scrolling.
+          // On larger screens (sm and up), revert to the default wrapping behavior.
+          flexWrap: { xs: "nowrap", sm: "wrap" },
+          overflowX: { xs: "auto", sm: "hidden" },
+          // Add some padding at the bottom on mobile to make space for the scrollbar
+          pb: { xs: 2, sm: 0 },
+          // For a cleaner look, you can uncomment the lines below to hide the scrollbar
+          // while keeping the scroll functionality.
+          // '&::-webkit-scrollbar': {
+          //   display: 'none',
+          // },
+          // msOverflowStyle: 'none',  /* IE and Edge */
+          // scrollbarWidth: 'none',  /* Firefox */
+          // --- CHANGE #1 END ---
+        }}
+      >
         {options.map((option) => {
           const isSelected = selectedOption === option.label;
           return (
-            <Grid item xs={6} sm={6} md={3} key={option.label}>
+            // --- CHANGE #2 START ---
+            // Adjusted the `xs` prop.
+            // Instead of `xs={12}` (full width), we use `xs={8}`. This makes each card
+            // take up 8/12 (~66%) of the screen width on mobile, which forces the
+            // container to overflow and activates the horizontal scrollbar.
+            <Grid item xs={8} sm={6} md={4} lg={2} key={option.label}>
+            {/* --- CHANGE #2 END --- */}
               <Card
                 variant="outlined"
                 sx={{
-                  height: "100%", // Uniform height
-                  transition: "all 0.2s ease-in-out",
-                  backgroundColor: isSelected ? alpha(THEME_PURPLE, 0.04) : "#fff",
-                  borderColor: isSelected ? THEME_PURPLE : theme.palette.divider,
-                  borderWidth: "1px",
+                  height: '100%',
+                  textAlign: "center",
+                  transition: "all 0.3s ease-in-out",
+                  backgroundColor: isSelected ? alpha(customPrimaryColor, 0.08) : 'background.paper',
+                  borderColor: isSelected ? customPrimaryColor : theme.palette.divider,
+                  boxShadow: isSelected
+                    ? `0 4px 12px ${alpha(customPrimaryColor, 0.2)}`
+                    : "0 1px 3px rgba(0,0,0,0.05)",
                   "&:hover": {
-                    borderColor: THEME_PURPLE,
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+                    transform: "translateY(-4px)",
+                    boxShadow: `0 6px 16px ${alpha(customPrimaryColor, 0.25)}`,
+                    borderColor: customPrimaryColor,
                   },
                 }}
               >
                 <CardActionArea
                   onClick={() => setSelectedOption(option.label)}
                   sx={{
-                    p: 3,
                     height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
+                    p: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
                   }}
                 >
-                  <Box
-                    sx={{
-                      color: isSelected ? THEME_PURPLE : theme.palette.text.secondary,
-                      mb: 1.5,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
+                  <Box color={isSelected ? customPrimaryColor : 'text.secondary'} mb={1.5}>
                     {option.icon}
                   </Box>
                   <Typography
                     variant="subtitle1"
-                    fontWeight={isSelected ? "bold" : "500"}
-                    color={isSelected ? THEME_PURPLE : "text.primary"}
-                    align="center"
-                    sx={{ lineHeight: 1.2 }}
+                    fontWeight="600"
+                    color={isSelected ? customPrimaryColor : 'text.primary'}
                   >
                     {option.label}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {option.sublabel}
                   </Typography>
                 </CardActionArea>
               </Card>
@@ -1337,22 +1532,23 @@ const AssetsAdmin = () => {
           );
         })}
       </Grid>
-
-      {/* Render the selected component below the cards */}
-      <Box 
+ 
+      {/* Bottom Section: Render Selected Component with Fade Transition */}
+      <Box
         sx={{
-          backgroundColor: "#fff",
-          borderRadius: 2,
-          // Optional: Add a subtle shadow to the content area
-          // boxShadow: "0 2px 10px rgba(0,0,0,0.03)" 
+          p: { xs: 2, sm: 3 },
+          backgroundColor: "background.paper",
+          borderRadius: 3,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
         }}
       >
-        <Fade in timeout={300} key={selectedOption}>
+        <Fade in timeout={400} key={selectedOption}>
           <div>{renderComponent()}</div>
         </Fade>
       </Box>
     </Box>
   );
 };
-
+ 
 export default AssetsAdmin;
+ 
